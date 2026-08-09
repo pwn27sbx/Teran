@@ -12,10 +12,17 @@ export default function BrushReveal({
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const bgImgRef = useRef(null);
   const revealImgRef = useRef(null);
-  const brushImgRef = useRef(null);
+  
+  // Refs for animation and parallax
+  const bgNodeRef = useRef(null);
   const lastPosRef = useRef(null);
   const rafRef = useRef(null);
   const offCanvasRef = useRef(null);
+  
+  const isHoveringRef = useRef(false);
+  const currentPosRef = useRef({ x: 0, y: 0 });
+  const targetPosRef = useRef({ x: 0, y: 0 });
+  const autoTargetRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     let loadedCount = 0;
@@ -50,6 +57,11 @@ export default function BrushReveal({
       canvas.height = parent.clientHeight;
       offCanvas.width = canvas.width;
       offCanvas.height = canvas.height;
+      
+      if (currentPosRef.current.x === 0 && currentPosRef.current.y === 0 && canvas.width > 0) {
+         currentPosRef.current = { x: canvas.width / 2, y: canvas.height / 2 };
+         autoTargetRef.current = { x: canvas.width / 2, y: canvas.height / 2 };
+      }
     };
 
     window.addEventListener('resize', handleResize);
@@ -66,32 +78,37 @@ export default function BrushReveal({
         x = (canvasW - w) / 2;
       } else {
         h = canvasW / imgRatio;
-        // Shift up slightly to cut off the bottom legs (like the red line requested)
         y = (canvasH - h) * 0.2;
       }
 
       if (isReveal) {
-        // Apply custom scale from center
         const cx = x + w / 2;
         const cy = y + h / 2;
         w *= revealScale;
         h *= revealScale;
         x = cx - w / 2;
         y = cy - h / 2;
-
-        // Apply custom vertical shift
         y += h * revealOffsetY;
       }
 
       return { w, h, x, y };
     };
 
-    // Array to hold our water drops
     const drops = [];
-    const DROP_LIFESPAN = 250; // milliseconds before it vanishes completely
+    const DROP_LIFESPAN = 250;
 
     const addDrop = (x, y) => {
-      drops.push({ x, y, createdAt: Date.now() });
+      drops.push({ 
+        x, 
+        y, 
+        createdAt: Date.now(),
+        // Oil drop organic properties
+        radiusScale: 0.8 + Math.random() * 0.4, // Size varies 80% to 120%
+        squash: 0.7 + Math.random() * 0.3, // Squash Y axis for elliptical shape
+        angle: Math.random() * Math.PI * 2, // Random rotation
+        offsetX: (Math.random() - 0.5) * 20, // Position jitter X
+        offsetY: (Math.random() - 0.5) * 20  // Position jitter Y
+      });
     };
 
     // Main animation loop
@@ -99,6 +116,88 @@ export default function BrushReveal({
       const revImg = revealImgRef.current;
       const now = Date.now();
       
+      if (!canvas.width || !canvas.height) {
+         rafRef.current = requestAnimationFrame(renderLoop);
+         return;
+      }
+      
+      // -- UPDATE POSITIONS & PARALLAX --
+      if (!isHoveringRef.current) {
+        // Auto wander logic - fast, organic, edge to edge
+        if (Math.random() < 0.03) {
+          // Target extreme corners frequently to zip across
+          let targetX = Math.random() < 0.5 ? Math.random() * 0.2 : 0.8 + Math.random() * 0.2;
+          let targetY = Math.random() < 0.5 ? Math.random() * 0.2 : 0.8 + Math.random() * 0.2;
+          
+          // Occasionally aim for the center
+          if (Math.random() < 0.3) {
+             targetX = Math.random();
+             targetY = Math.random();
+          }
+
+          autoTargetRef.current = {
+            x: targetX * canvas.width,
+            y: targetY * canvas.height
+          };
+        }
+        
+        // Move much faster (like a fast mouse)
+        currentPosRef.current.x += (autoTargetRef.current.x - currentPosRef.current.x) * 0.08;
+        currentPosRef.current.y += (autoTargetRef.current.y - currentPosRef.current.y) * 0.08;
+      } else {
+        currentPosRef.current.x += (targetPosRef.current.x - currentPosRef.current.x) * 0.2;
+        currentPosRef.current.y += (targetPosRef.current.y - currentPosRef.current.y) * 0.2;
+      }
+      
+      // Update Parallax Transforms
+      const pX = (currentPosRef.current.x / canvas.width) - 0.5;
+      const pY = (currentPosRef.current.y / canvas.height) - 0.5;
+      
+      const bgOffsetX = pX * -30;
+      const bgOffsetY = pY * -30;
+      const canvasOffsetX = pX * -60;
+      const canvasOffsetY = pY * -60;
+      
+      if (bgNodeRef.current) {
+        bgNodeRef.current.style.transform = `translate(${bgOffsetX}px, ${bgOffsetY}px) scale(1.05)`;
+      }
+      if (canvasRef.current) {
+        canvasRef.current.style.transform = `translate(${canvasOffsetX}px, ${canvasOffsetY}px) scale(1.05)`;
+      }
+
+      // Convert Screen Coordinates to Canvas Coordinates accounting for scale and translate
+      const s = 1.05;
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      
+      const getCanvasCoords = (screenX, screenY) => {
+        return {
+          x: (screenX - canvasOffsetX - cx) / s + cx,
+          y: (screenY - canvasOffsetY - cy) / s + cy
+        };
+      };
+
+      // Auto-add drops
+      const dx = currentPosRef.current.x - (lastPosRef.current?.x || currentPosRef.current.x);
+      const dy = currentPosRef.current.y - (lastPosRef.current?.y || currentPosRef.current.y);
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      const spacing = brushSize * 0.1;
+      
+      if (dist > spacing) {
+         const steps = Math.min(30, Math.floor(dist / spacing));
+         for (let i = 1; i <= steps; i++) {
+           const sX = (lastPosRef.current?.x || currentPosRef.current.x) + (dx * i) / steps;
+           const sY = (lastPosRef.current?.y || currentPosRef.current.y) + (dy * i) / steps;
+           const cPos = getCanvasCoords(sX, sY);
+           addDrop(cPos.x, cPos.y);
+         }
+         lastPosRef.current = { x: currentPosRef.current.x, y: currentPosRef.current.y };
+      } else {
+         const cPos = getCanvasCoords(currentPosRef.current.x, currentPosRef.current.y);
+         addDrop(cPos.x, cPos.y);
+         lastPosRef.current = { x: currentPosRef.current.x, y: currentPosRef.current.y };
+      }
+
       // Clean up old drops
       while (drops.length > 0 && now - drops[0].createdAt > DROP_LIFESPAN) {
         drops.shift();
@@ -107,19 +206,25 @@ export default function BrushReveal({
       // 1. Clear offscreen canvas
       offCtx.clearRect(0, 0, offCanvas.width, offCanvas.height);
       
-      // 2. Draw all active drops as solid shrinking circles
+      // 2. Draw all active drops organically
       offCtx.globalCompositeOperation = 'source-over';
       offCtx.fillStyle = 'black';
       
       for (const drop of drops) {
-        const life = (now - drop.createdAt) / DROP_LIFESPAN; // 0.0 to 1.0
-        // Easing function for smooth shrinking
+        const life = (now - drop.createdAt) / DROP_LIFESPAN;
         const scale = 1 - Math.pow(life, 2); 
-        const currentRadius = brushSize * scale;
+        const currentRadius = brushSize * scale * drop.radiusScale;
         
         if (currentRadius > 0) {
           offCtx.beginPath();
-          offCtx.arc(drop.x, drop.y, currentRadius, 0, Math.PI * 2);
+          offCtx.ellipse(
+            drop.x + drop.offsetX, 
+            drop.y + drop.offsetY, 
+            currentRadius, 
+            currentRadius * drop.squash, 
+            drop.angle, 
+            0, Math.PI * 2
+          );
           offCtx.fill();
         }
       }
@@ -131,18 +236,17 @@ export default function BrushReveal({
       ctx.globalCompositeOperation = 'source-over';
       ctx.drawImage(offCanvas, 0, 0);
 
-      // 5. Draw reveal image masked by the solid drops (100% opacity)
+      // 5. Draw reveal image masked by the solid drops
       if (revImg) {
         ctx.globalCompositeOperation = 'source-in';
         const { w, h, x, y } = getCustomFraming(revImg, canvas.width, canvas.height, true);
         ctx.drawImage(revImg, x, y, w, h);
 
-        // Feathering edges to completely eliminate hard cut-offs when scaled down
+        // Feathering edges to eliminate artifacts
         ctx.globalCompositeOperation = 'destination-out';
         const featherSize = 250; 
-        const overlap = 5; // Erase slightly outside the boundary to kill 1px artifacts
+        const overlap = 5;
         
-        // Left edge feathering
         if (x > 0) {
           const gradLeft = ctx.createLinearGradient(x + overlap, 0, x + featherSize, 0);
           gradLeft.addColorStop(0, 'rgba(0,0,0,1)');
@@ -151,7 +255,6 @@ export default function BrushReveal({
           ctx.fillRect(x - overlap, 0, featherSize + overlap * 2, canvas.height);
         }
         
-        // Right edge feathering
         if (x + w < canvas.width) {
           const gradRight = ctx.createLinearGradient(x + w - overlap, 0, x + w - featherSize, 0);
           gradRight.addColorStop(0, 'rgba(0,0,0,1)');
@@ -160,7 +263,6 @@ export default function BrushReveal({
           ctx.fillRect(x + w - featherSize - overlap, 0, featherSize + overlap * 2, canvas.height);
         }
         
-        // Top edge feathering
         if (y > 0) {
           const gradTop = ctx.createLinearGradient(0, y + overlap, 0, y + featherSize);
           gradTop.addColorStop(0, 'rgba(0,0,0,1)');
@@ -175,48 +277,42 @@ export default function BrushReveal({
     rafRef.current = requestAnimationFrame(renderLoop);
 
     const handlePointerMove = (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const rect = containerRef.current.getBoundingClientRect();
+      targetPosRef.current = { 
+        x: e.clientX - rect.left, 
+        y: e.clientY - rect.top 
+      };
+      isHoveringRef.current = true;
+    };
 
-      if (lastPosRef.current) {
-        const dx = x - lastPosRef.current.x;
-        const dy = y - lastPosRef.current.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        
-        const spacing = brushSize * 0.1; 
-        if (dist > spacing) {
-          const steps = Math.min(30, Math.floor(dist / spacing));
-          for (let i = 1; i <= steps; i++) {
-            addDrop(lastPosRef.current.x + (dx * i) / steps, lastPosRef.current.y + (dy * i) / steps);
-          }
-        } else {
-          addDrop(x, y);
-        }
-      } else {
-        addDrop(x, y);
-      }
-      lastPosRef.current = { x, y };
+    const handleTouchMove = (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const rect = containerRef.current.getBoundingClientRect();
+      targetPosRef.current = { 
+        x: touch.clientX - rect.left, 
+        y: touch.clientY - rect.top 
+      };
+      isHoveringRef.current = true;
     };
 
     const handlePointerLeave = () => {
-      lastPosRef.current = null;
+      isHoveringRef.current = false;
+      autoTargetRef.current = { ...targetPosRef.current };
     };
 
-    canvas.addEventListener('pointermove', handlePointerMove);
-    canvas.addEventListener('pointerleave', handlePointerLeave);
-    
-    canvas.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-      const touch = e.touches[0];
-      const rect = canvas.getBoundingClientRect();
-      handlePointerMove({ clientX: touch.clientX, clientY: touch.clientY, preventDefault: ()=>{} });
-    }, { passive: false });
+    const container = containerRef.current;
+    container.addEventListener('pointermove', handlePointerMove);
+    container.addEventListener('pointerleave', handlePointerLeave);
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
+    container.addEventListener('touchend', handlePointerLeave);
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      canvas.removeEventListener('pointermove', handlePointerMove);
-      canvas.removeEventListener('pointerleave', handlePointerLeave);
+      container.removeEventListener('pointermove', handlePointerMove);
+      container.removeEventListener('pointerleave', handlePointerLeave);
+      container.removeEventListener('touchmove', handleTouchMove);
+      container.removeEventListener('touchend', handlePointerLeave);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [imagesLoaded, brushSize]);
@@ -229,17 +325,20 @@ export default function BrushReveal({
         </div>
       )}
       
-      {/* Milo - Base Layer */}
+      {/* Base Layer */}
       <img 
+        ref={bgNodeRef}
         src={bgImage} 
         alt="Base" 
         className="absolute inset-0 w-full h-full object-cover object-[center_20%] pointer-events-none"
+        style={{ willChange: 'transform' }}
       />
       
-      {/* Atreus - Reveal Layer */}
+      {/* Reveal Layer */}
       <canvas 
         ref={canvasRef} 
-        className="absolute inset-0 w-full h-full touch-none"
+        className="absolute inset-0 w-full h-full touch-none pointer-events-none"
+        style={{ willChange: 'transform' }}
       />
     </div>
   );

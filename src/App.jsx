@@ -11,7 +11,7 @@ function App() {
         <BrushReveal
           bgImage="/milo1.png"
           revealImage="/atreus1.png"
-          brushSize={100}
+          brushSize={150}
           revealScale={0.83}
           revealOffsetY={-0.18}
         />
