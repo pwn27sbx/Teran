@@ -97,17 +97,27 @@ export default function BrushReveal({
     const drops = [];
     const DROP_LIFESPAN = 250;
 
-    const addDrop = (x, y) => {
+    const addDrop = (x, y, dx = 0, dy = 0) => {
+      const speed = Math.sqrt(dx * dx + dy * dy);
+      const moveAngle = Math.atan2(dy, dx);
+
+      // Stable main oil drop that stretches with speed (no jitter)
+      const squash = Math.max(0.4, 1.0 - (speed * 0.015)); 
+      const rScale = 1.0 + (Math.min(speed, 50) * 0.005);
+      
+      const blobs = [{
+        rScale,
+        squash,
+        angle: moveAngle,
+        offsetX: 0,
+        offsetY: 0
+      }];
+
       drops.push({ 
         x, 
         y, 
         createdAt: Date.now(),
-        // Oil drop organic properties
-        radiusScale: 0.8 + Math.random() * 0.4, // Size varies 80% to 120%
-        squash: 0.7 + Math.random() * 0.3, // Squash Y axis for elliptical shape
-        angle: Math.random() * Math.PI * 2, // Random rotation
-        offsetX: (Math.random() - 0.5) * 20, // Position jitter X
-        offsetY: (Math.random() - 0.5) * 20  // Position jitter Y
+        blobs
       });
     };
 
@@ -189,12 +199,12 @@ export default function BrushReveal({
            const sX = (lastPosRef.current?.x || currentPosRef.current.x) + (dx * i) / steps;
            const sY = (lastPosRef.current?.y || currentPosRef.current.y) + (dy * i) / steps;
            const cPos = getCanvasCoords(sX, sY);
-           addDrop(cPos.x, cPos.y);
+           addDrop(cPos.x, cPos.y, dx, dy);
          }
          lastPosRef.current = { x: currentPosRef.current.x, y: currentPosRef.current.y };
       } else {
          const cPos = getCanvasCoords(currentPosRef.current.x, currentPosRef.current.y);
-         addDrop(cPos.x, cPos.y);
+         addDrop(cPos.x, cPos.y, dx, dy);
          lastPosRef.current = { x: currentPosRef.current.x, y: currentPosRef.current.y };
       }
 
@@ -206,25 +216,28 @@ export default function BrushReveal({
       // 1. Clear offscreen canvas
       offCtx.clearRect(0, 0, offCanvas.width, offCanvas.height);
       
-      // 2. Draw all active drops organically
+      // 2. Draw all active drops (Positive Mask)
       offCtx.globalCompositeOperation = 'source-over';
       offCtx.fillStyle = 'black';
       
       for (const drop of drops) {
         const life = (now - drop.createdAt) / DROP_LIFESPAN;
         const scale = 1 - Math.pow(life, 2); 
-        const currentRadius = brushSize * scale * drop.radiusScale;
+        const baseRadius = brushSize * scale;
         
-        if (currentRadius > 0) {
-          offCtx.beginPath();
-          offCtx.ellipse(
-            drop.x + drop.offsetX, 
-            drop.y + drop.offsetY, 
-            currentRadius, 
-            currentRadius * drop.squash, 
-            drop.angle, 
-            0, Math.PI * 2
+        if (baseRadius > 0) {
+          const size = baseRadius;
+          
+          const gradient = offCtx.createRadialGradient(
+            drop.x, drop.y, size * 0.2, 
+            drop.x, drop.y, size
           );
+          gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
+          gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+          
+          offCtx.fillStyle = gradient;
+          offCtx.beginPath();
+          offCtx.arc(drop.x, drop.y, size, 0, Math.PI * 2);
           offCtx.fill();
         }
       }
