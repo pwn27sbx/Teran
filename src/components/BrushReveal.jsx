@@ -23,8 +23,9 @@ export default function BrushReveal({
   const currentPosRef = useRef({ x: 0, y: 0 });
   const targetPosRef = useRef({ x: 0, y: 0 });
   const autoTargetRef = useRef({ x: 0, y: 0 });
+  const mousePosRef = useRef({ x: 0, y: 0 });
+  const lastMousePosRef = useRef({ x: 0, y: 0 });
   const idleTimerRef = useRef(0);
-  const opacityRef = useRef(0);
   const lastAngleRef = useRef(0);
   const momentumRef = useRef({ x: 0, y: 0 });
 
@@ -65,6 +66,7 @@ export default function BrushReveal({
       if (currentPosRef.current.x === 0 && currentPosRef.current.y === 0 && canvas.width > 0) {
          currentPosRef.current = { x: canvas.width / 2, y: canvas.height / 2 };
          autoTargetRef.current = { x: canvas.width / 2, y: canvas.height / 2 };
+         mousePosRef.current = { x: canvas.width / 2, y: canvas.height / 2 };
       }
     };
 
@@ -146,8 +148,33 @@ export default function BrushReveal({
       
       const now = Date.now();
 
-      // Auto-wander logic when not hovering
-      if (!isHoveringRef.current) {
+      // Core Mouse Physics and Momentum
+      if (isHoveringRef.current) {
+        const mouseDx = mousePosRef.current.x - lastMousePosRef.current.x;
+        const mouseDy = mousePosRef.current.y - lastMousePosRef.current.y;
+        const mouseSpeed = Math.sqrt(mouseDx * mouseDx + mouseDy * mouseDy);
+        
+        lastMousePosRef.current = { ...mousePosRef.current };
+        
+        // Filter out micro-jitter
+        if (mouseSpeed > 0.5) {
+           idleTimerRef.current = 0;
+           momentumRef.current.x = momentumRef.current.x * 0.6 + mouseDx * 0.4;
+           momentumRef.current.y = momentumRef.current.y * 0.6 + mouseDy * 0.4;
+           targetPosRef.current.x = mousePosRef.current.x;
+           targetPosRef.current.y = mousePosRef.current.y;
+        } else {
+           idleTimerRef.current += 1;
+           // If stopped, apply drift and let the stroke dry up progressively
+           if (idleTimerRef.current > 2) {
+              targetPosRef.current.x += momentumRef.current.x;
+              targetPosRef.current.y += momentumRef.current.y;
+              momentumRef.current.x *= 0.90; // Drift friction
+              momentumRef.current.y *= 0.90;
+           }
+        }
+      } else {
+        // Auto-wander logic when not hovering
         if (Math.random() < 0.03) {
           let targetX = Math.random() < 0.5 ? Math.random() * 0.2 : 0.8 + Math.random() * 0.2;
           let targetY = Math.random() < 0.5 ? Math.random() * 0.2 : 0.8 + Math.random() * 0.2;
@@ -172,18 +199,6 @@ export default function BrushReveal({
       const dx = currentPosRef.current.x - lastRenderedPos.x;
       const dy = currentPosRef.current.y - lastRenderedPos.y;
       const speed = Math.sqrt(dx * dx + dy * dy);
-      
-      idleTimerRef.current += 1;
-      
-      if (idleTimerRef.current > 3 && isHoveringRef.current) {
-         targetPosRef.current.x += momentumRef.current.x;
-         targetPosRef.current.y += momentumRef.current.y;
-         momentumRef.current.x *= 0.92;
-         momentumRef.current.y *= 0.92;
-      }
-
-      const isIdle = idleTimerRef.current > 15 || !isHoveringRef.current;
-      opacityRef.current += ((isIdle ? 0 : 1) - opacityRef.current) * 0.1;
 
       if (speed > 1.0) {
         const targetAngle = Math.atan2(dy, dx);
@@ -263,13 +278,13 @@ export default function BrushReveal({
       
       // 2. Draw trail drops (Organic oily continuous stroke)
       for (const drop of drops) {
-        const life = (now - drop.createdAt) / DROP_LIFESPAN;
+        const life = Math.max(0, (now - drop.createdAt) / DROP_LIFESPAN);
         const scale = 1 - Math.pow(life, 2); 
         const size = brushSize * scale * drop.sizeMod; 
         
         if (size > 0.5) {
           offCtx.beginPath();
-          offCtx.arc(drop.x, drop.y, size, 0, Math.PI * 2);
+          offCtx.ellipse(drop.x, drop.y, size * 1.15, size * 0.85, drop.angle, 0, Math.PI * 2);
           offCtx.fill();
           
           // Draw satellite splatters
@@ -282,12 +297,6 @@ export default function BrushReveal({
             }
           }
         }
-      }
-
-      // 3. Draw the persistent main paw (cursor head)
-      const currentBrushSize = brushSize * opacityRef.current;
-      if (currentBrushSize > 0.5) {
-        drawGota(offCtx, cPos.x, cPos.y, currentBrushSize, moveAngle);
       }
 
       // 3. Clear main canvas
@@ -339,34 +348,22 @@ export default function BrushReveal({
 
     const handlePointerMove = (e) => {
       const rect = containerRef.current.getBoundingClientRect();
-      const newX = e.clientX - rect.left;
-      const newY = e.clientY - rect.top;
-      
-      const rawDx = newX - targetPosRef.current.x;
-      const rawDy = newY - targetPosRef.current.y;
-      momentumRef.current.x = momentumRef.current.x * 0.7 + rawDx * 0.3;
-      momentumRef.current.y = momentumRef.current.y * 0.7 + rawDy * 0.3;
-
-      targetPosRef.current = { x: newX, y: newY };
+      mousePosRef.current = { 
+        x: e.clientX - rect.left, 
+        y: e.clientY - rect.top 
+      };
       isHoveringRef.current = true;
-      idleTimerRef.current = 0;
     };
 
     const handleTouchMove = (e) => {
       e.preventDefault();
       const touch = e.touches[0];
       const rect = containerRef.current.getBoundingClientRect();
-      const newX = touch.clientX - rect.left;
-      const newY = touch.clientY - rect.top;
-      
-      const rawDx = newX - targetPosRef.current.x;
-      const rawDy = newY - targetPosRef.current.y;
-      momentumRef.current.x = momentumRef.current.x * 0.7 + rawDx * 0.3;
-      momentumRef.current.y = momentumRef.current.y * 0.7 + rawDy * 0.3;
-
-      targetPosRef.current = { x: newX, y: newY };
+      mousePosRef.current = { 
+        x: touch.clientX - rect.left, 
+        y: touch.clientY - rect.top 
+      };
       isHoveringRef.current = true;
-      idleTimerRef.current = 0;
     };
 
     const handlePointerLeave = () => {
