@@ -23,6 +23,10 @@ export default function BrushReveal({
   const currentPosRef = useRef({ x: 0, y: 0 });
   const targetPosRef = useRef({ x: 0, y: 0 });
   const autoTargetRef = useRef({ x: 0, y: 0 });
+  const idleTimerRef = useRef(0);
+  const opacityRef = useRef(0);
+  const lastAngleRef = useRef(0);
+  const momentumRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     let loadedCount = 0;
@@ -95,69 +99,102 @@ export default function BrushReveal({
     };
 
     const drops = [];
-    const DROP_LIFESPAN = 250;
+    const DROP_LIFESPAN = 400; // Shorter trail to make the paw pop out
 
-    const addDrop = (x, y, dx = 0, dy = 0) => {
-      const speed = Math.sqrt(dx * dx + dy * dy);
-      const moveAngle = Math.atan2(dy, dx);
+    const addDrop = (x, y, angle) => {
+      // Vary the size of the trail slightly for wavy edges, 
+      // but KEEP IT UNDER 1.0 so the main head (size 1.0) always fully covers the front!
+      const sizeMod = 0.75 + Math.random() * 0.2; // 0.75 to 0.95
 
-      // Stable main oil drop that stretches with speed (no jitter)
-      const squash = Math.max(0.4, 1.0 - (speed * 0.015)); 
-      const rScale = 1.0 + (Math.min(speed, 50) * 0.005);
-      
-      const blobs = [{
-        rScale,
-        squash,
-        angle: moveAngle,
-        offsetX: 0,
-        offsetY: 0
-      }];
+      // Generate satellite drops (splatters) at a perfect middle ground
+      const satellites = [];
+      if (Math.random() < 0.45) { // Middle ground chance
+        const numSats = 1 + Math.floor(Math.random() * 2); // 1 to 2 splatters
+        for (let i = 0; i < numSats; i++) {
+          satellites.push({
+            ox: (Math.random() - 0.5) * brushSize * 1.9, // Balanced spread
+            oy: (Math.random() - 0.5) * brushSize * 1.9,
+            sz: 0.07 + Math.random() * 0.13 // Balanced size (up to 20%)
+          });
+        }
+      }
 
       drops.push({ 
-        x, 
+        x, // No positional offsets to prevent the "caterpillar" look
         y, 
-        createdAt: Date.now(),
-        blobs
+        sizeMod,
+        satellites,
+        angle, 
+        createdAt: Date.now() 
       });
     };
 
-    // Main animation loop
+    let lastRenderedPos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+
     const renderLoop = () => {
       const revImg = revealImgRef.current;
-      const now = Date.now();
+      const canvas = canvasRef.current;
+      const offCanvas = offCanvasRef.current;
+      if (!canvas || !offCanvas) return;
+      const ctx = canvas.getContext('2d');
+      const offCtx = offCanvas.getContext('2d');
       
       if (!canvas.width || !canvas.height) {
          rafRef.current = requestAnimationFrame(renderLoop);
          return;
       }
       
-      // -- UPDATE POSITIONS & PARALLAX --
+      const now = Date.now();
+
+      // Auto-wander logic when not hovering
       if (!isHoveringRef.current) {
-        // Auto wander logic - fast, organic, edge to edge
         if (Math.random() < 0.03) {
-          // Target extreme corners frequently to zip across
           let targetX = Math.random() < 0.5 ? Math.random() * 0.2 : 0.8 + Math.random() * 0.2;
           let targetY = Math.random() < 0.5 ? Math.random() * 0.2 : 0.8 + Math.random() * 0.2;
-          
-          // Occasionally aim for the center
           if (Math.random() < 0.3) {
              targetX = Math.random();
              targetY = Math.random();
           }
-
           autoTargetRef.current = {
             x: targetX * canvas.width,
             y: targetY * canvas.height
           };
         }
-        
-        // Move much faster (like a fast mouse)
-        currentPosRef.current.x += (autoTargetRef.current.x - currentPosRef.current.x) * 0.08;
-        currentPosRef.current.y += (autoTargetRef.current.y - currentPosRef.current.y) * 0.08;
-      } else {
-        currentPosRef.current.x += (targetPosRef.current.x - currentPosRef.current.x) * 0.2;
-        currentPosRef.current.y += (targetPosRef.current.y - currentPosRef.current.y) * 0.2;
+        targetPosRef.current.x += (autoTargetRef.current.x - targetPosRef.current.x) * 0.05;
+        targetPosRef.current.y += (autoTargetRef.current.y - targetPosRef.current.y) * 0.05;
       }
+      
+      // Smooth interpolation for the brush position
+      currentPosRef.current.x += (targetPosRef.current.x - currentPosRef.current.x) * 0.15;
+      currentPosRef.current.y += (targetPosRef.current.y - currentPosRef.current.y) * 0.15;
+
+      // Calculate velocity for stretching/rotation
+      const dx = currentPosRef.current.x - lastRenderedPos.x;
+      const dy = currentPosRef.current.y - lastRenderedPos.y;
+      const speed = Math.sqrt(dx * dx + dy * dy);
+      
+      idleTimerRef.current += 1;
+      
+      if (idleTimerRef.current > 3 && isHoveringRef.current) {
+         targetPosRef.current.x += momentumRef.current.x;
+         targetPosRef.current.y += momentumRef.current.y;
+         momentumRef.current.x *= 0.92;
+         momentumRef.current.y *= 0.92;
+      }
+
+      const isIdle = idleTimerRef.current > 15 || !isHoveringRef.current;
+      opacityRef.current += ((isIdle ? 0 : 1) - opacityRef.current) * 0.1;
+
+      if (speed > 1.0) {
+        const targetAngle = Math.atan2(dy, dx);
+        let diff = targetAngle - lastAngleRef.current;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        lastAngleRef.current += diff * 0.15;
+      }
+      const moveAngle = lastAngleRef.current;
+      
+      lastRenderedPos = { ...currentPosRef.current };
       
       // Update Parallax Transforms
       const pX = (currentPosRef.current.x / canvas.width) - 0.5;
@@ -175,7 +212,6 @@ export default function BrushReveal({
         canvasRef.current.style.transform = `translate(${canvasOffsetX}px, ${canvasOffsetY}px) scale(1.05)`;
       }
 
-      // Convert Screen Coordinates to Canvas Coordinates accounting for scale and translate
       const s = 1.05;
       const cx = canvas.width / 2;
       const cy = canvas.height / 2;
@@ -187,24 +223,24 @@ export default function BrushReveal({
         };
       };
 
-      // Auto-add drops
-      const dx = currentPosRef.current.x - (lastPosRef.current?.x || currentPosRef.current.x);
-      const dy = currentPosRef.current.y - (lastPosRef.current?.y || currentPosRef.current.y);
-      const dist = Math.sqrt(dx*dx + dy*dy);
-      const spacing = brushSize * 0.1;
+      const cPos = getCanvasCoords(currentPosRef.current.x, currentPosRef.current.y);
+
+      // Auto-add drops for the trail
+      const ddx = currentPosRef.current.x - (lastPosRef.current?.x || currentPosRef.current.x);
+      const ddy = currentPosRef.current.y - (lastPosRef.current?.y || currentPosRef.current.y);
+      const dist = Math.sqrt(ddx*ddx + ddy*ddy);
+      const spacing = brushSize * 0.05; // Extremely tight spacing for a perfectly smooth core
       
       if (dist > spacing) {
          const steps = Math.min(30, Math.floor(dist / spacing));
          for (let i = 1; i <= steps; i++) {
-           const sX = (lastPosRef.current?.x || currentPosRef.current.x) + (dx * i) / steps;
-           const sY = (lastPosRef.current?.y || currentPosRef.current.y) + (dy * i) / steps;
-           const cPos = getCanvasCoords(sX, sY);
-           addDrop(cPos.x, cPos.y, dx, dy);
+           const sX = (lastPosRef.current?.x || currentPosRef.current.x) + (ddx * i) / steps;
+           const sY = (lastPosRef.current?.y || currentPosRef.current.y) + (ddy * i) / steps;
+           const trailCPos = getCanvasCoords(sX, sY);
+           addDrop(trailCPos.x, trailCPos.y, moveAngle);
          }
          lastPosRef.current = { x: currentPosRef.current.x, y: currentPosRef.current.y };
-      } else {
-         const cPos = getCanvasCoords(currentPosRef.current.x, currentPosRef.current.y);
-         addDrop(cPos.x, cPos.y, dx, dy);
+      } else if (!lastPosRef.current) {
          lastPosRef.current = { x: currentPosRef.current.x, y: currentPosRef.current.y };
       }
 
@@ -216,44 +252,56 @@ export default function BrushReveal({
       // 1. Clear offscreen canvas
       offCtx.clearRect(0, 0, offCanvas.width, offCanvas.height);
       
-      // 2. Draw all active drops (Positive Mask)
       offCtx.globalCompositeOperation = 'source-over';
       offCtx.fillStyle = 'black';
       
+      const drawGota = (ctx, x, y, size) => {
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+      };
+      
+      // 2. Draw trail drops (Organic oily continuous stroke)
       for (const drop of drops) {
         const life = (now - drop.createdAt) / DROP_LIFESPAN;
         const scale = 1 - Math.pow(life, 2); 
-        const baseRadius = brushSize * scale;
+        const size = brushSize * scale * drop.sizeMod; 
         
-        if (baseRadius > 0) {
-          const size = baseRadius;
-          
-          const gradient = offCtx.createRadialGradient(
-            drop.x, drop.y, size * 0.2, 
-            drop.x, drop.y, size
-          );
-          gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
-          gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-          
-          offCtx.fillStyle = gradient;
+        if (size > 0.5) {
           offCtx.beginPath();
           offCtx.arc(drop.x, drop.y, size, 0, Math.PI * 2);
           offCtx.fill();
+          
+          // Draw satellite splatters
+          for (const sat of drop.satellites) {
+            const satSize = brushSize * scale * sat.sz;
+            if (satSize > 0.5) {
+              offCtx.beginPath();
+              offCtx.arc(drop.x + sat.ox, drop.y + sat.oy, satSize, 0, Math.PI * 2);
+              offCtx.fill();
+            }
+          }
         }
+      }
+
+      // 3. Draw the persistent main paw (cursor head)
+      const currentBrushSize = brushSize * opacityRef.current;
+      if (currentBrushSize > 0.5) {
+        drawGota(offCtx, cPos.x, cPos.y, currentBrushSize, moveAngle);
       }
 
       // 3. Clear main canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 4. Draw the drops onto main canvas
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.drawImage(offCanvas, 0, 0);
-
-      // 5. Draw reveal image masked by the solid drops
+      // 4. Draw reveal image masked by the solid ellipse
       if (revImg) {
-        ctx.globalCompositeOperation = 'source-in';
+        ctx.globalCompositeOperation = 'source-over';
         const { w, h, x, y } = getCustomFraming(revImg, canvas.width, canvas.height, true);
         ctx.drawImage(revImg, x, y, w, h);
+
+        // Apply the mask
+        ctx.globalCompositeOperation = 'destination-in';
+        ctx.drawImage(offCanvas, 0, 0);
 
         // Feathering edges to eliminate artifacts
         ctx.globalCompositeOperation = 'destination-out';
@@ -291,22 +339,34 @@ export default function BrushReveal({
 
     const handlePointerMove = (e) => {
       const rect = containerRef.current.getBoundingClientRect();
-      targetPosRef.current = { 
-        x: e.clientX - rect.left, 
-        y: e.clientY - rect.top 
-      };
+      const newX = e.clientX - rect.left;
+      const newY = e.clientY - rect.top;
+      
+      const rawDx = newX - targetPosRef.current.x;
+      const rawDy = newY - targetPosRef.current.y;
+      momentumRef.current.x = momentumRef.current.x * 0.7 + rawDx * 0.3;
+      momentumRef.current.y = momentumRef.current.y * 0.7 + rawDy * 0.3;
+
+      targetPosRef.current = { x: newX, y: newY };
       isHoveringRef.current = true;
+      idleTimerRef.current = 0;
     };
 
     const handleTouchMove = (e) => {
       e.preventDefault();
       const touch = e.touches[0];
       const rect = containerRef.current.getBoundingClientRect();
-      targetPosRef.current = { 
-        x: touch.clientX - rect.left, 
-        y: touch.clientY - rect.top 
-      };
+      const newX = touch.clientX - rect.left;
+      const newY = touch.clientY - rect.top;
+      
+      const rawDx = newX - targetPosRef.current.x;
+      const rawDy = newY - targetPosRef.current.y;
+      momentumRef.current.x = momentumRef.current.x * 0.7 + rawDx * 0.3;
+      momentumRef.current.y = momentumRef.current.y * 0.7 + rawDy * 0.3;
+
+      targetPosRef.current = { x: newX, y: newY };
       isHoveringRef.current = true;
+      idleTimerRef.current = 0;
     };
 
     const handlePointerLeave = () => {
