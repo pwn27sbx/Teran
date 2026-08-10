@@ -25,8 +25,8 @@ export default function BrushReveal({
   const autoTargetRef = useRef({ x: 0, y: 0 });
   const mousePosRef = useRef({ x: 0, y: 0 });
   const lastMousePosRef = useRef({ x: 0, y: 0 });
-  const idleTimerRef = useRef(0);
-  const globalFadeRef = useRef(1.0); // Track global opacity/scale for fade out
+  const exitVelocityRef = useRef(null); // Tracks the escape velocity when stopped
+  const idleTimerRef = useRef(0); // Tracks how long the mouse has been still
   const momentumRef = useRef({ x: 0, y: 0 });
   const nodesRef = useRef(null);
   const numNodes = 20; // Number of segments for a smooth curve
@@ -132,31 +132,69 @@ export default function BrushReveal({
 
         lastMousePosRef.current = { ...mousePosRef.current };
 
-        if (mouseSpeed > 0.1) {
-           momentumRef.current.x = momentumRef.current.x * 0.6 + mouseDx * 0.4;
-           momentumRef.current.y = momentumRef.current.y * 0.6 + mouseDy * 0.4;
+        if (mouseSpeed > 1.0) {
+           // Actively moving
+           momentumRef.current.x = momentumRef.current.x * 0.8 + mouseDx * 0.2;
+           momentumRef.current.y = momentumRef.current.y * 0.8 + mouseDy * 0.2;
            targetPosRef.current.x = mousePosRef.current.x;
            targetPosRef.current.y = mousePosRef.current.y;
+           
+           idleTimerRef.current = 0;
+           
+           if (exitVelocityRef.current) {
+               // We were exiting. If the brush is far away, snap it back to the mouse so it doesn't whip across the screen
+               // Changed to 800 to prevent false-positive teleporting during very fast mouse sweeps!
+               const dist = Math.sqrt(Math.pow(currentPosRef.current.x - mousePosRef.current.x, 2) + Math.pow(currentPosRef.current.y - mousePosRef.current.y, 2));
+               if (dist > 800) {
+                   currentPosRef.current = { ...mousePosRef.current };
+                   if (nodesRef.current) {
+                       nodesRef.current.forEach(n => { n.x = mousePosRef.current.x; n.y = mousePosRef.current.y; });
+                   }
+               }
+               exitVelocityRef.current = null; 
+           }
         } else {
-           targetPosRef.current.x += momentumRef.current.x;
-           targetPosRef.current.y += momentumRef.current.y;
-           momentumRef.current.x *= 0.90;
-           momentumRef.current.y *= 0.90;
+           idleTimerRef.current += 1;
+           
+           if (idleTimerRef.current > 5) {
+               // Stopped moving for a moment! Fly off the screen!
+               if (!exitVelocityRef.current) {
+                   let mx = momentumRef.current.x;
+                   let my = momentumRef.current.y;
+                   let mSpeed = Math.sqrt(mx*mx + my*my);
+                   
+                   if (mSpeed < 1.0) {
+                       // If they clicked without moving, pick a random direction
+                       const angle = Math.random() * Math.PI * 2;
+                       mx = Math.cos(angle);
+                       my = Math.sin(angle);
+                       mSpeed = 1.0;
+                   }
+                   
+                   // Set high exit velocity in the direction of last movement
+                   exitVelocityRef.current = {
+                       x: (mx / mSpeed) * 35,
+                       y: (my / mSpeed) * 35
+                   };
+               }
+               
+               // Keep pushing the target off screen
+               targetPosRef.current.x += exitVelocityRef.current.x;
+               targetPosRef.current.y += exitVelocityRef.current.y;
+           } else {
+               // Stopped for just a few frames (maybe changing direction). Let it coast slightly.
+               targetPosRef.current.x += momentumRef.current.x;
+               targetPosRef.current.y += momentumRef.current.y;
+               momentumRef.current.x *= 0.8;
+               momentumRef.current.y *= 0.8;
+           }
         }
       } else {
-        
-        // Auto-wander logic when not hovering
+        // Auto-wander logic when completely not hovering (mouse off window)
         if (Math.random() < 0.03) {
           let targetX = Math.random() < 0.5 ? Math.random() * 0.2 : 0.8 + Math.random() * 0.2;
           let targetY = Math.random() < 0.5 ? Math.random() * 0.2 : 0.8 + Math.random() * 0.2;
-          if (Math.random() < 0.3) {
-             targetX = Math.random();
-             targetY = Math.random();
-          }
-          autoTargetRef.current = {
-            x: targetX * canvas.width,
-            y: targetY * canvas.height
-          };
+          autoTargetRef.current = { x: targetX * canvas.width, y: targetY * canvas.height };
         }
         targetPosRef.current.x += (autoTargetRef.current.x - targetPosRef.current.x) * 0.05;
         targetPosRef.current.y += (autoTargetRef.current.y - targetPosRef.current.y) * 0.05;
@@ -166,22 +204,14 @@ export default function BrushReveal({
       currentPosRef.current.x += (targetPosRef.current.x - currentPosRef.current.x) * 0.15;
       currentPosRef.current.y += (targetPosRef.current.y - currentPosRef.current.y) * 0.15;
 
-      // Centralized Idle Timer Logic based on distance to target!
-      const distToTarget = Math.sqrt(Math.pow(targetPosRef.current.x - currentPosRef.current.x, 2) + Math.pow(targetPosRef.current.y - currentPosRef.current.y, 2));
-      
-      if (distToTarget > 1.0) {
-         idleTimerRef.current = 0;
-         globalFadeRef.current = 1.0; // Stay fully visible while moving
-      } else {
-         idleTimerRef.current += 1;
-         if (idleTimerRef.current > 3) {
-            globalFadeRef.current = Math.max(0, globalFadeRef.current - 0.15); // Shrink very fast when stopped
-         }
-      }
-
       // Update Parallax Transforms
-      const pX = (currentPosRef.current.x / canvas.width) - 0.5;
-      const pY = (currentPosRef.current.y / canvas.height) - 0.5;
+      // Use mousePosRef instead of currentPosRef so the background doesn't drift infinitely when the brush flies away
+      let pX = (mousePosRef.current.x / canvas.width) - 0.5;
+      let pY = (mousePosRef.current.y / canvas.height) - 0.5;
+      
+      // Clamp values just in case the mouse goes out of window
+      pX = Math.max(-0.6, Math.min(0.6, pX));
+      pY = Math.max(-0.6, Math.min(0.6, pY));
 
       const bgOffsetX = pX * -30;
       const bgOffsetY = pY * -30;
@@ -200,9 +230,18 @@ export default function BrushReveal({
       const centerScreenY = canvas.height / 2;
 
       const getCanvasCoords = (screenX, screenY) => {
+        // Use the same clamped pX/pY logic for calculating offsets when drawing the brush
+        let curPX = (mousePosRef.current.x / canvas.width) - 0.5;
+        let curPY = (mousePosRef.current.y / canvas.height) - 0.5;
+        curPX = Math.max(-0.6, Math.min(0.6, curPX));
+        curPY = Math.max(-0.6, Math.min(0.6, curPY));
+        
+        const cOffX = curPX * -60;
+        const cOffY = curPY * -60;
+
         return {
-          x: (screenX - canvasOffsetX - centerScreenX) / s + centerScreenX,
-          y: (screenY - canvasOffsetY - centerScreenY) / s + centerScreenY
+          x: (screenX - cOffX - centerScreenX) / s + centerScreenX,
+          y: (screenY - cOffY - centerScreenY) / s + centerScreenY
         };
       };
 
@@ -215,26 +254,12 @@ export default function BrushReveal({
       
       nodesRef.current[0] = { ...head };
 
-      if (idleTimerRef.current <= 3) {
-          // Active state: Nodes follow each other smoothly (creates the curve)
-          for (let i = 1; i < numNodes; i++) {
-              let dx = nodesRef.current[i-1].x - nodesRef.current[i].x;
-              let dy = nodesRef.current[i-1].y - nodesRef.current[i].y;
-              nodesRef.current[i].x += dx * 0.35; // Stiffness of the liquid
-              nodesRef.current[i].y += dy * 0.35;
-          }
-      } else {
-          // Idle state: Snap back & Delay effect!
-          for (let i = 1; i < numNodes; i++) {
-              let dx = nodesRef.current[i-1].x - nodesRef.current[i].x;
-              let dy = nodesRef.current[i-1].y - nodesRef.current[i].y;
-              nodesRef.current[i].x += dx * 0.70; // Violently snap to head (oil retracting)
-              nodesRef.current[i].y += dy * 0.70;
-          }
-          
-          if (idleTimerRef.current > 20) { 
-             globalFadeRef.current = Math.max(0, globalFadeRef.current - 0.10);
-          }
+      // Active state: Nodes follow each other smoothly (creates the curve)
+      for (let i = 1; i < numNodes; i++) {
+          let dx = nodesRef.current[i-1].x - nodesRef.current[i].x;
+          let dy = nodesRef.current[i-1].y - nodesRef.current[i].y;
+          nodesRef.current[i].x += dx * 0.35; // Stiffness of the liquid
+          nodesRef.current[i].y += dy * 0.35;
       }
 
       // 1. Clear offscreen canvas
@@ -242,48 +267,60 @@ export default function BrushReveal({
       offCtx.globalCompositeOperation = 'source-over';
 
       // 2. Draw the continuous curved oil drop (Trapezoid & Circle Spline)
-      const baseRadius = brushSize * 1.0 * globalFadeRef.current; 
+      const baseRadius = brushSize * 1.3; // Always full thickness when rendering
 
       if (baseRadius > 0.1) {
          offCtx.fillStyle = 'black';
+         
+         // Calculate Aerodynamic Squash based on head velocity
+         const dxHead = nodesRef.current[0].x - nodesRef.current[1].x;
+         const dyHead = nodesRef.current[0].y - nodesRef.current[1].y;
+         const headSpeed = Math.sqrt(dxHead*dxHead + dyHead*dyHead);
+         
+         // Global tension factor (squash only, stretch is handled by the spring physics separating the nodes!)
+         const globalSquash = Math.max(0.80, 1.0 - (headSpeed / 60.0)); // Aún menos aplastamiento
          
          for (let i = 0; i < numNodes - 1; i++) {
              const p1 = nodesRef.current[i];
              const p2 = nodesRef.current[i+1];
              
-             // Scale radius down linearly from head to tail (100% to 5%)
+             // Scale radius down linearly from head to tail
              const r1 = baseRadius * (1 - (i / numNodes) * 0.95);
              const r2 = baseRadius * (1 - ((i+1) / numNodes) * 0.95);
              
              if (r1 < 0.1) continue;
 
-             // Stamp a circle at p1
-             offCtx.beginPath();
-             offCtx.arc(p1.x, p1.y, r1, 0, Math.PI * 2);
-             offCtx.fill();
-             
              const dx = p2.x - p1.x;
              const dy = p2.y - p1.y;
              
-             // Draw connecting trapezoid if points are far enough apart
+             // Apply squash factor to get the actual radius for this frame
+             const r1Squashed = r1 * globalSquash;
+             const r2Squashed = r2 * globalSquash;
+
+             // Stamp a circle at p1
+             offCtx.beginPath();
+             offCtx.arc(p1.x, p1.y, r1Squashed, 0, Math.PI * 2);
+             offCtx.fill();
+             
+             // Draw connecting trapezoid
              if (dx*dx + dy*dy > 0.5) {
-                 const angle = Math.atan2(dy, dx);
-                 const cos = Math.cos(angle - Math.PI/2);
-                 const sin = Math.sin(angle - Math.PI/2);
+                 const localAngle = Math.atan2(dy, dx);
+                 const cos = Math.cos(localAngle - Math.PI/2);
+                 const sin = Math.sin(localAngle - Math.PI/2);
                  
                  offCtx.beginPath();
-                 offCtx.moveTo(p1.x + r1 * cos, p1.y + r1 * sin);
-                 offCtx.lineTo(p1.x - r1 * cos, p1.y - r1 * sin);
-                 offCtx.lineTo(p2.x - r2 * cos, p2.y - r2 * sin);
-                 offCtx.lineTo(p2.x + r2 * cos, p2.y + r2 * sin);
+                 offCtx.moveTo(p1.x + r1Squashed * cos, p1.y + r1Squashed * sin);
+                 offCtx.lineTo(p1.x - r1Squashed * cos, p1.y - r1Squashed * sin);
+                 offCtx.lineTo(p2.x - r2Squashed * cos, p2.y - r2Squashed * sin);
+                 offCtx.lineTo(p2.x + r2Squashed * cos, p2.y + r2Squashed * sin);
                  offCtx.closePath();
                  offCtx.fill();
              }
          }
          
-         // Cap the tail with a final tiny circle
+         // Cap the tail
          const lastP = nodesRef.current[numNodes - 1];
-         const lastR = baseRadius * 0.05;
+         const lastR = baseRadius * 0.05 * globalSquash;
          if (lastR > 0.1) {
              offCtx.beginPath();
              offCtx.arc(lastP.x, lastP.y, lastR, 0, Math.PI * 2);
@@ -295,7 +332,7 @@ export default function BrushReveal({
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // 5. Draw reveal image masked by the melted fluid shape
-      if (revImg && globalFadeRef.current > 0) {
+      if (revImg) {
         ctx.globalCompositeOperation = 'source-over';
         const { w, h, x, y } = getCustomFraming(revImg, canvas.width, canvas.height, true);
         ctx.drawImage(revImg, x, y, w, h);
