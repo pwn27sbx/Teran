@@ -29,8 +29,7 @@ export default function BrushReveal({
   const globalFadeRef = useRef(1.0); // Track global opacity/scale for fade out
   const momentumRef = useRef({ x: 0, y: 0 });
   const nodesRef = useRef(null);
-  const collapsePointRef = useRef(null); // Stores the center point when stopped
-  const numNodes = 30; // Increased for a smoother, more detailed organic curve
+  const numNodes = 20; // Number of segments for a smooth curve
 
   useEffect(() => {
     let loadedCount = 0;
@@ -214,45 +213,27 @@ export default function BrushReveal({
           nodesRef.current = Array(numNodes).fill().map(() => ({ ...head }));
       }
       
+      nodesRef.current[0] = { ...head };
 
       if (idleTimerRef.current <= 3) {
           // Active state: Nodes follow each other smoothly (creates the curve)
-          nodesRef.current[0] = { ...head }; // Head follows mouse
-          collapsePointRef.current = null; // Reset collapse point
-          
           for (let i = 1; i < numNodes; i++) {
               let dx = nodesRef.current[i-1].x - nodesRef.current[i].x;
               let dy = nodesRef.current[i-1].y - nodesRef.current[i].y;
-              nodesRef.current[i].x += dx * 0.45; // Slightly faster follow for 30 nodes
-              nodesRef.current[i].y += dy * 0.45;
+              nodesRef.current[i].x += dx * 0.35; // Stiffness of the liquid
+              nodesRef.current[i].y += dy * 0.35;
           }
       } else {
-          // Idle state: Calculate Midpoint once, then collapse everything towards it!
-          if (!collapsePointRef.current) {
-              // Calculate the average position of all nodes to find the exact center of the stretched liquid
-              let sumX = 0, sumY = 0;
-              for (let i = 0; i < numNodes; i++) {
-                  sumX += nodesRef.current[i].x;
-                  sumY += nodesRef.current[i].y;
-              }
-              collapsePointRef.current = {
-                  x: sumX / numNodes,
-                  y: sumY / numNodes
-              };
-          }
-
-          // Collapse EVERYTHING (including the head) towards the midpoint (Pooling effect)
-          const mid = collapsePointRef.current;
-          for (let i = 0; i < numNodes; i++) {
-              let dx = mid.x - nodesRef.current[i].x;
-              let dy = mid.y - nodesRef.current[i].y;
-              nodesRef.current[i].x += dx * 0.15; // Smoothly slide to center (Pooling)
-              nodesRef.current[i].y += dy * 0.15;
+          // Idle state: Snap back & Delay effect!
+          for (let i = 1; i < numNodes; i++) {
+              let dx = nodesRef.current[i-1].x - nodesRef.current[i].x;
+              let dy = nodesRef.current[i-1].y - nodesRef.current[i].y;
+              nodesRef.current[i].x += dx * 0.70; // Violently snap to head (oil retracting)
+              nodesRef.current[i].y += dy * 0.70;
           }
           
-          // Wait 15 frames for it to physically pool together in the center BEFORE shrinking
-          if (idleTimerRef.current > 15) {
-             globalFadeRef.current = Math.max(0, globalFadeRef.current - 0.06);
+          if (idleTimerRef.current > 20) { 
+             globalFadeRef.current = Math.max(0, globalFadeRef.current - 0.10);
           }
       }
 
@@ -266,19 +247,15 @@ export default function BrushReveal({
       if (baseRadius > 0.1) {
          offCtx.fillStyle = 'black';
          
-         const time = Date.now() / 150; // Speed of the organic wobble
-         
          for (let i = 0; i < numNodes - 1; i++) {
              const p1 = nodesRef.current[i];
              const p2 = nodesRef.current[i+1];
              
              // Scale radius down linearly from head to tail (100% to 5%)
-             let r1 = baseRadius * (1 - (i / numNodes) * 0.95);
-             let r2 = baseRadius * (1 - ((i+1) / numNodes) * 0.95);
+             const r1 = baseRadius * (1 - (i / numNodes) * 0.95);
+             const r2 = baseRadius * (1 - ((i+1) / numNodes) * 0.95);
              
-             // Clamp radii to avoid negative values
-             r1 = Math.max(0.1, r1);
-             r2 = Math.max(0.1, r2);
+             if (r1 < 0.1) continue;
 
              // Stamp a circle at p1
              offCtx.beginPath();
