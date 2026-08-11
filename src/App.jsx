@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import BrushReveal from './components/BrushReveal';
 import DriftWall from './components/DriftWall';
 import LogoLoop from './components/LogoLoop';
+import CurvedInput from './components/CurvedInput';
 import { Menu, Store, MapPin, Activity, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform, useInView, useSpring } from 'framer-motion';
 
@@ -20,7 +21,7 @@ const galleryItems = [
 
 const brandLogos = [
   { src: "/logos/pfizer.svg", alt: "Pfizer", title: "Pfizer" },
-  { src: "/logos/nexgard.svg", alt: "NexGard", title: "NexGard" },
+  { src: "/logos/nextgard.svg", alt: "NexGard", title: "NexGard" },
   { src: "/logos/hills2.svg", alt: "Hill's", title: "Hill's" },
   { src: "/logos/purina.svg", alt: "Purina", title: "Purina" },
   { src: "/logos/equilibrio.svg", alt: "Equilibrio", title: "Equilibrio" },
@@ -31,21 +32,35 @@ const brandLogos = [
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { scrollY } = useScroll();
-  
+
   const galleryRef = useRef(null);
+  const footerRef = useRef(null);
   
-  // Tie the slide-in directly to the scroll wheel
+  // Tie the slide-in directly to the scroll wheel for gallery
   const { scrollYProgress: galleryProgress } = useScroll({
     target: galleryRef,
     offset: ["start end", "center center"]
   });
+
+  // Scroll progress for the footer (curtain effect animation)
+  const { scrollYProgress: footerProgress } = useScroll({
+    target: footerRef,
+    offset: ["start end", "end end"]
+  });
+
+  // Animals slide diagonally inwards and upwards as footer scrolls in
+  const dogX = useTransform(footerProgress, [0.3, 1], [-150, 0]);
+  const dogY = useTransform(footerProgress, [0.3, 1], [150, 0]);
+  const catX = useTransform(footerProgress, [0.3, 1], [150, 0]);
+  const catY = useTransform(footerProgress, [0.3, 1], [150, 0]);
+  const animalsOpacity = useTransform(footerProgress, [0.3, 0.9], [0, 0.95]);
   // Apply a spring physics layer to smooth out the scroll progress
   const smoothGalleryProgress = useSpring(galleryProgress, {
     stiffness: 70,
     damping: 20,
     restDelta: 0.001
   });
-  
+
   // Use the smoothed progress for the transform
   const galleryX = useTransform(smoothGalleryProgress, [0, 0.8], ["100%", "0%"]);
 
@@ -60,8 +75,8 @@ function App() {
 
       {/* Fixed Paw pattern background overlay (pure CSS) covering the whole page */}
       <div className="fixed inset-0 opacity-[0.04] pointer-events-none z-0" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M22.4 9.6a6.4 6.4 0 0 0-3.2-5.6 5.7 5.7 0 0 0-5.8.5A11 11 0 0 0 12 6a11 11 0 0 0-1.4-1.5 5.7 5.7 0 0 0-5.8-.5 6.4 6.4 0 0 0-3.2 5.6c0 1.2.6 2.4 1.7 3.3a12.8 12.8 0 0 0 4.3 2.1c.9.2 1.7.5 2.5 1 .7.4 1.4.9 1.9 1.5.5-.6 1.2-1.1 1.9-1.5.8-.4 1.6-.7 2.5-1a12.8 12.8 0 0 0 4.3-2.1c1.1-.9 1.7-2.1 1.7-3.3zM12 24c-5 0-9.8-3.4-11.4-8.3-.3-.9-.1-1.9.5-2.6s1.5-1.2 2.5-1.2c.4 0 .9.1 1.3.2 2.4.9 4.3 2.4 5.9 4.4 1.5-2 3.4-3.5 5.9-4.4.4-.1.9-.2 1.3-.2 1 0 1.9.5 2.5 1.2.6.7.8 1.7.5 2.6C21.8 20.6 17 24 12 24z' fill='%23ffffff'/%3E%3C/svg%3E")`,
-        backgroundSize: '120px 120px'
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg' fill='%23ffffff'%3E%3Cellipse cx='25' cy='35' rx='12' ry='16' transform='rotate(-30 25 35)' /%3E%3Cellipse cx='42' cy='18' rx='12' ry='16' transform='rotate(-10 42 18)' /%3E%3Cellipse cx='68' cy='18' rx='12' ry='16' transform='rotate(10 68 18)' /%3E%3Cellipse cx='85' cy='35' rx='12' ry='16' transform='rotate(30 85 35)' /%3E%3Cpath d='M 30,55 Q 55,40 80,55 Q 95,75 80,90 Q 55,100 30,90 Q 15,75 30,55 Z' /%3E%3C/svg%3E")`,
+        backgroundSize: '90px 90px'
       }} />
 
       {/* Fixed Header - stays on top of everything while scrolling */}
@@ -189,14 +204,14 @@ function App() {
       </div>
 
       {/* ============================================================== */}
-      {/* 3. THIRD SECTION: Galería DriftWall                            */}
+      {/* 3. THIRD SECTION: Photo Gallery (DriftWall)                      */}
       {/* ============================================================== */}
-      <div ref={galleryRef} className="w-full overflow-hidden">
-        <motion.div 
+      <div className="sticky top-0 relative w-full h-[60vh] md:h-screen bg-[#0277ab] overflow-hidden flex flex-col z-10" ref={galleryRef}>
+        <motion.div
           style={{ x: galleryX }}
-          className="relative z-30 w-full bg-[#0277ab] h-screen min-h-[700px] flex items-center overflow-hidden px-6 md:px-12 shadow-[20px_0_50px_rgba(0,0,0,0.3)]"
+          className="relative z-30 w-full h-screen min-h-[700px] flex items-center overflow-hidden px-6 md:px-12"
         >
-        
+
         {/* Left Side: Text */}
         <div className="relative z-10 w-full md:w-[35%] flex flex-col items-start pl-4 md:pl-12">
           <h2 className="font-['Outfit'] font-black text-6xl md:text-7xl lg:text-8xl text-white tracking-tight drop-shadow-lg leading-[0.9]">
@@ -207,7 +222,7 @@ function App() {
             Un vistazo a la excelencia de nuestras instalaciones y los pacientes felices que confían en nosotros día a día.
           </p>
         </div>
-        
+
         {/* Right Side: DriftWall seamlessly fading into the background */}
         <div className="absolute right-[-5vw] top-0 w-[120%] md:w-[75%] h-full z-0 pointer-events-auto">
           <DriftWall
@@ -240,77 +255,117 @@ function App() {
       {/* ============================================================== */}
       {/* 4. FOURTH SECTION: Newsletter & Footer                           */}
       {/* ============================================================== */}
-      <footer className="relative z-20 flex flex-col items-center pt-32 w-full">
-        <div className="w-full max-w-2xl mx-auto flex flex-col items-center text-center px-6">
-          <h2 className="font-['Outfit'] font-black text-5xl md:text-6xl text-white mb-4 drop-shadow-md">Boletín Terrancito</h2>
-          <p className="font-serif text-white/90 text-lg md:text-xl mb-12 drop-shadow-sm">Suscríbete y recibe nuestras ofertas y novedades</p>
-          
-          <form className="w-full flex flex-col gap-5 max-w-md">
-            <input 
-              type="text" 
-              placeholder="Nombre y Apellidos*" 
-              className="w-full px-6 py-4 rounded-2xl bg-white/95 backdrop-blur-md border-none shadow-[0_10px_30px_rgba(0,0,0,0.15)] text-gray-800 placeholder:text-gray-400 font-['Outfit'] font-medium focus:ring-4 focus:ring-[#f4484a]/40 outline-none transition-all"
+      <footer ref={footerRef} className="relative z-20 flex flex-col items-center pt-32 w-full min-h-screen overflow-hidden bg-[#f8f9fa] shadow-[0_-10px_40px_rgba(0,0,0,0.2)]">
+        {/* Dog on the left */}
+        <motion.img
+          src="/miloperfil.png"
+          alt="Dog"
+          className="absolute left-0 bottom-0 w-[400px] md:w-[600px] lg:w-[800px] xl:w-[1000px] object-contain -translate-x-[45%] md:-translate-x-1/4 pointer-events-none mix-blend-multiply"
+          style={{ x: dogX, y: dogY, opacity: animalsOpacity }}
+        />
+
+        {/* Cat on the right */}
+        <motion.img
+          src="/atreusperfil.png"
+          alt="Cat"
+          className="absolute right-0 bottom-0 w-[400px] md:w-[600px] lg:w-[800px] xl:w-[1000px] object-contain translate-x-1/3 md:translate-x-1/4 pointer-events-none mix-blend-multiply"
+          style={{ x: catX, y: catY, opacity: animalsOpacity }}
+        />
+
+        <div className="relative z-10 w-full max-w-2xl mx-auto flex flex-col items-center text-center px-6 mt-10 md:mt-20 md:translate-x-6 lg:translate-x-8">
+          <h2 className="font-['Outfit'] font-black text-4xl md:text-5xl text-[#0277ab] mb-4">Boletín Terrancito</h2>
+          <p className="font-serif text-gray-600 text-base md:text-lg mb-2">Suscríbete y recibe nuestras ofertas y novedades</p>
+
+          <form className="w-full flex flex-col -space-y-4 max-w-md items-center mt-4">
+            <CurvedInput
+              showButton={false}
+              showIcon={false}
+              placeholder="Nombre y Apellidos*"
+              type="text"
+              cornerRadius={18}
+              borderWidth={2}
+              borderColor="#0277ab"
+              fontSize={16}
+              backgroundColor="#ffffff"
+              textColor="#1d2050"
+              placeholderColor="#9aa0b6"
+              shadowSize="md"
+              shadowColor="#000000"
+              width={450}
+              height={64}
+              bend={18}
             />
-            <input 
-              type="email" 
-              placeholder="tucorreo@email.com*" 
-              className="w-full px-6 py-4 rounded-2xl bg-white/95 backdrop-blur-md border-none shadow-[0_10px_30px_rgba(0,0,0,0.15)] text-gray-800 placeholder:text-gray-400 font-['Outfit'] font-medium focus:ring-4 focus:ring-[#f4484a]/40 outline-none transition-all"
+            <CurvedInput
+              showButton={true}
+              buttonText="Enviar"
+              showIcon={false}
+              placeholder="tucorreo@email.com*"
+              type="email"
+              cornerRadius={18}
+              borderWidth={2}
+              borderColor="#0277ab"
+              fontSize={16}
+              backgroundColor="#ffffff"
+              textColor="#1d2050"
+              placeholderColor="#9aa0b6"
+              buttonColor="#f4484a"
+              buttonTextColor="#ffffff"
+              shadowSize="md"
+              shadowColor="#000000"
+              width={450}
+              height={64}
+              bend={18}
             />
-            <button 
-              type="button" 
-              className="mt-4 w-full md:w-auto self-center bg-[#f4484a] text-white font-['Outfit'] font-bold text-lg px-14 py-4 rounded-2xl shadow-[0_10px_30px_rgba(244,72,74,0.3)] hover:bg-[#db4042] hover:scale-105 hover:-translate-y-1 active:scale-95 transition-all duration-300"
-            >
-              Enviar
-            </button>
           </form>
         </div>
 
-        <div className="mt-32 w-full flex flex-col items-center px-6">
-          <h3 className="font-['Outfit'] font-bold text-sm md:text-base tracking-[0.25em] uppercase text-white/80 mb-10">Nuestros Colaboradores:</h3>
-          <div className="w-full max-w-5xl mx-auto overflow-hidden">
+        <div className="w-full flex flex-col items-center px-6 relative z-10 mt-auto mb-10">
+          <h3 className="font-['Outfit'] font-bold text-sm md:text-base tracking-[0.25em] uppercase text-gray-500 mb-10">Nuestros Colaboradores:</h3>
+          <div className="w-full max-w-3xl mx-auto overflow-hidden">
             <LogoLoop
               logos={brandLogos}
               speed={60}
               direction="left"
-              logoHeight={60}
-              gap={50}
+              logoHeight={40}
+              gap={30}
               hoverSpeed={15}
               scaleOnHover
               fadeOut={true}
-              fadeOutColor="#0277ab"
+              fadeOutColor="#f8f9fa"
               ariaLabel="Nuestros Colaboradores"
             />
           </div>
         </div>
 
-        {/* Footer Bottom Bar */}
-        <div className="w-full bg-white text-gray-500 font-['Outfit'] mt-32 py-10 px-6 relative shadow-[0_-20px_50px_rgba(0,0,0,0.15)]">
-          <div className="max-w-6xl mx-auto flex flex-col items-center text-sm md:text-base">
-            <div className="flex items-center gap-2 mb-6 bg-gray-100 px-4 py-2 rounded-full font-medium">
-              <Activity className="w-4 h-4 text-gray-400" />
-              <span>Nº de visitas: <strong className="text-gray-700">126.935</strong></span>
+        <div className="w-full text-gray-500 font-['Outfit'] mt-20 py-8 px-6 relative z-30">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-sm md:text-base">
+            <div className="flex flex-col items-center md:items-start gap-1">
+              <p className="font-medium">© 2026 Dommomedia. Todos los derechos reservados.</p>
+              <div className="flex gap-4 text-gray-400 font-medium">
+                <a href="#" className="hover:text-[#0277ab] transition-colors">Política de privacidad</a>
+                <span>-</span>
+                <a href="#" className="hover:text-[#0277ab] transition-colors">Política de cookies</a>
+              </div>
             </div>
-            
-            <div className="w-full h-px bg-gray-200 mb-8 max-w-4xl"></div>
-            
-            <p className="mb-2 font-medium">© 2026 Dommomedia. Todos los derechos reservados.</p>
-            <div className="flex gap-4 mb-6 text-gray-400 font-medium">
-              <a href="#" className="hover:text-[#0277ab] transition-colors">Política de privacidad</a>
-              <span>-</span>
-              <a href="#" className="hover:text-[#0277ab] transition-colors">Política de cookies</a>
+
+            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
+              <div className="flex items-center gap-2 bg-gray-100/50 px-4 py-2 rounded-full font-medium">
+                <Activity className="w-4 h-4 text-gray-400" />
+                <span>Nº de visitas: <strong className="text-gray-700">126.935</strong></span>
+              </div>
+
+              <a href="#" className="flex items-center gap-2 font-bold text-[#0277ab] bg-[#0277ab]/5 px-5 py-2.5 rounded-xl hover:bg-[#0277ab]/10 hover:text-[#015a82] transition-all">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
+                </svg>
+                Visítanos en Facebook
+              </a>
             </div>
-            
-            <a href="#" className="flex items-center gap-2 font-bold text-[#0277ab] bg-[#0277ab]/5 px-6 py-3 rounded-xl hover:bg-[#0277ab]/10 hover:text-[#015a82] transition-all">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
-              </svg>
-              Visítanos en Facebook
-            </a>
-            
+
             {/* Scroll to top button */}
-            <button 
+            <button
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="absolute left-6 md:left-12 bottom-10 w-12 h-12 flex items-center justify-center bg-gray-100 hover:bg-[#0277ab] hover:text-white text-gray-500 rounded-xl transition-all hover:-translate-y-2 shadow-sm hover:shadow-md"
+              className="md:absolute left-6 md:left-12 bottom-8 w-12 h-12 flex items-center justify-center bg-gray-100/80 hover:bg-[#0277ab] hover:text-white text-gray-500 rounded-xl transition-all hover:-translate-y-2 shadow-sm hover:shadow-md"
               aria-label="Volver arriba"
             >
               <ChevronUp className="w-6 h-6" />

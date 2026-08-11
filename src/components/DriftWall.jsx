@@ -208,9 +208,10 @@ const DriftWall = ({
     release();
   }, [release]);
 
+  // Use a mask that fades out smoothly at both the top and the bottom, as well as the sides
   const maskStyle =
-    'radial-gradient(ellipse 78% 82% at 50% 46%, #000 var(--dw-edge), transparent 100%), ' +
-    'linear-gradient(to top, #000 var(--dw-edge), transparent 100%)';
+    'linear-gradient(to bottom, transparent, #000 15%, #000 85%, transparent 100%), ' +
+    'linear-gradient(to right, transparent, #000 15%, #000 85%, transparent 100%)';
 
   const cssVars = useMemo(
     () => ({

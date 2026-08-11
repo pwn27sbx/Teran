@@ -37,11 +37,16 @@ export default function BrushReveal({
     const bg = new Image();
     bg.src = bgImage;
     bg.onload = () => { bgImgRef.current = bg; loadedCount++; if (loadedCount === 2) setImagesLoaded(true); };
+    bg.onerror = () => { loadedCount++; if (loadedCount === 2) setImagesLoaded(true); };
 
     const rev = new Image();
     rev.src = revealImage;
     rev.onload = () => {
       revealImgRef.current = rev;
+      loadedCount++;
+      if (loadedCount === 2) setImagesLoaded(true);
+    };
+    rev.onerror = () => {
       loadedCount++;
       if (loadedCount === 2) setImagesLoaded(true);
     };
@@ -191,13 +196,36 @@ export default function BrushReveal({
         }
       } else {
         // Auto-wander logic when completely not hovering (mouse off window)
-        if (Math.random() < 0.03) {
-          let targetX = Math.random() < 0.5 ? Math.random() * 0.2 : 0.8 + Math.random() * 0.2;
-          let targetY = Math.random() < 0.5 ? Math.random() * 0.2 : 0.8 + Math.random() * 0.2;
-          autoTargetRef.current = { x: targetX * canvas.width, y: targetY * canvas.height };
+        // Pick a new target occasionally to sweep across the screen
+        if (Math.random() < 0.015) { 
+           const cx = canvas.width / 2;
+           const cy = canvas.height / 2;
+           
+           let dx = cx - currentPosRef.current.x;
+           let dy = cy - currentPosRef.current.y;
+           const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+           
+           if (dist < 100) {
+              const angle = Math.random() * Math.PI * 2;
+              dx = Math.cos(angle);
+              dy = Math.sin(angle);
+           } else {
+              dx /= dist;
+              dy /= dist;
+           }
+           
+           const angleOffset = (Math.random() - 0.5) * Math.PI * 0.8; // +/- 72 degrees
+           const finalDx = dx * Math.cos(angleOffset) - dy * Math.sin(angleOffset);
+           const finalDy = dx * Math.sin(angleOffset) + dy * Math.cos(angleOffset);
+           
+           const padding = Math.max(canvas.width, canvas.height) * 1.0;
+           autoTargetRef.current = {
+               x: cx + finalDx * padding,
+               y: cy + finalDy * padding
+           };
         }
-        targetPosRef.current.x += (autoTargetRef.current.x - targetPosRef.current.x) * 0.05;
-        targetPosRef.current.y += (autoTargetRef.current.y - targetPosRef.current.y) * 0.05;
+        targetPosRef.current.x += (autoTargetRef.current.x - targetPosRef.current.x) * 0.03;
+        targetPosRef.current.y += (autoTargetRef.current.y - targetPosRef.current.y) * 0.03;
       }
 
       // Smooth interpolation for the brush position
@@ -421,7 +449,7 @@ export default function BrushReveal({
   return (
     <div ref={containerRef} className="relative w-full h-full overflow-hidden bg-white cursor-crosshair">
       {!imagesLoaded && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-zinc-900 text-white font-serif text-xl tracking-widest">
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#f8f9fa] text-[#0277ab] font-serif text-xl tracking-widest">
           Cargando magia...
         </div>
       )}
