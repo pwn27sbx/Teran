@@ -3,7 +3,8 @@ import BrushReveal from './components/BrushReveal';
 import DriftWall from './components/DriftWall';
 import LogoLoop from './components/LogoLoop';
 import CurvedInput from './components/CurvedInput';
-import { Menu, Store, MapPin, Activity, ChevronUp } from 'lucide-react';
+import GooeyNav from './components/GooeyNav';
+import { Menu, Store, MapPin, Activity, ChevronUp, PhoneCall } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform, useInView, useSpring } from 'framer-motion';
 
 const baseGalleryItems = Array.from({ length: 27 }, (_, i) => ({
@@ -35,11 +36,11 @@ function App() {
 
   const galleryRef = useRef(null);
   const footerRef = useRef(null);
-  
+
   // Tie the slide-in directly to the scroll wheel for gallery
   const { scrollYProgress: galleryProgress } = useScroll({
     target: galleryRef,
-    offset: ["start end", "center center"]
+    offset: ["start end", "start 20%"]
   });
 
   // Scroll progress for the footer (curtain effect animation)
@@ -54,15 +55,8 @@ function App() {
   const catX = useTransform(footerProgress, [0.3, 1], [150, 0]);
   const catY = useTransform(footerProgress, [0.3, 1], [150, 0]);
   const animalsOpacity = useTransform(footerProgress, [0.3, 0.9], [0, 0.95]);
-  // Apply a spring physics layer to smooth out the scroll progress
-  const smoothGalleryProgress = useSpring(galleryProgress, {
-    stiffness: 70,
-    damping: 20,
-    restDelta: 0.001
-  });
-
-  // Use the smoothed progress for the transform
-  const galleryX = useTransform(smoothGalleryProgress, [0, 0.8], ["100%", "0%"]);
+  // Use the raw progress for the transform to prevent rubber-banding
+  const galleryX = useTransform(galleryProgress, [0, 1], ["100%", "0%"]);
 
   // Advanced Lando-style zoom out effect:
   // Scales down drastically and gets rounded corners as the user scrolls
@@ -96,20 +90,41 @@ function App() {
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-4 pointer-events-auto">
-          <div className="flex items-center gap-2 font-['Outfit'] font-bold text-[14px] text-white bg-[#f4484a] px-6 py-3.5 rounded-2xl shadow-md shadow-[#f4484a]/30 cursor-pointer hover:bg-[#db4042] hover:scale-105 active:scale-95 transition-all duration-300">
-            <span>EMERGENCIAS 24 HORAS</span>
-          </div>
+        <div className="relative pointer-events-auto flex items-center">
+          <GooeyNav
+            items={[
+              { 
+                label: (
+                  <div className="flex items-center gap-2 font-['Outfit'] font-bold text-[14px]">
+                    <PhoneCall className="w-4 h-4" />
+                    <span>EMERGENCIAS 24H</span>
+                  </div>
+                ), 
+                activeColor: '#f4484a',
+                activeTextColor: 'white',
+                onClick: () => console.log('Emergencias clicked')
+              },
+              { 
+                label: (
+                  <div className="flex items-center gap-2 font-['Outfit'] font-bold text-[14px]">
+                    <Menu className="w-4 h-4" />
+                    <span>MENÚ</span>
+                  </div>
+                ), 
+                activeColor: '#e5e7eb',
+                activeTextColor: '#1f2937',
+                onClick: () => setIsMenuOpen(!isMenuOpen) 
+              }
+            ]}
+            particleCount={15}
+            particleDistances={[50, 10]}
+            particleR={15}
+            initialActiveIndex={isMenuOpen ? 1 : 0}
+            animationTime={500}
+            timeVariance={200}
+          />
 
-          <div className="relative">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="flex items-center gap-2 font-['Outfit'] font-semibold text-[15px] text-gray-800 bg-white/60 backdrop-blur-md px-5 py-3.5 rounded-2xl border border-gray-200/50 shadow-sm cursor-pointer hover:bg-white/90 hover:scale-105 active:scale-95 transition-all duration-300">
-              <Menu className="w-5 h-5 text-gray-700" />
-              <span>MENÚ</span>
-            </button>
-
-            <AnimatePresence>
+          <AnimatePresence>
               {isMenuOpen && (
                 <motion.div
                   initial={{ opacity: 0, y: -15, scale: 0.95 }}
@@ -124,7 +139,6 @@ function App() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
         </div>
       </motion.header>
 
@@ -204,13 +218,16 @@ function App() {
       </div>
 
       {/* ============================================================== */}
-      {/* 3. THIRD SECTION: Photo Gallery (DriftWall)                      */}
+      {/* 3. THIRD SECTION: Photo Gallery & 4. FOOTER (Combined)         */}
       {/* ============================================================== */}
-      <div className="sticky top-0 relative w-full h-[60vh] md:h-screen bg-[#0277ab] overflow-hidden flex flex-col z-10" ref={galleryRef}>
-        <motion.div
-          style={{ x: galleryX }}
-          className="relative z-30 w-full h-screen min-h-[700px] flex items-center overflow-hidden px-6 md:px-12"
-        >
+      <div className="relative w-full" ref={galleryRef}>
+
+        {/* Sticky Gallery */}
+        <div className="sticky top-0 w-full h-[100dvh] overflow-hidden flex flex-col z-10 bg-[#0277ab]">
+          <motion.div
+            style={{ x: galleryX }}
+            className="relative z-30 w-full h-full flex items-center overflow-hidden px-6 md:px-12"
+          >
 
         {/* Left Side: Text */}
         <div className="relative z-10 w-full md:w-[35%] flex flex-col items-start pl-4 md:pl-12">
@@ -250,27 +267,28 @@ function App() {
           />
         </div>
         </motion.div>
-      </div>
+        </div>
 
-      {/* ============================================================== */}
-      {/* 4. FOURTH SECTION: Newsletter & Footer                           */}
-      {/* ============================================================== */}
-      <footer ref={footerRef} className="relative z-20 flex flex-col items-center pt-32 w-full min-h-screen overflow-hidden bg-[#f8f9fa] shadow-[0_-10px_40px_rgba(0,0,0,0.2)]">
-        {/* Dog on the left */}
-        <motion.img
-          src="/miloperfil.png"
-          alt="Dog"
-          className="absolute left-0 bottom-0 w-[400px] md:w-[600px] lg:w-[800px] xl:w-[1000px] object-contain -translate-x-[45%] md:-translate-x-1/4 pointer-events-none mix-blend-multiply"
-          style={{ x: dogX, y: dogY, opacity: animalsOpacity }}
-        />
+        {/* Scroll Pause */}
+        <div className="w-full h-[35vh] pointer-events-none" />
 
-        {/* Cat on the right */}
-        <motion.img
-          src="/atreusperfil.png"
-          alt="Cat"
-          className="absolute right-0 bottom-0 w-[400px] md:w-[600px] lg:w-[800px] xl:w-[1000px] object-contain translate-x-1/3 md:translate-x-1/4 pointer-events-none mix-blend-multiply"
-          style={{ x: catX, y: catY, opacity: animalsOpacity }}
-        />
+        {/* Footer slides over the gallery */}
+        <footer ref={footerRef} className="relative z-20 flex flex-col items-center pt-32 w-full min-h-screen overflow-hidden bg-[#f8f9fa] shadow-[0_-20px_50px_rgba(0,0,0,0.3)]">
+          {/* Dog on the left */}
+          <motion.img
+            src="/miloperfil.png"
+            alt="Dog"
+            className="absolute left-0 bottom-0 w-[400px] md:w-[600px] lg:w-[800px] xl:w-[1000px] object-contain -translate-x-[45%] md:-translate-x-1/4 pointer-events-none mix-blend-multiply"
+            style={{ x: dogX, y: dogY, opacity: animalsOpacity }}
+          />
+
+          {/* Cat on the right */}
+          <motion.img
+            src="/atreusperfil.png"
+            alt="Cat"
+            className="absolute right-0 bottom-0 w-[400px] md:w-[600px] lg:w-[800px] xl:w-[1000px] object-contain translate-x-1/3 md:translate-x-1/4 pointer-events-none mix-blend-multiply"
+            style={{ x: catX, y: catY, opacity: animalsOpacity }}
+          />
 
         <div className="relative z-10 w-full max-w-2xl mx-auto flex flex-col items-center text-center px-6 mt-10 md:mt-20 md:translate-x-6 lg:translate-x-8">
           <h2 className="font-['Outfit'] font-black text-4xl md:text-5xl text-[#0277ab] mb-4">Boletín Terrancito</h2>
@@ -320,14 +338,14 @@ function App() {
         </div>
 
         <div className="w-full flex flex-col items-center px-6 relative z-10 mt-auto mb-10">
-          <h3 className="font-['Outfit'] font-bold text-sm md:text-base tracking-[0.25em] uppercase text-gray-500 mb-10">Nuestros Colaboradores:</h3>
+          <h3 className="font-['Outfit'] font-bold text-sm md:text-base tracking-[0.25em] uppercase text-gray-500 mb-10">NUESTROS COLABORADORES</h3>
           <div className="w-full max-w-3xl mx-auto overflow-hidden">
             <LogoLoop
               logos={brandLogos}
               speed={60}
               direction="left"
-              logoHeight={40}
-              gap={30}
+              logoHeight={50}
+              gap={35}
               hoverSpeed={15}
               scaleOnHover
               fadeOut={true}
@@ -373,6 +391,7 @@ function App() {
           </div>
         </div>
       </footer>
+      </div>
 
     </div>
   );
