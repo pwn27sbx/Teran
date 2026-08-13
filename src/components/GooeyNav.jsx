@@ -18,35 +18,35 @@ const GooeyNav = ({
 
   const noise = (n = 1) => n / 2 - Math.random() * n;
 
+  // Simplified to just fly outwards from the center
   const getXY = (distance, pointIndex, totalPoints) => {
-    const angle = ((360 + noise(8)) / totalPoints) * pointIndex * (Math.PI / 180);
+    const angle = ((360 + noise(15)) / totalPoints) * pointIndex * (Math.PI / 180);
     return [distance * Math.cos(angle), distance * Math.sin(angle)];
   };
 
-  const createParticle = (i, t, d, r, color) => {
+  const createParticle = (i, t, d, r, color, bubbleTime) => {
     const p = document.createElement('span');
     p.classList.add('particle');
 
-    const start = getXY(d[0], particleCount - i, particleCount);
-    const end = getXY(d[1], particleCount - i, particleCount);
+    // Fly outward by at least 200px to guarantee escaping wide buttons
+    const end = getXY(200, i, particleCount);
 
-    p.style.setProperty('--start-x', `${start[0]}px`);
-    p.style.setProperty('--start-y', `${start[1]}px`);
     p.style.setProperty('--end-x', `${end[0]}px`);
     p.style.setProperty('--end-y', `${end[1]}px`);
-    p.style.setProperty('--end-scale', `${Math.max(0, noise(2.5))}`);
-    
-    // We use the active color for the particles
-    p.style.setProperty('--color', color);
+    p.style.setProperty('--color', 'black');
 
-    const animationProps = `var(--time) var(--linear-ease) ${t}ms 1 both`;
-    p.style.animation = `particle-fly ${animationProps}`;
+    // Fast outward burst
+    const flyAnim = `${bubbleTime}ms cubic-bezier(0.16, 1, 0.3, 1) ${t}ms 1 both`;
+    p.style.animation = `particle-fly ${flyAnim}`;
     
     const child = document.createElement('span');
     child.classList.add('point');
     child.style.width = `${r}px`;
     child.style.height = `${r}px`;
-    child.style.animation = `particle-scale ${animationProps}`;
+    
+    // Ease-in shrink: stays large for most of the flight, shrinks at the very end
+    const scaleAnim = `${bubbleTime}ms ease-in ${t}ms 1 both`;
+    child.style.animation = `particle-scale ${scaleAnim}`;
     
     p.appendChild(child);
     return p;
@@ -57,11 +57,9 @@ const GooeyNav = ({
     const r = particleR;
     const bubbleTime = animationTime * 2 + timeVariance;
 
-    element.style.setProperty('--time', `${bubbleTime}ms`);
-
     for (let i = 0; i < particleCount; i++) {
       const t = Math.random() * timeVariance;
-      const p = createParticle(i, t, d, r, color);
+      const p = createParticle(i, t, d, r, color, bubbleTime);
       element.appendChild(p);
 
       setTimeout(() => {
@@ -97,6 +95,10 @@ const GooeyNav = ({
 
   const handleClick = (e, index, item) => {
     const liEl = e.currentTarget;
+    const activeColor = liEl.getAttribute('data-color') || '#ffffff';
+    
+    // Always shoot particles on click, even if already active!
+    makeParticles(filterRef.current, activeColor);
     
     if (activeIndex === index) {
       if (item.onClick) item.onClick(e);
@@ -105,17 +107,6 @@ const GooeyNav = ({
     
     setActiveIndex(index);
     updateEffectPosition(liEl);
-    
-    filterRef.current?.classList.remove('active');
-    textRef.current?.classList.remove('active');
-
-    const activeColor = liEl.getAttribute('data-color') || '#ffffff';
-
-    setTimeout(() => {
-      filterRef.current?.classList.add('active');
-      textRef.current?.classList.add('active');
-      makeParticles(filterRef.current, activeColor);
-    }, 10);
     
     if (item.onClick) {
       item.onClick(e);
@@ -136,6 +127,7 @@ const GooeyNav = ({
     if (activeLi) {
       updateEffectPosition(activeLi);
       textRef.current?.classList.add('active');
+      filterRef.current?.classList.add('active');
     }
 
     const resizeObserver = new ResizeObserver(() => {
@@ -164,6 +156,7 @@ const GooeyNav = ({
             display: grid;
             place-items: center;
             z-index: 1;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
           }
 
           .effect.text {
@@ -177,7 +170,7 @@ const GooeyNav = ({
           }
 
           .effect.filter {
-            filter: url(#gooey-nav-filter-${filterId});
+            /* filter: url(#gooey-nav-filter-${filterId}); disabled for debugging */
           }
 
           .effect.filter::after {
@@ -185,74 +178,45 @@ const GooeyNav = ({
             position: absolute;
             inset: 0;
             background: var(--active-bg, #ffffff);
-            transform: scale(0);
-            opacity: 0;
             z-index: -1;
             border-radius: 1rem; /* rounded-2xl */
-            transition: background-color 0.3s ease;
-          }
-
-          .effect.active::after {
-            animation: pill 0.3s ease both;
+            transition: background-color 0.5s ease;
           }
 
           .particle {
             position: absolute;
             width: 0;
             height: 0;
-            z-index: -2;
+            z-index: 999;
           }
 
           .point {
             position: absolute;
-            left: calc(var(--start-x) * -1);
-            top: calc(var(--start-y) * -1);
+            left: 0;
+            top: 0;
             background: var(--color);
             border-radius: 50%;
             transform: translate(-50%, -50%);
           }
 
           @keyframes particle-fly {
-            0% { transform: translate(var(--start-x), var(--start-y)); }
+            0% { transform: translate(0, 0); }
             100% { transform: translate(var(--end-x), var(--end-y)); }
           }
 
           @keyframes particle-scale {
             0% { transform: translate(-50%, -50%) scale(1); }
-            100% { transform: translate(-50%, -50%) scale(var(--end-scale)); }
-          }
-
-          @keyframes pill {
-            0% { transform: scale(0); opacity: 0; }
-            50% { opacity: 1; }
-            100% { transform: scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(0); }
           }
 
           li.active {
             color: transparent !important;
           }
-
-          li.active::after {
-            opacity: 1;
-            transform: scale(1);
-          }
-
-          li::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: 1rem; /* rounded-2xl */
-            background: var(--active-bg, #ffffff);
-            opacity: 0;
-            transform: scale(0);
-            transition: all 0.3s ease;
-            z-index: -1;
-          }
         `}
       </style>
 
       <svg style={{ position: 'absolute', width: 0, height: 0 }}>
-        <filter id={`gooey-nav-filter-${filterId}`}>
+        <filter id={`gooey-nav-filter-${filterId}`} x="-100%" y="-100%" width="300%" height="300%">
           <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur" />
           <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo" />
           <feBlend in="SourceGraphic" in2="goo" />
@@ -270,6 +234,7 @@ const GooeyNav = ({
                 key={index}
                 data-color={item.activeColor || '#ffffff'}
                 data-text-color={item.activeTextColor || '#000000'}
+                style={{ '--active-bg': item.activeColor || '#ffffff' }}
                 className={`rounded-2xl relative cursor-pointer transition-all duration-300 ease shadow-sm text-gray-800 hover:brightness-90 ${item.className || ''} ${
                   activeIndex === index ? 'active' : ''
                 }`}

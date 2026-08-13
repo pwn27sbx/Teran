@@ -108,6 +108,16 @@ export default function BrushReveal({
         x = cx - w / 2;
         y = cy - h / 2;
         y += h * revealOffsetY;
+
+        // Apply scaleFactor anchored to bottom center to match the CSS behavior!
+        const globalScale = 0.90;
+        const elemX = canvasW * (1 - globalScale) / 2;
+        const elemY = canvasH * (1 - globalScale);
+        
+        w *= globalScale;
+        h *= globalScale;
+        x = elemX + (x * globalScale);
+        y = elemY + (y * globalScale);
       }
 
       return { w, h, x, y };
@@ -242,21 +252,29 @@ export default function BrushReveal({
       pY = Math.max(-0.6, Math.min(0.6, pY));
 
       // Reduce parallax intensity per user request
-      const bgOffsetX = pX * -15;
-      const bgOffsetY = pY * -15;
-      const canvasOffsetX = pX * -30;
-      const canvasOffsetY = pY * -30;
+      const bgOffsetX = pX * -8;
+      const bgOffsetY = pY * -8;
+      const canvasOffsetX = pX * -15;
+      const canvasOffsetY = pY * -15;
+
+      const scaleFactor = 0.90;
+      const parallaxScale = 1.05;
+      const finalBgScale = scaleFactor * parallaxScale;
 
       if (bgNodeRef.current) {
-        bgNodeRef.current.style.transform = `translate(${bgOffsetX}px, ${bgOffsetY}px) scale(1.05)`;
+        bgNodeRef.current.style.transformOrigin = 'bottom center';
+        // Add +15px downward buffer to hide the bottom cut line below the screen edge
+        bgNodeRef.current.style.transform = `translate(${bgOffsetX}px, ${bgOffsetY + 15}px) scale(${finalBgScale})`;
       }
       if (canvasRef.current) {
-        canvasRef.current.style.transform = `translate(${canvasOffsetX}px, ${canvasOffsetY}px) scale(1.05)`;
+        canvasRef.current.style.transformOrigin = 'bottom center';
+        // Add +15px downward buffer to match the background image
+        canvasRef.current.style.transform = `translate(${canvasOffsetX}px, ${canvasOffsetY + 15}px) scale(${parallaxScale})`;
       }
 
-      const s = 1.05;
-      const centerScreenX = canvas.width / 2;
-      const centerScreenY = canvas.height / 2;
+      const s = parallaxScale;
+      const originX = canvas.width / 2;
+      const originY = canvas.height; // Anchor to bottom
 
       const getCanvasCoords = (screenX, screenY) => {
         // Use the same clamped pX/pY logic for calculating offsets when drawing the brush
@@ -266,12 +284,12 @@ export default function BrushReveal({
         curPY = Math.max(-0.6, Math.min(0.6, curPY));
 
         // Reduce parallax intensity per user request
-        const cOffX = curPX * -30;
-        const cOffY = curPY * -30;
+        const cOffX = curPX * -15;
+        const cOffY = curPY * -15;
 
         return {
-          x: (screenX - cOffX - centerScreenX) / s + centerScreenX,
-          y: (screenY - cOffY - centerScreenY) / s + centerScreenY
+          x: (screenX - cOffX - originX) / s + originX,
+          y: (screenY - cOffY - 15 - originY) / s + originY
         };
       };
 
@@ -364,6 +382,7 @@ export default function BrushReveal({
       // 5. Draw reveal image masked by the melted fluid shape
       if (revImg) {
         ctx.globalCompositeOperation = 'source-over';
+        
         const { w, h, x, y } = getCustomFraming(revImg, canvas.width, canvas.height, true);
         ctx.drawImage(revImg, x, y, w, h);
 

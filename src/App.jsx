@@ -116,8 +116,8 @@ function App() {
                 onClick: () => setIsMenuOpen(!isMenuOpen) 
               }
             ]}
-            particleCount={15}
-            particleDistances={[50, 10]}
+            particleCount={25}
+            particleDistances={[250, 10]}
             particleR={15}
             initialActiveIndex={isMenuOpen ? 1 : 0}
             animationTime={500}
@@ -152,14 +152,13 @@ function App() {
             className="w-full h-full relative origin-center bg-white shadow-2xl overflow-hidden pointer-events-auto"
           >
             <BrushReveal
-              bgImage="/milo1.png"
-              revealImage="/atreus1.png"
+              bgImage="/milo1_nobg.png"
+              revealImage="/atreus1_nobg.png"
               brushSize={150}
               revealScale={0.83}
-              revealOffsetY={-0.18}
+              revealOffsetY={-0.26}
             />
-            {/* Bottom Fade Gradient for grounding inside the hero */}
-            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent z-0 pointer-events-none" />
+            {/* No fade gradient at the bottom as requested */}
           </motion.div>
         </div>
       </div>
