@@ -1,0 +1,5 @@
+<h2>Servicios</h2>
+		<h4><a href="http://hospitalveterinarioteran.com/servicios/rayos-x/">Rayos X – Digitalizador En Alta Resolución</a></h4>		<div class="tm_pb_blurb_content">
+		<h4><a href="http://hospitalveterinarioteran.com/servicios/laboratorio-veterinario/">Laboratorio Veterinario</a></h4>		<div class="tm_pb_blurb_content">
+		<h4><a href="http://hospitalveterinarioteran.com/servicios/hidroterapia/">Hidroterapia</a></h4>		<div class="tm_pb_blurb_content">
+		<h4><a href="http://hospitalveterinarioteran.com/servicios/cirugia-medica/">Cirugía Médica</a></h4>		<div class="tm_pb_blurb_content">
