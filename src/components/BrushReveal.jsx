@@ -5,6 +5,8 @@ export default function BrushReveal({
   revealImage,
   brushSize = 80,
   revealScale = 1.0,
+  bgScale = 0.90,
+  bgObjectPosition = "center 20%",
   revealOffsetY = 0
 }) {
   const containerRef = useRef(null);
@@ -110,7 +112,7 @@ export default function BrushReveal({
         y += h * revealOffsetY;
 
         // Apply scaleFactor anchored to bottom center to match the CSS behavior!
-        const globalScale = 0.90;
+        const globalScale = bgScale;
         const elemX = canvasW * (1 - globalScale) / 2;
         const elemY = canvasH * (1 - globalScale);
         
@@ -257,7 +259,8 @@ export default function BrushReveal({
       const canvasOffsetX = pX * -15;
       const canvasOffsetY = pY * -15;
 
-      const scaleFactor = 0.90;
+      // Compute final transforms adding the +15 buffer
+      const scaleFactor = bgScale;
       const parallaxScale = 1.05;
       const finalBgScale = scaleFactor * parallaxScale;
 
@@ -478,8 +481,8 @@ export default function BrushReveal({
         ref={bgNodeRef}
         src={bgImage}
         alt="Base"
-        className="absolute inset-0 w-full h-full object-cover object-[center_20%] pointer-events-none"
-        style={{ willChange: 'transform' }}
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+        style={{ willChange: 'transform', objectPosition: bgObjectPosition }}
       />
 
       {/* Reveal Layer */}

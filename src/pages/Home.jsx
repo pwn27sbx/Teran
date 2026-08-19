@@ -186,8 +186,10 @@ function App() {
               bgImage="/milo1_nobg.png"
               revealImage="/atreus1_nobg.png"
               brushSize={180}
-              revealScale={0.78}
-              revealOffsetY={-0.26}
+              revealScale={0.73}
+              bgScale={0.90}
+              bgObjectPosition="center 10%"
+              revealOffsetY={-0.29}
             />
             {/* No fade gradient at the bottom as requested */}
           </motion.div>
@@ -330,7 +332,7 @@ function App() {
           <motion.img
             src="/miloperfil.png"
             alt="Dog"
-            className="absolute -left-[15%] md:-left-[10%] bottom-0 w-[350px] md:w-[550px] lg:w-[700px] xl:w-[850px] object-contain pointer-events-none mix-blend-multiply"
+            className="absolute -left-[15%] md:-left-[10%] bottom-0 w-[400px] md:w-[600px] lg:w-[780px] xl:w-[950px] object-contain pointer-events-none mix-blend-multiply"
             style={{ x: dogX, y: dogY, opacity: animalsOpacity }}
           />
 
@@ -338,7 +340,7 @@ function App() {
           <motion.img
             src="/atreusperfil.png"
             alt="Cat"
-            className="absolute -right-[15%] md:-right-[6%] bottom-0 w-[350px] md:w-[550px] lg:w-[700px] xl:w-[850px] object-contain pointer-events-none mix-blend-multiply"
+            className="absolute -right-[15%] md:-right-[10%] bottom-0 w-[400px] md:w-[600px] lg:w-[780px] xl:w-[950px] object-contain pointer-events-none mix-blend-multiply"
             style={{ x: catX, y: catY, opacity: animalsOpacity }}
           />
 
@@ -350,7 +352,7 @@ function App() {
               Suscríbete y recibe nuestras ofertas y novedades
             </p>
 
-            <form className="w-full flex flex-col -space-y-4 max-w-md items-center mt-4">
+            <div className="w-full max-w-md mx-auto flex flex-col -space-y-4 items-center mt-4">
               <CurvedInput
                 showButton={false}
                 showIcon={false}
@@ -390,7 +392,7 @@ function App() {
                 height={64}
                 bend={18}
               />
-            </form>
+            </div>
           </div>
 
           <div className="w-full flex flex-col items-center px-6 relative z-10 mt-auto mb-10">
