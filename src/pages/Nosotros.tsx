@@ -26,95 +26,82 @@ export default function Nosotros() {
       
       <Header variant="back" />
       
-      <main className="flex-1 flex flex-col relative z-10 pt-28 pb-8 px-6 justify-center">
-        <div className="max-w-6xl mx-auto w-full">
+      <main className="flex-1 flex flex-col relative z-10 pt-24 pb-8 px-6 lg:px-12 justify-center">
+        <div className="max-w-[1200px] mx-auto w-full flex flex-col md:flex-row gap-12 lg:gap-20 items-center">
           
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-8"
+          {/* Portrait Image (Apple Style) */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full md:w-[380px] shrink-0 relative rounded-[2.5rem] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.15)] dark:shadow-[0_30px_60px_rgba(0,0,0,0.4)]"
           >
-            <h1 className="text-4xl md:text-5xl font-black text-[#0277ab] mb-4 tracking-tight">
-              Quiénes Somos
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base max-w-4xl mx-auto font-serif">
-              Clínicas Veterinarias Terán nacen a través de una tradición familiar que se canaliza en una enorme vocación profesional por la medicina veterinaria generada en sus jóvenes directores los MVZ Mario y Vanessa Terán Rivas.
-            </p>
-          </motion.div>
-
-          {/* Stats Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
-          >
-            {stats.map((stat, i) => (
-              <div key={i} className="bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-gray-100 dark:border-white/10 rounded-2xl p-4 text-center hover:scale-105 transition-transform duration-300 shadow-xl shadow-gray-200/50 dark:shadow-none">
-                <h3 className="text-3xl md:text-4xl font-black text-[#f4484a] mb-1">{stat.value}</h3>
-                <p className="text-gray-600 dark:text-gray-400 font-medium text-[10px] md:text-xs uppercase tracking-widest">{stat.label}</p>
-              </div>
-            ))}
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 gap-8 items-center mb-8">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="space-y-3"
-            >
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Tradición Familiar</h2>
-              <div className="text-gray-600 dark:text-gray-400 text-sm md:text-base leading-relaxed space-y-3">
-                <p>
-                  El hecho de vivir en un entorno donde las mascotas son parte importante de la vida familiar e interrelacionarse con ellas ha sido la base para consolidar uno de sus proyectos institucionales más importantes a nivel profesional, la construcción del primer HOSPITAL VETERINARIO DEL SUR DEL PERÚ.
-                </p>
-                <p>
-                  Son más de 21 años donde la constante capacitación y especialización en el rubro veterinario en animales menores, se plasma en una institución reconocida por la calidad profesional de sus médicos y un equipamiento de primer nivel y avanzada tecnología.
-                </p>
-                <p>
-                  En esencia la base del reconocimiento por nuestros clientes se da en que todos los que trabajamos en VETERINARIAS TERÁN tenemos la vocación profesional y de servicio a las familias que comparten y conviven con una mascota.
-                </p>
-              </div>
-            </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="relative h-[260px] md:h-[300px] rounded-[2rem] overflow-hidden shadow-2xl"
-            >
+            <div className="aspect-[3/4] w-full">
               <img 
                 src="/staff.webp" 
                 alt="MVZ Mario y Vanessa Terán Rivas" 
-                className="absolute inset-0 w-full h-full object-cover object-top"
+                className="w-full h-full object-cover object-top"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-              <div className="absolute bottom-6 left-6 right-6 text-white">
-                <p className="font-['Outfit'] font-bold tracking-widest text-[10px] md:text-xs mb-1 text-blue-300 uppercase">Vocación y Servicio</p>
-                <h3 className="text-lg md:text-xl font-bold">MVZ Mario y Vanessa Terán</h3>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+              <div className="absolute bottom-8 left-8 right-8 text-white">
+                <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/70 mb-2">Directores</p>
+                <h3 className="text-xl font-medium tracking-tight text-white/95">MVZ Mario y Vanessa Terán</h3>
               </div>
-            </motion.div>
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mt-auto"
-          >
-            <Link 
-              to="/emergencias" 
-              className="inline-flex items-center gap-2 bg-[#f4484a] text-white px-8 py-4 rounded-full font-bold shadow-xl shadow-red-500/20 hover:scale-105 transition-all text-lg"
-            >
-              Conoce nuestras sedes
-            </Link>
+            </div>
           </motion.div>
-          
+
+          {/* Editorial Content */}
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="flex-1 flex flex-col justify-center"
+          >
+            <h1 className="text-4xl lg:text-6xl font-semibold tracking-tighter text-gray-900 dark:text-white mb-6 leading-[1.1]">
+              Vocación de familia. <br/>
+              <span className="text-gray-400 dark:text-gray-500">Innovación en salud.</span>
+            </h1>
+
+            <p className="text-lg lg:text-xl font-serif text-gray-600 dark:text-gray-300 mb-8 leading-relaxed max-w-2xl">
+              Clínicas Veterinarias Terán nacen a través de una tradición familiar que se canaliza en una enorme vocación profesional por la medicina veterinaria generada en sus jóvenes directores.
+            </p>
+
+            {/* Editorial Columns */}
+            <div className="md:columns-2 gap-10 text-[13px] text-gray-500 dark:text-gray-400 leading-relaxed mb-12 max-w-3xl">
+              <p className="mb-4 break-inside-avoid">
+                El hecho de vivir en un entorno donde las mascotas son parte importante de la vida familiar e interrelacionarse con ellas ha sido la base para consolidar uno de sus proyectos institucionales más importantes a nivel profesional, la construcción del primer HOSPITAL VETERINARIO DEL SUR DEL PERÚ.
+              </p>
+              <p className="mb-4 break-inside-avoid">
+                Son más de 21 años donde la constante capacitación y especialización en el rubro veterinario en animales menores, se plasma en una institución reconocida por la calidad profesional de sus médicos y un equipamiento de primer nivel y avanzada tecnología.
+              </p>
+              <p className="break-inside-avoid">
+                En esencia la base del reconocimiento por nuestros clientes se da en que todos los que trabajamos en VETERINARIAS TERÁN tenemos la vocación profesional y de servicio a las familias que comparten y conviven con una mascota.
+              </p>
+            </div>
+
+            {/* Stats & Action - Minimalist */}
+            <div className="flex flex-wrap items-center gap-8 lg:gap-12 pt-8 border-t border-gray-200 dark:border-white/10">
+              {stats.map((stat, i) => (
+                <div key={i} className="flex flex-col">
+                  <span className="text-3xl font-semibold tracking-tighter text-gray-900 dark:text-white mb-1">{stat.value}</span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400">{stat.label}</span>
+                </div>
+              ))}
+              
+              <div className="ml-auto mt-4 md:mt-0">
+                <Link 
+                  to="/emergencias" 
+                  className="group flex items-center gap-3 text-sm font-semibold text-gray-900 dark:text-white hover:opacity-70 transition-opacity"
+                >
+                  Conoce nuestras sedes
+                  <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <ArrowLeft className="w-4 h-4 rotate-180" />
+                  </div>
+                </Link>
+              </div>
+            </div>
+            
+          </motion.div>
         </div>
       </main>
     </div>
