@@ -7,6 +7,7 @@ const Home = React.lazy(() => import("./pages/Home"));
 const Servicios = React.lazy(() => import("./pages/Servicios"));
 const Emergencias = React.lazy(() => import("./pages/Emergencias"));
 const Tienda = React.lazy(() => import("./pages/Tienda"));
+const Nosotros = React.lazy(() => import("./pages/Nosotros"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 
 // Fallback loader while chunks are downloading
@@ -22,6 +23,7 @@ export default function App() {
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/nosotros" element={<Nosotros />} />
           <Route path="/servicios" element={<Servicios />} />
           <Route path="/emergencias" element={<Emergencias />} />
           <Route path="/tienda" element={<Tienda />} />
