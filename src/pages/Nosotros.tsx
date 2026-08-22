@@ -1,12 +1,12 @@
 import React from "react";
-import { ArrowLeft, Award, Heart, ShieldCheck, Clock } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Header from "../components/Header";
 
 export default function Nosotros() {
   const stats = [
-    { label: "Años de Experiencia", value: "24+" },
+    { label: "Años de Experiencia", value: "21+" },
     { label: "Mascotas Atendidas", value: "50k+" },
     { label: "Sedes en Arequipa", value: "3" },
     { label: "Profesionales", value: "40+" },
@@ -38,8 +38,8 @@ export default function Nosotros() {
             <h1 className="text-4xl md:text-5xl font-black text-[#0277ab] mb-4 tracking-tight">
               Quiénes Somos
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 text-base md:text-lg max-w-3xl mx-auto font-serif">
-              Somos el Hospital Veterinario Terán, con más de 24 años de experiencia mejorando la salud y calidad de vida de las mascotas en Arequipa.
+            <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base max-w-4xl mx-auto font-serif">
+              Clínicas Veterinarias Terán nacen a través de una tradición familiar que se canaliza en una enorme vocación profesional por la medicina veterinaria generada en sus jóvenes directores los MVZ Mario y Vanessa Terán Rivas.
             </p>
           </motion.div>
 
@@ -48,7 +48,7 @@ export default function Nosotros() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10"
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
           >
             {stats.map((stat, i) => (
               <div key={i} className="bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-gray-100 dark:border-white/10 rounded-2xl p-4 text-center hover:scale-105 transition-transform duration-300 shadow-xl shadow-gray-200/50 dark:shadow-none">
@@ -64,27 +64,20 @@ export default function Nosotros() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="space-y-4"
+              className="space-y-3"
             >
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Nuestra Misión</h2>
-              <p className="text-gray-600 dark:text-gray-400 text-base md:text-lg leading-relaxed">
-                Brindar la mejor atención médica veterinaria integral, con tecnología de vanguardia y un equipo humano altamente capacitado, garantizando el bienestar de las mascotas y la tranquilidad de sus familias.
-              </p>
-              <ul className="space-y-3 pt-2">
-                {[
-                  { icon: Heart, text: "Amor y empatía por los animales" },
-                  { icon: ShieldCheck, text: "Ética y profesionalismo médico" },
-                  { icon: Clock, text: "Atención ininterrumpida 24/7" },
-                  { icon: Award, text: "Innovación y tecnología constante" },
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-gray-700 dark:text-gray-300 font-medium text-sm md:text-base">
-                    <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-[#0277ab]">
-                      <item.icon className="w-4 h-4" />
-                    </div>
-                    {item.text}
-                  </li>
-                ))}
-              </ul>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Tradición Familiar</h2>
+              <div className="text-gray-600 dark:text-gray-400 text-sm md:text-base leading-relaxed space-y-3">
+                <p>
+                  El hecho de vivir en un entorno donde las mascotas son parte importante de la vida familiar e interrelacionarse con ellas ha sido la base para consolidar uno de sus proyectos institucionales más importantes a nivel profesional, la construcción del primer HOSPITAL VETERINARIO DEL SUR DEL PERÚ.
+                </p>
+                <p>
+                  Son más de 21 años donde la constante capacitación y especialización en el rubro veterinario en animales menores, se plasma en una institución reconocida por la calidad profesional de sus médicos y un equipamiento de primer nivel y avanzada tecnología.
+                </p>
+                <p>
+                  En esencia la base del reconocimiento por nuestros clientes se da en que todos los que trabajamos en VETERINARIAS TERÁN tenemos la vocación profesional y de servicio a las familias que comparten y conviven con una mascota.
+                </p>
+              </div>
             </motion.div>
             
             <motion.div
@@ -95,14 +88,14 @@ export default function Nosotros() {
               className="relative h-[260px] md:h-[300px] rounded-[2rem] overflow-hidden shadow-2xl"
             >
               <img 
-                src="/gallery/1.webp" 
-                alt="Instalaciones Hospital Veterinario Terán" 
-                className="absolute inset-0 w-full h-full object-cover"
+                src="/staff.webp" 
+                alt="MVZ Mario y Vanessa Terán Rivas" 
+                className="absolute inset-0 w-full h-full object-cover object-top"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               <div className="absolute bottom-6 left-6 right-6 text-white">
-                <p className="font-['Outfit'] font-bold tracking-widest text-xs mb-1 text-blue-300 uppercase">Tecnología y Calidez</p>
-                <h3 className="text-xl md:text-2xl font-bold">Instalaciones de primer nivel</h3>
+                <p className="font-['Outfit'] font-bold tracking-widest text-[10px] md:text-xs mb-1 text-blue-300 uppercase">Vocación y Servicio</p>
+                <h3 className="text-lg md:text-xl font-bold">MVZ Mario y Vanessa Terán</h3>
               </div>
             </motion.div>
           </div>
