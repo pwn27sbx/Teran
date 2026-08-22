@@ -21,62 +21,66 @@ export default function Servicios() {
       <Header variant="back" />
 
       {/* Main Content */}
-      <main className="pt-32 pb-24 px-6 relative z-10 max-w-7xl mx-auto">
+      <main className="pt-24 pb-8 px-6 lg:px-8 relative z-10 max-w-[1600px] mx-auto min-h-screen flex flex-col justify-center">
+        
+        {/* Header Section */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center max-w-3xl mx-auto mb-12"
+          className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900 border border-blue-100 dark:border-blue-800 text-[#0277ab] font-bold text-sm tracking-widest uppercase mb-6 shadow-sm">
-            <Stethoscope className="w-4 h-4" />
-            Especialidades
+          <div className="text-left max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900 border border-blue-100 dark:border-blue-800 text-[#0277ab] font-bold text-[10px] tracking-widest uppercase mb-3 shadow-sm">
+              <Stethoscope className="w-3 h-3" />
+              Especialidades
+            </div>
+            <h1 className="text-4xl lg:text-5xl font-black text-gray-900 dark:text-white leading-tight mb-2">
+              Nuestros <span className="text-[#0277ab]">Servicios</span>
+            </h1>
+            <p className="text-[15px] lg:text-base text-gray-500 dark:text-gray-400 font-serif">
+              Más de 21 años mejorando la salud de tu mascota con la mejor tecnología.
+            </p>
           </div>
-          <h1 className="text-5xl md:text-6xl font-black text-gray-900 dark:text-white mb-6 leading-tight">
-            Nuestros <span className="text-[#0277ab]">Servicios</span>
-          </h1>
-          <p className="text-lg md:text-xl text-gray-500 dark:text-gray-400 font-serif leading-relaxed">
-            Más de 24 años mejorando la salud de tu mascota. Descubre todas las especialidades con las que contamos.
-          </p>
+
+          {/* Categories Tabs (Moved to right on desktop) */}
+          <div className="flex flex-wrap items-center justify-start md:justify-end gap-2">
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`px-4 py-2 rounded-full font-bold text-xs transition-all duration-300 ${
+                  activeCategory === cat.id 
+                    ? "bg-[#0277ab] text-white shadow-md scale-105" 
+                    : "bg-white/50 text-gray-500 hover:bg-white dark:bg-gray-900 border border-gray-200/50 hover:text-[#0277ab]"
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
         </motion.div>
 
-        {/* Categories Tabs */}
-        <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4 mb-12">
-          {categories.map(cat => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all duration-300 ${
-                activeCategory === cat.id 
-                  ? "bg-[#0277ab] text-white shadow-md scale-105" 
-                  : "bg-white/50 text-gray-500 dark:text-gray-400 hover:bg-white dark:bg-gray-900 border border-gray-200/50 dark:border-gray-700/50 hover:text-[#0277ab]"
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Services Grid with AnimatePresence for filtering */}
-        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        {/* Services Grid - 4 Columns */}
+        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-4 flex-1">
           <AnimatePresence mode="popLayout">
             {filteredServices.map((service) => (
               <motion.div
                 key={service.id}
                 layout
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
+                exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
-                whileHover={{ y: -5, scale: 1.02 }}
-                className={`p-5 md:p-6 rounded-2xl bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border ${service.border} shadow-sm hover:shadow-lg transition-shadow cursor-pointer group flex items-start gap-4 h-full`}
+                whileHover={{ y: -3, scale: 1.02 }}
+                className={`p-4 xl:p-5 rounded-2xl bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border ${service.border} shadow-sm hover:shadow-lg transition-all cursor-pointer group flex items-start gap-4 h-full`}
               >
-                <div className={`w-12 h-12 rounded-xl shrink-0 ${service.color} flex items-center justify-center group-hover:rotate-6 transition-transform duration-300 mt-1`}>
+                <div className={`w-10 h-10 xl:w-12 xl:h-12 rounded-[0.8rem] shrink-0 ${service.color} flex items-center justify-center group-hover:rotate-6 transition-transform duration-300 mt-0.5`}>
                   {service.icon}
                 </div>
-                <div>
-                  <h2 className="text-[17px] md:text-lg font-bold text-gray-800 dark:text-gray-100 leading-tight mb-1">{service.title}</h2>
-                  <h3 className="text-[11px] font-bold text-[#0277ab] uppercase tracking-wider mb-2">{service.subtitle}</h3>
-                  <p className="text-gray-500 dark:text-gray-400 font-serif leading-snug text-[14px]">
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-[15px] xl:text-[17px] font-bold text-gray-800 dark:text-gray-100 leading-tight mb-1 truncate">{service.title}</h2>
+                  <h3 className="text-[9px] xl:text-[10px] font-bold text-[#0277ab] uppercase tracking-wider mb-1.5">{service.subtitle}</h3>
+                  <p className="text-gray-500 dark:text-gray-400 font-serif leading-snug text-[12px] xl:text-[13px] line-clamp-3">
                     {service.description}
                   </p>
                 </div>
@@ -84,6 +88,7 @@ export default function Servicios() {
             ))}
           </AnimatePresence>
         </motion.div>
+
       </main>
     </div>
   );
