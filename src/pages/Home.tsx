@@ -74,8 +74,8 @@ function App() {
             className="w-full h-full relative origin-center bg-white dark:bg-[#121212] shadow-2xl overflow-hidden pointer-events-auto"
           >
             <BrushReveal
-              bgImage={isDark ? "/milo1_dark.webp" : "/milo1_nobg.webp"}
-              revealImage={isDark ? "/atreus1_dark.webp" : "/atreus1_nobg.webp"}
+              bgImage="/milo1_nobg.webp"
+              revealImage="/atreus1_nobg.webp"
               xrayImage={isDark ? "/atreusx_dark.webp" : "/atreusx_nobg.webp"}
               brushSize={180}
               revealScale={0.73}
