@@ -31,7 +31,8 @@ const features = [
     icon: Play,
     bgImg: '/gallery/10.webp',
     color: 'from-amber-500/90 to-orange-400/80',
-    accent: 'bg-amber-400 text-gray-900'
+    accent: 'bg-amber-400 text-gray-900',
+    link: 'https://www.youtube.com/channel/UC7C7Yo0ILqCbQN6PK1wzWgg/featured'
   }
 ];
 
@@ -86,15 +87,18 @@ export default function PremiumFeatures() {
                 
                 <AnimatePresence>
                   {isActive && (
-                    <motion.div
+                    <motion.a
+                      href={f.link || '#'}
+                      target={f.link ? "_blank" : undefined}
+                      rel={f.link ? "noopener noreferrer" : undefined}
                       initial={{ opacity: 0, scale: 0.5, rotate: -45 }}
                       animate={{ opacity: 1, scale: 1, rotate: 0 }}
                       exit={{ opacity: 0, scale: 0.5, rotate: 45 }}
                       transition={{ duration: 0.3 }}
-                      className="w-12 h-12 rounded-full bg-white text-gray-900 flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+                      className="w-12 h-12 rounded-full bg-white text-gray-900 flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer"
                     >
                       <ArrowUpRight className="w-5 h-5" />
-                    </motion.div>
+                    </motion.a>
                   )}
                 </AnimatePresence>
               </div>
