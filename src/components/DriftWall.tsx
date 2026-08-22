@@ -87,6 +87,7 @@ export const DriftWall: React.FC<DriftWallProps> = ({
   const planeRef = useRef<HTMLDivElement | null>(null);
   const trackRefs = useRef<(HTMLDivElement | null)[]>([]);
   const rafRef = useRef<number | null>(null);
+  const isVisibleRef = useRef<boolean>(true);
 
   const offsetsRef = useRef<number[]>([]);
   const velocitiesRef = useRef<number[]>([]);
@@ -159,7 +160,20 @@ export const DriftWall: React.FC<DriftWallProps> = ({
   );
 
   useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      isVisibleRef.current = entry.isIntersecting;
+      if (entry.isIntersecting && rafRef.current === null) {
+        lastTsRef.current = null;
+        rafRef.current = requestAnimationFrame(animate);
+      }
+    });
+    if (containerRef.current) observer.observe(containerRef.current);
+
     const animate = (ts: number) => {
+      if (!isVisibleRef.current) {
+        rafRef.current = null;
+        return;
+      }
       if (lastTsRef.current === null) lastTsRef.current = ts;
       const dt = Math.min(0.05, Math.max(0, ts - lastTsRef.current) / 1000);
       lastTsRef.current = ts;
@@ -200,8 +214,8 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       rafRef.current = requestAnimationFrame(animate);
     };
 
-    rafRef.current = requestAnimationFrame(animate);
     return () => {
+      observer.disconnect();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
       lastTsRef.current = null;

@@ -42,6 +42,9 @@ export default function BrushReveal({
   const xrayImgRef = useRef<HTMLImageElement | null>(null);
 
   // Refs for animation and parallax
+  const isVisibleRef = useRef<boolean>(true);
+  const cachedRevFramingRef = useRef<Framing | null>(null);
+  const cachedXrayFramingRef = useRef<Framing | null>(null);
   const bgNodeRef = useRef<HTMLImageElement | null>(null);
   const rafRef = useRef<number | null>(null);
   const offCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -122,6 +125,8 @@ export default function BrushReveal({
     offCanvasRef.current = offCanvas;
 
     const handleResize = () => {
+      cachedRevFramingRef.current = null;
+      cachedXrayFramingRef.current = null;
       const parent = containerRef.current;
       if (!parent || !canvas) return;
 
@@ -149,6 +154,14 @@ export default function BrushReveal({
 
     window.addEventListener('resize', handleResize);
     handleResize();
+
+    const io = new IntersectionObserver(([entry]) => {
+      isVisibleRef.current = entry.isIntersecting;
+      if (entry.isIntersecting && rafRef.current === null) {
+        rafRef.current = requestAnimationFrame(renderLoop);
+      }
+    });
+    if (containerRef.current) io.observe(containerRef.current);
 
     // Calculate dimensions to match CSS object-cover with a 20% top offset
     const getCustomFraming = (
@@ -196,6 +209,11 @@ export default function BrushReveal({
     };
 
     const renderLoop = () => {
+      if (!isVisibleRef.current) {
+        rafRef.current = null;
+        return;
+      }
+
       const revImg = revealImgRef.current;
       const currentCanvas = canvasRef.current;
       const currentOffCanvas = offCanvasRef.current;
@@ -468,12 +486,10 @@ export default function BrushReveal({
       if (revImg) {
         ctx.globalCompositeOperation = 'source-over';
 
-        const { w, h, x, y } = getCustomFraming(
-          revImg,
-          currentCanvas.width,
-          currentCanvas.height,
-          true
-        );
+        if (!cachedRevFramingRef.current) {
+          cachedRevFramingRef.current = getCustomFraming(revImg, currentCanvas.width, currentCanvas.height, true);
+        }
+        const { w, h, x, y } = cachedRevFramingRef.current;
         ctx.drawImage(revImg, x, y, w, h);
 
         // Apply the mask
@@ -525,12 +541,10 @@ export default function BrushReveal({
         const xctx = xrayCanvasRef.current.getContext('2d');
         if (xctx) {
           xctx.clearRect(0, 0, xrayCanvasRef.current.width, xrayCanvasRef.current.height);
-          const { w, h, x, y } = getCustomFraming(
-            xrayImgRef.current,
-            currentCanvas.width,
-            currentCanvas.height,
-            true
-          );
+          if (!cachedXrayFramingRef.current) {
+            cachedXrayFramingRef.current = getCustomFraming(xrayImgRef.current, currentCanvas.width, currentCanvas.height, true);
+          }
+          const { w, h, x, y } = cachedXrayFramingRef.current;
           
           // Draw the image with lower opacity
           xctx.globalAlpha = 0.30; 
@@ -601,6 +615,7 @@ export default function BrushReveal({
     }
 
     return () => {
+      io.disconnect();
       window.removeEventListener('resize', handleResize);
       if (container) {
         container.removeEventListener('pointermove', handlePointerMove);
