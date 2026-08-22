@@ -3,7 +3,6 @@ import { ArrowLeft, Award, Heart, ShieldCheck, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Header from "../components/Header";
-import Footer from "../components/Footer";
 
 export default function Nosotros() {
   const stats = [
@@ -125,8 +124,6 @@ export default function Nosotros() {
           
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
