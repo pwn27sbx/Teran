@@ -135,7 +135,7 @@ function TestimonialCard({ testimonial, index, direction }: { testimonial: any, 
           </div>
         </div>
         
-        <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 mt-2">
+        <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 mt-2 flex flex-col justify-center">
           <p className="text-gray-700 dark:text-gray-300 font-serif leading-relaxed text-[15px] italic">
             "{testimonial.text}"
           </p>
