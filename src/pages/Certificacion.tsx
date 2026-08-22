@@ -27,77 +27,110 @@ const testimonials = [
 
 export default function Certificacion() {
   return (
-    <div className="h-screen w-full overflow-hidden bg-[#f8f9fa] dark:bg-[#121212] font-sans selection:bg-[#0277ab] selection:text-white flex flex-col">
+    <div className="h-screen w-full overflow-hidden bg-[#f3f4f6] dark:bg-[#0a0a0a] font-sans selection:bg-[#0277ab] selection:text-white flex flex-col relative">
+      {/* Background ambient glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-400/20 dark:bg-blue-600/10 blur-[120px] rounded-full pointer-events-none z-0"></div>
+
       <Header variant="back" />
       
-      <main className="flex-1 w-full max-w-[1400px] mx-auto px-6 pt-28 pb-8 flex flex-col lg:flex-row gap-8 lg:gap-12 min-h-0">
+      <main className="flex-1 w-full max-w-[1500px] mx-auto px-6 pt-32 pb-12 flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-12 min-h-0 relative z-10">
         
-        {/* Left Side: Header & Certificate (1/3 width) */}
+        {/* Left Column: Testimonials 1 & 2 (Shifted Up) */}
+        <div className="hidden lg:flex w-1/3 flex-col gap-6 h-full justify-center pb-16">
+          {[testimonials[0], testimonials[1]].map((t, i) => (
+            <TestimonialCard key={i} testimonial={t} index={i} direction={-1} />
+          ))}
+        </div>
+
+        {/* Center Column: The Accreditation Altar */}
         <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="w-full lg:w-1/3 flex flex-col justify-center h-full"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="w-full lg:w-1/3 flex flex-col items-center justify-center text-center h-full relative"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 text-[#0277ab] font-bold text-sm tracking-widest uppercase w-fit mb-6 shadow-sm">
-            <Award className="w-4 h-4" />
-            Acreditación
-          </div>
-          
-          <h1 className="text-4xl lg:text-6xl font-black text-gray-900 dark:text-white mb-4 leading-tight">
-            Certificación <br className="hidden lg:block" />
-            <span className="text-[#0277ab]">Oficial</span>
-          </h1>
-          
-          <p className="text-lg text-gray-500 dark:text-gray-400 font-serif leading-relaxed mb-8">
-            Certificada por el Colegio Médico Veterinario de Arequipa. Lo que dicen nuestros médicos sobre su labor diaria.
-          </p>
-          
-          <div className="flex-1 flex items-center justify-start max-h-[250px] lg:max-h-[300px]">
+          {/* Badge with floating animation */}
+          <motion.div 
+            animate={{ y: [-10, 10, -10] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            className="relative mb-10 group"
+          >
+            <div className="absolute inset-0 bg-blue-500/20 blur-[50px] rounded-full group-hover:bg-blue-500/40 transition-colors duration-500"></div>
             <img 
               src="http://hospitalveterinarioteran.com/wp-content/uploads/2017/11/acreditacion1.png" 
               alt="Certificación Colegio Médico Veterinario" 
-              className="max-h-full w-auto object-contain drop-shadow-xl hover:scale-105 transition-transform duration-300"
+              className="w-56 md:w-72 h-auto relative z-10 drop-shadow-2xl"
             />
+          </motion.div>
+
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-100/50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 text-[#0277ab] dark:text-sky-400 font-bold text-xs tracking-[0.2em] uppercase mb-6 backdrop-blur-md">
+            <Award className="w-3.5 h-3.5" />
+            Excelencia Médica
           </div>
+          
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 dark:text-white mb-6 leading-[1.1] tracking-tight">
+            Certificación <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0277ab] to-blue-400">
+              Oficial
+            </span>
+          </h1>
+          
+          <p className="text-base md:text-lg text-gray-600 dark:text-gray-400 font-serif leading-relaxed max-w-sm mx-auto">
+            Avalados por el Colegio Médico Veterinario de Arequipa. Conoce la vocación que impulsa a nuestros especialistas cada día.
+          </p>
         </motion.div>
 
-        {/* Right Side: 2x2 Testimonials Grid (2/3 width) */}
-        <div className="w-full lg:w-2/3 h-full flex-1 min-h-0">
-          {/* Use a custom scrollbar just in case the screen is too short, but usually it fits */}
-          <div className="h-full w-full overflow-y-auto overflow-x-hidden custom-scrollbar pr-4 pb-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
-              {testimonials.map((t, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="bg-white dark:bg-gray-900 rounded-3xl p-6 lg:p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-800 relative group flex flex-col"
-                >
-                  <div className="absolute top-6 right-6 text-blue-50 dark:text-blue-900/10">
-                    <Quote size={48} className="transform rotate-180" />
-                  </div>
-                  
-                  <div className="relative z-10 flex flex-col h-full">
-                    <div className="flex items-center gap-4 mb-6">
-                      <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-blue-50 dark:border-gray-800 shadow-sm shrink-0">
-                        <img src={t.image} alt={t.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-black text-gray-900 dark:text-white leading-none mb-1">{t.name}</h3>
-                        <p className="text-[#0277ab] font-bold text-xs tracking-wider uppercase">Médico Veterinario</p>
-                      </div>
-                    </div>
-                    <p className="text-gray-600 dark:text-gray-400 font-serif leading-relaxed text-[15px] italic flex-1 overflow-y-auto custom-scrollbar">
-                      "{t.text}"
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
+        {/* Right Column: Testimonials 3 & 4 (Shifted Down) */}
+        <div className="hidden lg:flex w-1/3 flex-col gap-6 h-full justify-center pt-16">
+          {[testimonials[2], testimonials[3]].map((t, i) => (
+            <TestimonialCard key={i+2} testimonial={t} index={i+2} direction={1} />
+          ))}
         </div>
+
+        {/* Mobile View: Scrollable Row */}
+        <div className="flex lg:hidden w-full overflow-x-auto gap-4 pb-4 snap-x snap-mandatory custom-scrollbar">
+          {testimonials.map((t, i) => (
+            <div key={i} className="min-w-[85vw] snap-center">
+              <TestimonialCard testimonial={t} index={i} direction={0} />
+            </div>
+          ))}
+        </div>
+
       </main>
     </div>
+  );
+}
+
+// Subcomponent for the cards to keep code clean
+function TestimonialCard({ testimonial, index, direction }: { testimonial: any, index: number, direction: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: direction * 50 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.6, delay: 0.2 + index * 0.1, ease: "easeOut" }}
+      className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-3xl p-6 lg:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-white/50 dark:border-gray-800 flex flex-col relative group hover:-translate-y-1 transition-transform duration-300 h-[280px]"
+    >
+      <div className="absolute top-6 right-6 text-[#0277ab]/10 dark:text-blue-400/10 group-hover:scale-110 group-hover:text-[#0277ab]/20 transition-all duration-300">
+        <Quote size={80} className="transform rotate-180" />
+      </div>
+      
+      <div className="relative z-10 flex flex-col h-full">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white dark:border-gray-800 shadow-md shrink-0">
+            <img src={testimonial.image} alt={testimonial.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+          </div>
+          <div>
+            <h3 className="text-lg font-black text-gray-900 dark:text-white leading-tight">{testimonial.name}</h3>
+            <p className="text-[#0277ab] font-bold text-[10px] tracking-widest uppercase mt-0.5">Médico Veterinario</p>
+          </div>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 mt-2">
+          <p className="text-gray-700 dark:text-gray-300 font-serif leading-relaxed text-[15px] italic">
+            "{testimonial.text}"
+          </p>
+        </div>
+      </div>
+    </motion.div>
   );
 }
