@@ -54,7 +54,17 @@ export default function PremiumFeatures() {
             key={f.id}
             layout
             onMouseEnter={() => setActive(f.id)}
-            onClick={() => setActive(f.id)}
+            onClick={() => {
+              if (isActive) {
+                if (f.link?.startsWith('http')) {
+                  window.open(f.link, '_blank', 'noopener,noreferrer');
+                } else if (f.link) {
+                  navigate(f.link);
+                }
+              } else {
+                setActive(f.id);
+              }
+            }}
             animate={{
               flex: isActive ? 3 : 1,
             }}
