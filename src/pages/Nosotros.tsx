@@ -26,19 +26,19 @@ export default function Nosotros() {
       
       <Header variant="back" />
       
-      <main className="flex-1 flex flex-col relative z-10 pt-32 pb-20 px-6">
+      <main className="flex-1 flex flex-col relative z-10 pt-28 pb-8 px-6 justify-center">
         <div className="max-w-6xl mx-auto w-full">
           
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-16"
+            className="text-center mb-8"
           >
-            <h1 className="text-5xl md:text-6xl font-black text-[#0277ab] mb-6 tracking-tight">
+            <h1 className="text-4xl md:text-5xl font-black text-[#0277ab] mb-4 tracking-tight">
               Quiénes Somos
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 text-lg md:text-xl max-w-3xl mx-auto font-serif">
+            <p className="text-gray-600 dark:text-gray-400 text-base md:text-lg max-w-3xl mx-auto font-serif">
               Somos el Hospital Veterinario Terán, con más de 24 años de experiencia mejorando la salud y calidad de vida de las mascotas en Arequipa.
             </p>
           </motion.div>
@@ -48,38 +48,38 @@ export default function Nosotros() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mb-20"
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10"
           >
             {stats.map((stat, i) => (
-              <div key={i} className="bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-gray-100 dark:border-white/10 rounded-3xl p-6 text-center hover:scale-105 transition-transform duration-300 shadow-xl shadow-gray-200/50 dark:shadow-none">
-                <h3 className="text-4xl md:text-5xl font-black text-[#f4484a] mb-2">{stat.value}</h3>
-                <p className="text-gray-600 dark:text-gray-400 font-medium text-sm uppercase tracking-widest">{stat.label}</p>
+              <div key={i} className="bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-gray-100 dark:border-white/10 rounded-2xl p-4 text-center hover:scale-105 transition-transform duration-300 shadow-xl shadow-gray-200/50 dark:shadow-none">
+                <h3 className="text-3xl md:text-4xl font-black text-[#f4484a] mb-1">{stat.value}</h3>
+                <p className="text-gray-600 dark:text-gray-400 font-medium text-[10px] md:text-xs uppercase tracking-widest">{stat.label}</p>
               </div>
             ))}
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
+          <div className="grid md:grid-cols-2 gap-8 items-center mb-8">
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="space-y-6"
+              className="space-y-4"
             >
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Nuestra Misión</h2>
-              <p className="text-gray-600 dark:text-gray-400 text-lg leading-relaxed">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Nuestra Misión</h2>
+              <p className="text-gray-600 dark:text-gray-400 text-base md:text-lg leading-relaxed">
                 Brindar la mejor atención médica veterinaria integral, con tecnología de vanguardia y un equipo humano altamente capacitado, garantizando el bienestar de las mascotas y la tranquilidad de sus familias.
               </p>
-              <ul className="space-y-4 pt-4">
+              <ul className="space-y-3 pt-2">
                 {[
                   { icon: Heart, text: "Amor y empatía por los animales" },
                   { icon: ShieldCheck, text: "Ética y profesionalismo médico" },
                   { icon: Clock, text: "Atención ininterrumpida 24/7" },
                   { icon: Award, text: "Innovación y tecnología constante" },
                 ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-4 text-gray-700 dark:text-gray-300 font-medium">
-                    <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-[#0277ab]">
-                      <item.icon className="w-5 h-5" />
+                  <li key={i} className="flex items-center gap-3 text-gray-700 dark:text-gray-300 font-medium text-sm md:text-base">
+                    <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-[#0277ab]">
+                      <item.icon className="w-4 h-4" />
                     </div>
                     {item.text}
                   </li>
@@ -92,7 +92,7 @@ export default function Nosotros() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="relative h-[400px] rounded-[3rem] overflow-hidden shadow-2xl"
+              className="relative h-[260px] md:h-[300px] rounded-[2rem] overflow-hidden shadow-2xl"
             >
               <img 
                 src="/gallery/1.webp" 
@@ -100,9 +100,9 @@ export default function Nosotros() {
                 className="absolute inset-0 w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <div className="absolute bottom-8 left-8 right-8 text-white">
-                <p className="font-['Outfit'] font-bold tracking-widest text-sm mb-2 text-blue-300 uppercase">Tecnología y Calidez</p>
-                <h3 className="text-2xl font-bold">Instalaciones de primer nivel</h3>
+              <div className="absolute bottom-6 left-6 right-6 text-white">
+                <p className="font-['Outfit'] font-bold tracking-widest text-xs mb-1 text-blue-300 uppercase">Tecnología y Calidez</p>
+                <h3 className="text-xl md:text-2xl font-bold">Instalaciones de primer nivel</h3>
               </div>
             </motion.div>
           </div>
@@ -112,7 +112,7 @@ export default function Nosotros() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-center"
+            className="text-center mt-auto"
           >
             <Link 
               to="/emergencias" 
