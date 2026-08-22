@@ -59,7 +59,7 @@ export default function BrushReveal({
   const idleTimerRef = useRef<number>(0); // Tracks how long the mouse has been still
   const momentumRef = useRef<Point>({ x: 0, y: 0 });
   const nodesRef = useRef<Point[] | null>(null);
-  const numNodes = 20; // Number of segments for a smooth curve
+  const numNodes = 12; // Reduced from 20 to 12 for 144fps performance optimization
 
   useEffect(() => {
     // If xrayImage is provided, we wait for 3 images instead of 2
@@ -496,43 +496,35 @@ export default function BrushReveal({
         ctx.globalCompositeOperation = 'destination-in';
         ctx.drawImage(currentOffCanvas, 0, 0);
 
-        // Feathering edges to eliminate artifacts
-        ctx.globalCompositeOperation = 'destination-out';
-        const featherSize = 250;
-        const overlap = 5;
+        // Optimization: Feathering edges are incredibly heavy. We'll only calculate and draw them if x > 0 or y > 0
+        if (x > 0 || y > 0 || (x + w < currentCanvas.width)) {
+          ctx.globalCompositeOperation = 'destination-out';
+          const featherSize = 250;
+          const overlap = 5;
 
-        if (x > 0) {
-          const gradLeft = ctx.createLinearGradient(x + overlap, 0, x + featherSize, 0);
-          gradLeft.addColorStop(0, 'rgba(0,0,0,1)');
-          gradLeft.addColorStop(1, 'rgba(0,0,0,0)');
-          ctx.fillStyle = gradLeft;
-          ctx.fillRect(x - overlap, 0, featherSize + overlap * 2, currentCanvas.height);
-        }
+          if (x > 0) {
+            const gradLeft = ctx.createLinearGradient(x + overlap, 0, x + featherSize, 0);
+            gradLeft.addColorStop(0, 'rgba(0,0,0,1)');
+            gradLeft.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = gradLeft;
+            ctx.fillRect(x - overlap, 0, featherSize + overlap * 2, currentCanvas.height);
+          }
 
-        if (x + w < currentCanvas.width) {
-          const gradRight = ctx.createLinearGradient(
-            x + w - overlap,
-            0,
-            x + w - featherSize,
-            0
-          );
-          gradRight.addColorStop(0, 'rgba(0,0,0,1)');
-          gradRight.addColorStop(1, 'rgba(0,0,0,0)');
-          ctx.fillStyle = gradRight;
-          ctx.fillRect(
-            x + w - featherSize - overlap,
-            0,
-            featherSize + overlap * 2,
-            currentCanvas.height
-          );
-        }
+          if (x + w < currentCanvas.width) {
+            const gradRight = ctx.createLinearGradient(x + w - overlap, 0, x + w - featherSize, 0);
+            gradRight.addColorStop(0, 'rgba(0,0,0,1)');
+            gradRight.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = gradRight;
+            ctx.fillRect(x + w - featherSize - overlap, 0, featherSize + overlap * 2, currentCanvas.height);
+          }
 
-        if (y > 0) {
-          const gradTop = ctx.createLinearGradient(0, y + overlap, 0, y + featherSize);
-          gradTop.addColorStop(0, 'rgba(0,0,0,1)');
-          gradTop.addColorStop(1, 'rgba(0,0,0,0)');
-          ctx.fillStyle = gradTop;
-          ctx.fillRect(0, y - overlap, currentCanvas.width, featherSize + overlap * 2);
+          if (y > 0) {
+            const gradTop = ctx.createLinearGradient(0, y + overlap, 0, y + featherSize);
+            gradTop.addColorStop(0, 'rgba(0,0,0,1)');
+            gradTop.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = gradTop;
+            ctx.fillRect(0, y - overlap, currentCanvas.width, featherSize + overlap * 2);
+          }
         }
       }
 
