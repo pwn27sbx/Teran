@@ -1,6 +1,45 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-const DEFAULT_ITEMS = Array.from({ length: 15 }, (_, i) => {
+export interface DriftWallItem {
+  image: string;
+  title?: string;
+  href?: string;
+}
+
+export interface DriftWallProps {
+  items?: DriftWallItem[];
+  columns?: number;
+  tileWidth?: number;
+  tileHeight?: number;
+  gap?: number;
+  radius?: number;
+  tilt?: number;
+  turn?: number;
+  roll?: number;
+  perspective?: number;
+  depth?: number;
+  speed?: number;
+  direction?: 'up' | 'down';
+  variance?: number;
+  parallax?: number;
+  pauseOnHover?: boolean;
+  lift?: number;
+  fade?: number;
+  dim?: number;
+  grayscale?: boolean;
+  overlayColor?: string;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+
+
+interface Point2D {
+  x: number;
+  y: number;
+}
+
+const DEFAULT_ITEMS: DriftWallItem[] = Array.from({ length: 15 }, (_, i) => {
   const ids = [1015, 1025, 1039, 1043, 1044, 1050, 1062, 1069, 1074, 1080, 1084, 106, 110, 133, 164];
   return {
     image: `https://picsum.photos/id/${ids[i % ids.length]}/600/400`,
@@ -9,17 +48,17 @@ const DEFAULT_ITEMS = Array.from({ length: 15 }, (_, i) => {
   };
 });
 
-const cx = (...parts) => parts.filter(Boolean).join(' ');
+const cx = (...parts: (string | boolean | null | undefined)[]): string => parts.filter(Boolean).join(' ');
 
-const prefersReducedMotion = () =>
+const prefersReducedMotion = (): boolean =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const columnFactor = (index, variance) => {
+const columnFactor = (index: number, variance: number): number => {
   const pseudo = ((index * 0.6180339887 + 0.35) % 1) * 2 - 1;
   return 1 + variance * pseudo;
 };
 
-const DriftWall = ({
+export const DriftWall: React.FC<DriftWallProps> = ({
   items = DEFAULT_ITEMS,
   columns = 5,
   tileWidth = 200,
@@ -44,34 +83,34 @@ const DriftWall = ({
   className = '',
   style
 }) => {
-  const containerRef = useRef(null);
-  const planeRef = useRef(null);
-  const trackRefs = useRef([]);
-  const rafRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const planeRef = useRef<HTMLDivElement | null>(null);
+  const trackRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const rafRef = useRef<number | null>(null);
 
-  const offsetsRef = useRef([]);
-  const velocitiesRef = useRef([]);
-  const hoveredColRef = useRef(-1);
-  const wallHoveredRef = useRef(false);
-  const pointerRef = useRef({ x: 0, y: 0 });
-  const pointerDampedRef = useRef({ x: 0, y: 0 });
-  const lastTsRef = useRef(null);
+  const offsetsRef = useRef<number[]>([]);
+  const velocitiesRef = useRef<number[]>([]);
+  const hoveredColRef = useRef<number>(-1);
+  const wallHoveredRef = useRef<boolean>(false);
+  const pointerRef = useRef<Point2D>({ x: 0, y: 0 });
+  const pointerDampedRef = useRef<Point2D>({ x: 0, y: 0 });
+  const lastTsRef = useRef<number | null>(null);
 
-  const [containerHeight, setContainerHeight] = useState(600);
-  const [activeId, setActiveId] = useState(null);
-  const activeIdRef = useRef(null);
-  const [reduced, setReduced] = useState(false);
+  const [containerHeight, setContainerHeight] = useState<number>(600);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const activeIdRef = useRef<string | null>(null);
+  const [reduced, setReduced] = useState<boolean>(false);
 
   useEffect(() => {
     setReduced(prefersReducedMotion());
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const onChange = (e) => setReduced(e.matches);
+    const onChange = (e: MediaQueryListEvent) => setReduced(e.matches);
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
   const columnItems = useMemo(() => {
-    const cols = Array.from({ length: columns }, () => []);
+    const cols = Array.from({ length: columns }, () => [] as DriftWallItem[]);
     items.forEach((item, i) => cols[i % columns].push(item));
     return cols.map((col) => (col.length ? col : items.slice(0, 1)));
   }, [items, columns]);
@@ -108,7 +147,7 @@ const DriftWall = ({
   }, [columnMeta, columnItems]);
 
   const applyPlaneTransform = useCallback(
-    (px, py) => {
+    (px: number, py: number) => {
       const plane = planeRef.current;
       if (!plane) return;
       plane.style.transform =
@@ -120,7 +159,7 @@ const DriftWall = ({
   );
 
   useEffect(() => {
-    const animate = (ts) => {
+    const animate = (ts: number) => {
       if (lastTsRef.current === null) lastTsRef.current = ts;
       const dt = Math.min(0.05, Math.max(0, ts - lastTsRef.current) / 1000);
       lastTsRef.current = ts;
@@ -139,11 +178,11 @@ const DriftWall = ({
           if (!meta) continue;
           const paused = wallHoveredRef.current && pauseOnHover;
           const factor = paused || hoveredColRef.current === c ? 0 : 1;
-          const target = baseVelocities[c] * factor;
+          const target = (baseVelocities[c] ?? 0) * factor;
 
           const ease = 1 - Math.exp(-dt / (target === 0 ? 0.16 : 0.28));
-          velocitiesRef.current[c] += (target - velocitiesRef.current[c]) * ease;
-          let next = (offsetsRef.current[c] ?? 0) + velocitiesRef.current[c] * dt;
+          velocitiesRef.current[c] = (velocitiesRef.current[c] ?? 0) + (target - (velocitiesRef.current[c] ?? 0)) * ease;
+          let next = (offsetsRef.current[c] ?? 0) + (velocitiesRef.current[c] ?? 0) * dt;
           next = ((next % meta.copyHeight) + meta.copyHeight) % meta.copyHeight;
           offsetsRef.current[c] = next;
 
@@ -169,7 +208,7 @@ const DriftWall = ({
     };
   }, [baseVelocities, columnMeta, pauseOnHover, parallax, reduced, applyPlaneTransform]);
 
-  const activate = useCallback((id, index) => {
+  const activate = useCallback((id: string, index: number) => {
     activeIdRef.current = id;
     hoveredColRef.current = index;
     setActiveId(id);
@@ -181,7 +220,7 @@ const DriftWall = ({
   }, []);
 
   const handlePointerMove = useCallback(
-    (e) => {
+    (e: React.PointerEvent<HTMLDivElement>) => {
       const rect = containerRef.current?.getBoundingClientRect();
       if (!rect) return;
       if (parallax > 0 && !reduced) {
@@ -191,7 +230,7 @@ const DriftWall = ({
         };
       }
       const hit = document.elementFromPoint(e.clientX, e.clientY);
-      const tile = hit && hit.closest ? hit.closest('[data-tile-id]') : null;
+      const tile = hit?.closest('[data-tile-id]') as HTMLElement | null;
       if (!tile) return;
       const id = tile.dataset.tileId ?? null;
       if (id === activeIdRef.current) return;
@@ -213,7 +252,7 @@ const DriftWall = ({
     'linear-gradient(to bottom, transparent, #000 15%, #000 85%, transparent 100%), ' +
     'linear-gradient(to right, transparent, #000 15%, #000 85%, transparent 100%)';
 
-  const cssVars = useMemo(
+  const cssVars = useMemo<React.CSSProperties>(
     () => ({
       '--dw-tile-w': `${tileWidth}px`,
       '--dw-tile-h': `${tileHeight}px`,
@@ -231,7 +270,7 @@ const DriftWall = ({
       WebkitMaskComposite: 'source-in',
       maskComposite: 'intersect',
       ...style
-    }),
+    } as React.CSSProperties),
     [tileWidth, tileHeight, gap, radius, lift, dim, grayscale, overlayColor, fade, perspective, maskStyle, style]
   );
 
@@ -260,7 +299,7 @@ const DriftWall = ({
     'group-[.is-active]/tile:opacity-0 group-focus-visible/tile:opacity-0'
   );
 
-  const renderTile = (item, id, colIndex) => {
+  const renderTile = (item: DriftWallItem, id: string, colIndex: number): React.ReactNode => {
     const inner = (
       <span className={innerClass}>
         <img
@@ -314,6 +353,7 @@ const DriftWall = ({
       >
         {columnItems.map((col, c) => {
           const meta = columnMeta[c];
+          if (!meta) return null;
           const copies = Array.from({ length: meta.copies });
           return (
             <div

@@ -1,6 +1,25 @@
 import React, { useRef, useEffect, useState, useId } from 'react';
 
-const GooeyNav = ({
+export interface GooeyNavItem {
+  label: React.ReactNode;
+  href?: string;
+  activeColor?: string;
+  activeTextColor?: string;
+  className?: string;
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement> | React.KeyboardEvent<HTMLAnchorElement>) => void;
+}
+
+export interface GooeyNavProps {
+  items: GooeyNavItem[];
+  animationTime?: number;
+  particleCount?: number;
+  particleDistances?: [number, number] | number[];
+  particleR?: number;
+  timeVariance?: number;
+  initialActiveIndex?: number;
+}
+
+export const GooeyNav: React.FC<GooeyNavProps> = ({
   items,
   animationTime = 600,
   particleCount = 15,
@@ -9,22 +28,29 @@ const GooeyNav = ({
   timeVariance = 300,
   initialActiveIndex = 0
 }) => {
-  const containerRef = useRef(null);
-  const navRef = useRef(null);
-  const filterRef = useRef(null);
-  const textRef = useRef(null);
-  const [activeIndex, setActiveIndex] = useState(initialActiveIndex);
-  const filterId = useId().replace(/:/g, "");
+  const containerRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLUListElement>(null);
+  const filterRef = useRef<HTMLSpanElement>(null);
+  const textRef = useRef<HTMLSpanElement>(null);
+  const [activeIndex, setActiveIndex] = useState<number>(initialActiveIndex);
+  const filterId = useId().replace(/:/g, '');
 
-  const noise = (n = 1) => n / 2 - Math.random() * n;
+  const noise = (n: number = 1): number => n / 2 - Math.random() * n;
 
   // Simplified to just fly outwards from the center
-  const getXY = (distance, pointIndex, totalPoints) => {
+  const getXY = (distance: number, pointIndex: number, totalPoints: number): [number, number] => {
     const angle = ((360 + noise(15)) / totalPoints) * pointIndex * (Math.PI / 180);
     return [distance * Math.cos(angle), distance * Math.sin(angle)];
   };
 
-  const createParticle = (i, t, d, r, color, bubbleTime) => {
+  const createParticle = (
+    i: number,
+    t: number,
+    _d: [number, number] | number[],
+    r: number,
+    color: string,
+    bubbleTime: number
+  ): HTMLSpanElement => {
     const p = document.createElement('span');
     p.classList.add('particle');
 
@@ -33,26 +59,26 @@ const GooeyNav = ({
 
     p.style.setProperty('--end-x', `${end[0]}px`);
     p.style.setProperty('--end-y', `${end[1]}px`);
-    p.style.setProperty('--color', 'black');
+    p.style.setProperty('--color', color || 'black');
 
     // Fast outward burst
     const flyAnim = `${bubbleTime}ms cubic-bezier(0.16, 1, 0.3, 1) ${t}ms 1 both`;
     p.style.animation = `particle-fly ${flyAnim}`;
-    
+
     const child = document.createElement('span');
     child.classList.add('point');
     child.style.width = `${r}px`;
     child.style.height = `${r}px`;
-    
+
     // Ease-in shrink: stays large for most of the flight, shrinks at the very end
     const scaleAnim = `${bubbleTime}ms ease-in ${t}ms 1 both`;
     child.style.animation = `particle-scale ${scaleAnim}`;
-    
+
     p.appendChild(child);
     return p;
   };
 
-  const makeParticles = (element, color) => {
+  const makeParticles = (element: HTMLElement, color: string): void => {
     const d = particleDistances;
     const r = particleR;
     const bubbleTime = animationTime * 2 + timeVariance;
@@ -68,52 +94,69 @@ const GooeyNav = ({
     }
   };
 
-  const updateEffectPosition = element => {
+  const updateEffectPosition = (element: HTMLElement): void => {
     if (!containerRef.current || !filterRef.current || !textRef.current) return;
 
     const containerRect = containerRef.current.getBoundingClientRect();
     const pos = element.getBoundingClientRect();
 
-    const styles = {
-      left: `${pos.x - containerRect.x}px`,
-      top: `${pos.y - containerRect.y}px`,
-      width: `${pos.width}px`,
-      height: `${pos.height}px`
-    };
+    const left = `${pos.x - containerRect.x}px`;
+    const top = `${pos.y - containerRect.y}px`;
+    const width = `${pos.width}px`;
+    const height = `${pos.height}px`;
 
     const activeColor = element.getAttribute('data-color') || '#ffffff';
     const activeTextColor = element.getAttribute('data-text-color') || '#000000';
-    
+
     filterRef.current.style.setProperty('--active-bg', activeColor);
     textRef.current.style.setProperty('--active-text-color', activeTextColor);
-    
-    Object.assign(filterRef.current.style, styles);
-    Object.assign(textRef.current.style, styles);
+
+    filterRef.current.style.left = left;
+    filterRef.current.style.top = top;
+    filterRef.current.style.width = width;
+    filterRef.current.style.height = height;
+
+    textRef.current.style.left = left;
+    textRef.current.style.top = top;
+    textRef.current.style.width = width;
+    textRef.current.style.height = height;
+
     // Use innerHTML to preserve icons if any
     textRef.current.innerHTML = element.innerHTML;
   };
 
-  const handleClick = (e, index, item) => {
-    const liEl = e.currentTarget;
+  const handleClick = (
+    e: React.MouseEvent<HTMLAnchorElement> | React.KeyboardEvent<HTMLAnchorElement>,
+    index: number,
+    item: GooeyNavItem
+  ): void => {
+    const target = e.currentTarget;
+    const liEl = (target.closest('li') ?? target) as HTMLElement;
     const activeColor = liEl.getAttribute('data-color') || '#ffffff';
-    
+
     // Always shoot particles on click, even if already active!
-    makeParticles(filterRef.current, activeColor);
-    
+    if (filterRef.current) {
+      makeParticles(filterRef.current, activeColor);
+    }
+
     if (activeIndex === index) {
       if (item.onClick) item.onClick(e);
       return;
     }
-    
+
     setActiveIndex(index);
     updateEffectPosition(liEl);
-    
+
     if (item.onClick) {
       item.onClick(e);
     }
   };
 
-  const handleKeyDown = (e, index, item) => {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLAnchorElement>,
+    index: number,
+    item: GooeyNavItem
+  ): void => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       handleClick(e, index, item);
@@ -122,22 +165,23 @@ const GooeyNav = ({
 
   useEffect(() => {
     if (!navRef.current || !containerRef.current) return;
-    
-    const activeLi = navRef.current.querySelectorAll('li')[activeIndex];
+
+    const activeLi = navRef.current.querySelectorAll('li')[activeIndex] as HTMLElement | undefined;
     if (activeLi) {
       updateEffectPosition(activeLi);
       textRef.current?.classList.add('active');
       filterRef.current?.classList.add('active');
     }
 
+    const container = containerRef.current;
     const resizeObserver = new ResizeObserver(() => {
-      const currentActiveLi = navRef.current?.querySelectorAll('li')[activeIndex];
+      const currentActiveLi = navRef.current?.querySelectorAll('li')[activeIndex] as HTMLElement | undefined;
       if (currentActiveLi) {
         updateEffectPosition(currentActiveLi);
       }
     });
 
-    resizeObserver.observe(containerRef.current);
+    resizeObserver.observe(container);
     return () => resizeObserver.disconnect();
   }, [activeIndex]);
 
@@ -234,8 +278,8 @@ const GooeyNav = ({
                 key={index}
                 data-color={item.activeColor || '#ffffff'}
                 data-text-color={item.activeTextColor || '#000000'}
-                style={{ '--active-bg': item.activeColor || '#ffffff' }}
-                className={`rounded-2xl relative cursor-pointer transition-all duration-300 ease shadow-sm text-gray-800 hover:brightness-90 ${item.className || ''} ${
+                style={{ '--active-bg': item.activeColor || '#ffffff' } as React.CSSProperties}
+                className={`rounded-2xl relative cursor-pointer transition-all duration-300 ease shadow-sm text-gray-800 dark:text-gray-100 hover:brightness-90 ${item.className || ''} ${
                   activeIndex === index ? 'active' : ''
                 }`}
               >

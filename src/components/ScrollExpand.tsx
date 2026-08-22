@@ -1,13 +1,52 @@
-import { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 
-const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+export type MediaType = 'image' | 'video';
 
-const smoothstep = (edge0, edge1, x) => {
+export interface ScrollExpandProps extends React.HTMLAttributes<HTMLDivElement> {
+  src?: string;
+  mediaType?: MediaType;
+  poster?: string;
+  alt?: string;
+  title?: string;
+  scrollHint?: string;
+  startWidth?: number;
+  startHeight?: number;
+  startRadius?: number;
+  endRadius?: number;
+  mediaZoom?: number;
+  scrollDistance?: number;
+  holdDistance?: number;
+  smoothing?: number;
+  overlayScrim?: number;
+  useWindowScroll?: boolean;
+  enabled?: boolean;
+  children?: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+interface ScrollExpandSettings {
+  startWidth: number;
+  startHeight: number;
+  startRadius: number;
+  endRadius: number;
+  mediaZoom: number;
+  scrollDistance: number;
+  holdDistance: number;
+  smoothing: number;
+  overlayScrim: number;
+  useWindowScroll: boolean;
+  enabled: boolean;
+}
+
+const clamp = (v: number, a: number, b: number): number => (v < a ? a : v > b ? b : v);
+
+const smoothstep = (edge0: number, edge1: number, x: number): number => {
   const t = clamp((x - edge0) / (edge1 - edge0 || 1e-6), 0, 1);
   return t * t * (3 - 2 * t);
 };
 
-const ScrollExpand = ({
+const ScrollExpand: React.FC<ScrollExpandProps> = ({
   src = '',
   mediaType = 'image',
   poster = '',
@@ -30,17 +69,29 @@ const ScrollExpand = ({
   style,
   ...rest
 }) => {
-  const rootRef = useRef(null);
-  const trackRef = useRef(null);
-  const stageRef = useRef(null);
-  const frameRef = useRef(null);
-  const mediaRef = useRef(null);
-  const titleRef = useRef(null);
-  const overlayRef = useRef(null);
-  const scrimRef = useRef(null);
-  const hintRef = useRef(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const frameRef = useRef<HTMLDivElement | null>(null);
+  const mediaRef = useRef<HTMLElement | null>(null);
+  const titleRef = useRef<HTMLDivElement | null>(null);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  const scrimRef = useRef<HTMLDivElement | null>(null);
+  const hintRef = useRef<HTMLDivElement | null>(null);
 
-  const propsRef = useRef({});
+  const propsRef = useRef<ScrollExpandSettings>({
+    startWidth,
+    startHeight,
+    startRadius,
+    endRadius,
+    mediaZoom,
+    scrollDistance,
+    holdDistance,
+    smoothing,
+    overlayScrim,
+    useWindowScroll,
+    enabled
+  });
   propsRef.current = {
     startWidth,
     startHeight,
@@ -55,7 +106,7 @@ const ScrollExpand = ({
     enabled
   };
 
-  const applyProgress = useCallback(p => {
+  const applyProgress = useCallback((p: number) => {
     const frame = frameRef.current;
     const media = mediaRef.current;
     if (!frame || !media) return;
@@ -101,7 +152,7 @@ const ScrollExpand = ({
     let stageH = 0;
     let running = false;
 
-    const measure = () => {
+    const measure = (): void => {
       const c = propsRef.current;
       stageH = c.useWindowScroll ? window.innerHeight : root.clientHeight;
       if (stageH <= 0) return;
@@ -112,7 +163,7 @@ const ScrollExpand = ({
       stage.style.setProperty('--se-title-size', `${clamp(w * 0.075, 20, 84)}px`);
     };
 
-    const readProgress = () => {
+    const readProgress = (): number => {
       const c = propsRef.current;
       if (!c.enabled) return 1;
       const span = stageH * Math.max(0.01, c.scrollDistance);
@@ -123,7 +174,7 @@ const ScrollExpand = ({
       return clamp(root.scrollTop / span, 0, 1);
     };
 
-    const tick = () => {
+    const tick = (): void => {
       const c = propsRef.current;
       const k = c.smoothing <= 0 ? 1 : 1 - Math.exp(-1 / (60 * c.smoothing));
       current += (target - current) * k;
@@ -135,13 +186,13 @@ const ScrollExpand = ({
       raf = running ? requestAnimationFrame(tick) : 0;
     };
 
-    const kick = () => {
+    const kick = (): void => {
       if (running) return;
       running = true;
       if (!raf) raf = requestAnimationFrame(tick);
     };
 
-    const onScroll = () => {
+    const onScroll = (): void => {
       target = readProgress();
       if (propsRef.current.smoothing <= 0 || reduceMotion) {
         current = target;
@@ -151,7 +202,7 @@ const ScrollExpand = ({
       kick();
     };
 
-    const onResize = () => {
+    const onResize = (): void => {
       measure();
       target = readProgress();
       current = target;
@@ -163,15 +214,22 @@ const ScrollExpand = ({
     current = target;
     applyProgress(current);
 
-    const scroller = useWindowScroll ? window : root;
-    scroller.addEventListener('scroll', onScroll, { passive: true });
+    if (useWindowScroll) {
+      window.addEventListener('scroll', onScroll, { passive: true });
+    } else {
+      root.addEventListener('scroll', onScroll, { passive: true });
+    }
     window.addEventListener('resize', onResize);
     const ro = new ResizeObserver(onResize);
     ro.observe(root);
 
     return () => {
       if (raf) cancelAnimationFrame(raf);
-      scroller.removeEventListener('scroll', onScroll);
+      if (useWindowScroll) {
+        window.removeEventListener('scroll', onScroll);
+      } else {
+        root.removeEventListener('scroll', onScroll);
+      }
       window.removeEventListener('resize', onResize);
       ro.disconnect();
     };
@@ -180,7 +238,9 @@ const ScrollExpand = ({
   const media =
     mediaType === 'video' ? (
       <video
-        ref={mediaRef}
+        ref={(el) => {
+          mediaRef.current = el;
+        }}
         className="absolute inset-0 w-full h-full object-cover origin-center select-none [will-change:transform]"
         src={src}
         poster={poster}
@@ -191,15 +251,19 @@ const ScrollExpand = ({
       />
     ) : src ? (
       <img
-        ref={mediaRef}
+        ref={(el) => {
+          mediaRef.current = el;
+        }}
         className="absolute inset-0 w-full h-full object-cover origin-center select-none [will-change:transform]"
         src={src}
         alt={alt}
         draggable={false}
       />
     ) : (
-      <div 
-        ref={mediaRef}
+      <div
+        ref={(el) => {
+          mediaRef.current = el;
+        }}
         className="absolute inset-0 w-full h-full bg-[#f8f9fa] origin-center [will-change:transform]"
       />
     );
@@ -256,3 +320,4 @@ const ScrollExpand = ({
 };
 
 export default ScrollExpand;
+

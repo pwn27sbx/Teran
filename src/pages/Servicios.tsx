@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Menu, PhoneCall, Activity, HeartPulse, Stethoscope, Droplet, Zap, ChevronLeft,
-  Eye, Heart, Pill, Bed, Baby, Truck, Scissors, Syringe, Flame, BookOpen, Package, Cpu, Plane
+  Eye, Heart, Pill, Bed, Baby, Truck, Scissors, Syringe, Flame, BookOpen, Package, Cpu, Plane,
+  Sun, Moon
 } from "lucide-react";
+import { useDarkMode } from "../hooks/useDarkMode";
 
 const categories = [
   { id: "todos", label: "Todos" },
@@ -161,7 +163,7 @@ const services = [
     title: "Crematorio",
     subtitle: "Despedida digna",
     description: "Un servicio respetuoso y cálido para acompañarte en el momento de la despedida.",
-    icon: <Flame className="w-6 h-6 text-gray-500" />,
+    icon: <Flame className="w-6 h-6 text-gray-500 dark:text-gray-400" />,
     color: "bg-gray-50/50",
     border: "border-gray-500/20"
   },
@@ -198,15 +200,27 @@ const services = [
 ];
 
 export default function Servicios() {
+  const { isDark, toggleDark } = useDarkMode();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState("todos");
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const filteredServices = activeCategory === "todos" 
     ? services 
     : services.filter(s => s.category === activeCategory);
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] relative overflow-hidden font-['Outfit'] selection:bg-[#0277ab] selection:text-white">
+    <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#121212] relative overflow-hidden font-['Outfit'] selection:bg-[#0277ab] selection:text-white">
       {/* Background decoration */}
       <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-blue-100/40 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-red-100/30 rounded-full blur-3xl pointer-events-none"></div>
@@ -214,8 +228,8 @@ export default function Servicios() {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 py-6">
         <Link to="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center border border-gray-100 group-hover:shadow-md transition-all">
-            <ChevronLeft className="w-5 h-5 text-gray-600 group-hover:-translate-x-1 transition-transform" />
+          <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-900 shadow-sm flex items-center justify-center border border-gray-100 dark:border-gray-800 group-hover:shadow-md transition-all">
+            <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:-translate-x-1 transition-transform" />
           </div>
           <span className="font-black text-xl tracking-tight text-[#0277ab]">
             TERAN
@@ -223,11 +237,22 @@ export default function Servicios() {
         </Link>
 
         {/* Right Actions */}
-        <div className="relative flex items-center gap-3">
+        <div ref={menuRef} className="relative flex items-center gap-3">
+          {/* Botón Dark Mode */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleDark}
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-white/70 dark:bg-gray-900/70 backdrop-blur-md text-gray-800 dark:text-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-white/40 dark:border-gray-700/40 hover:bg-white/90 hover:shadow-[0_4px_25px_rgba(0,0,0,0.1)] transition-all"
+            aria-label="Toggle dark mode"
+          >
+            {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+          </motion.button>
+
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className="hidden md:flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-[14px] bg-[#f4484a]/90 backdrop-blur-md text-white shadow-[0_4px_20px_rgba(244,72,74,0.4)] border border-white/20 hover:bg-[#f4484a] transition-all"
+            className="hidden md:flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-[14px] bg-[#f4484a]/90 backdrop-blur-md text-white shadow-[0_4px_20px_rgba(244,72,74,0.4)] border border-white/20 dark:border-gray-700/20 hover:bg-[#f4484a] transition-all"
           >
             <PhoneCall className="w-4 h-4" />
             <span>EMERGENCIAS</span>
@@ -236,7 +261,7 @@ export default function Servicios() {
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-[14px] bg-white/70 backdrop-blur-md text-gray-800 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-white/40 hover:bg-white/90 hover:shadow-[0_4px_25px_rgba(0,0,0,0.1)] transition-all"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-[14px] bg-white/70 dark:bg-gray-900/70 backdrop-blur-md text-gray-800 dark:text-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-white/40 dark:border-gray-700/40 hover:bg-white/90 hover:shadow-[0_4px_25px_rgba(0,0,0,0.1)] transition-all"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             <Menu className="w-4 h-4" />
@@ -250,11 +275,11 @@ export default function Servicios() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -15, scale: 0.95 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
-                className="absolute top-full right-0 mt-3 w-56 bg-white/80 backdrop-blur-xl rounded-2xl border border-white/40 shadow-2xl flex flex-col p-2 z-50 origin-top-right"
+                className="absolute top-full right-0 mt-3 w-56 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-white/40 dark:border-gray-700/40 shadow-2xl flex flex-col p-2 z-50 origin-top-right"
               >
                 <Link
                   to="/"
-                  className="px-4 py-2.5 rounded-xl hover:bg-white/60 hover:shadow-sm font-medium text-gray-800 transition-all flex items-center gap-2"
+                  className="px-4 py-2.5 rounded-xl hover:bg-white/60 hover:shadow-sm font-medium text-gray-800 dark:text-gray-100 transition-all flex items-center gap-2"
                 >
                   Inicio
                 </Link>
@@ -266,7 +291,7 @@ export default function Servicios() {
                 </Link>
                 <Link
                   to="/nosotros"
-                  className="px-4 py-2.5 rounded-xl hover:bg-white/60 hover:shadow-sm font-medium text-gray-800 transition-all flex items-center gap-2"
+                  className="px-4 py-2.5 rounded-xl hover:bg-white/60 hover:shadow-sm font-medium text-gray-800 dark:text-gray-100 transition-all flex items-center gap-2"
                 >
                   Nosotros
                 </Link>
@@ -283,14 +308,14 @@ export default function Servicios() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center max-w-3xl mx-auto mb-12"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 text-[#0277ab] font-bold text-sm tracking-widest uppercase mb-6 shadow-sm">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900 border border-blue-100 dark:border-blue-800 text-[#0277ab] font-bold text-sm tracking-widest uppercase mb-6 shadow-sm">
             <Stethoscope className="w-4 h-4" />
             Especialidades
           </div>
-          <h1 className="text-5xl md:text-6xl font-black text-gray-900 mb-6 leading-tight">
+          <h1 className="text-5xl md:text-6xl font-black text-gray-900 dark:text-white mb-6 leading-tight">
             Nuestros <span className="text-[#0277ab]">Servicios</span>
           </h1>
-          <p className="text-lg md:text-xl text-gray-500 font-serif leading-relaxed">
+          <p className="text-lg md:text-xl text-gray-500 dark:text-gray-400 font-serif leading-relaxed">
             Más de 24 años mejorando la salud de tu mascota. Descubre todas las especialidades con las que contamos.
           </p>
         </motion.div>
@@ -304,7 +329,7 @@ export default function Servicios() {
               className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all duration-300 ${
                 activeCategory === cat.id 
                   ? "bg-[#0277ab] text-white shadow-md scale-105" 
-                  : "bg-white/50 text-gray-500 hover:bg-white border border-gray-200/50 hover:text-[#0277ab]"
+                  : "bg-white/50 text-gray-500 dark:text-gray-400 hover:bg-white dark:bg-gray-900 border border-gray-200/50 dark:border-gray-700/50 hover:text-[#0277ab]"
               }`}
             >
               {cat.label}
@@ -315,7 +340,7 @@ export default function Servicios() {
         {/* Services Grid with AnimatePresence for filtering */}
         <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           <AnimatePresence mode="popLayout">
-            {filteredServices.map((service, index) => (
+            {filteredServices.map((service) => (
               <motion.div
                 key={service.id}
                 layout
@@ -324,15 +349,15 @@ export default function Servicios() {
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.2 }}
                 whileHover={{ y: -5, scale: 1.02 }}
-                className={`p-5 md:p-6 rounded-2xl bg-white/70 backdrop-blur-xl border ${service.border} shadow-sm hover:shadow-lg transition-shadow cursor-pointer group flex items-start gap-4 h-full`}
+                className={`p-5 md:p-6 rounded-2xl bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border ${service.border} shadow-sm hover:shadow-lg transition-shadow cursor-pointer group flex items-start gap-4 h-full`}
               >
                 <div className={`w-12 h-12 rounded-xl shrink-0 ${service.color} flex items-center justify-center group-hover:rotate-6 transition-transform duration-300 mt-1`}>
                   {service.icon}
                 </div>
                 <div>
-                  <h2 className="text-[17px] md:text-lg font-bold text-gray-800 leading-tight mb-1">{service.title}</h2>
+                  <h2 className="text-[17px] md:text-lg font-bold text-gray-800 dark:text-gray-100 leading-tight mb-1">{service.title}</h2>
                   <h3 className="text-[11px] font-bold text-[#0277ab] uppercase tracking-wider mb-2">{service.subtitle}</h3>
-                  <p className="text-gray-500 font-serif leading-snug text-[14px]">
+                  <p className="text-gray-500 dark:text-gray-400 font-serif leading-snug text-[14px]">
                     {service.description}
                   </p>
                 </div>

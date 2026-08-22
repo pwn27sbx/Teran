@@ -1,6 +1,16 @@
 import React, { useRef, useId } from 'react';
 
-const GooeyButton = ({
+export interface GooeyButtonProps {
+  children?: React.ReactNode;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  className?: string;
+  particleColor?: string;
+  particleCount?: number;
+  particleR?: number;
+  particleDistances?: [number, number] | number[];
+}
+
+const GooeyButton: React.FC<GooeyButtonProps> = ({
   children,
   onClick,
   className = "",
@@ -9,17 +19,22 @@ const GooeyButton = ({
   particleR = 40,
   particleDistances = [60, 20]
 }) => {
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const filterId = useId().replace(/:/g, "");
 
-  const noise = (n = 1) => n / 2 - Math.random() * n;
+  const noise = (n: number = 1): number => n / 2 - Math.random() * n;
 
-  const getXY = (distance, pointIndex, totalPoints) => {
+  const getXY = (distance: number, pointIndex: number, totalPoints: number): [number, number] => {
     const angle = ((360 + noise(8)) / totalPoints) * pointIndex * (Math.PI / 180);
     return [distance * Math.cos(angle), distance * Math.sin(angle)];
   };
 
-  const createParticle = (i, t, d, r) => {
+  const createParticle = (
+    i: number,
+    t: number,
+    d: [number, number] | number[],
+    r: number
+  ): HTMLSpanElement => {
     const p = document.createElement('span');
     p.style.position = 'absolute';
     p.style.width = '0';
@@ -27,8 +42,11 @@ const GooeyButton = ({
     p.style.zIndex = '-1';
     p.style.pointerEvents = 'none';
 
-    const start = getXY(d[0], particleCount - i, particleCount);
-    const end = getXY(d[1], particleCount - i, particleCount);
+    const startDist = d[0] ?? 60;
+    const endDist = d[1] ?? 20;
+
+    const start = getXY(startDist, particleCount - i, particleCount);
+    const end = getXY(endDist, particleCount - i, particleCount);
 
     p.style.setProperty('--start-x', `${start[0]}px`);
     p.style.setProperty('--start-y', `${start[1]}px`);
@@ -55,9 +73,9 @@ const GooeyButton = ({
     return p;
   };
 
-  const makeParticles = () => {
+  const makeParticles = (): void => {
     if (!containerRef.current) return;
-    const filterEl = containerRef.current.querySelector('.gooey-filter');
+    const filterEl = containerRef.current.querySelector<HTMLElement>('.gooey-filter');
     if (!filterEl) return;
 
     for (let i = 0; i < particleCount; i++) {
@@ -73,7 +91,7 @@ const GooeyButton = ({
     }
   };
 
-  const handleClick = (e) => {
+  const handleClick: React.MouseEventHandler<HTMLButtonElement> = (e) => {
     makeParticles();
     if (onClick) onClick(e);
   };
