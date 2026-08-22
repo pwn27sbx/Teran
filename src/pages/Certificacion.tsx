@@ -117,7 +117,8 @@ function TestimonialCard({ testimonial, index, direction }: { testimonial: any, 
       initial={{ opacity: 0, x: direction * 50 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.6, delay: 0.2 + index * 0.1, ease: "easeOut" }}
-      className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-3xl p-6 lg:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-white/50 dark:border-gray-800 flex flex-col relative group hover:-translate-y-1 transition-transform duration-300 h-[280px]"
+      className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-3xl p-6 lg:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-white/50 dark:border-gray-800 flex flex-col relative group hover:-translate-y-1 transition-transform duration-300 h-[320px]"
+
     >
       <div className="absolute top-6 right-6 text-[#0277ab]/10 dark:text-blue-400/10 group-hover:scale-110 group-hover:text-[#0277ab]/20 transition-all duration-300">
         <Quote size={80} className="transform rotate-180" />
