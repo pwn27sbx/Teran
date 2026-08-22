@@ -622,7 +622,7 @@ export default function BrushReveal({
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full overflow-hidden bg-white dark:bg-gray-900"
+      className="relative w-full h-full overflow-hidden bg-transparent"
     >
       {!imagesLoaded && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#f8f9fa] text-[#0277ab] font-serif text-xl tracking-widest">
