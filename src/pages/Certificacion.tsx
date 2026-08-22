@@ -49,19 +49,28 @@ export default function Certificacion() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="w-full lg:w-1/3 flex flex-col items-center justify-center text-center h-full relative"
         >
+          {/* Custom style for hardware accelerated floating */}
+          <style>{`
+            @keyframes float-badge {
+              0%, 100% { transform: translateY(-12px); }
+              50% { transform: translateY(12px); }
+            }
+            .animate-float-badge {
+              animation: float-badge 6s ease-in-out infinite;
+              will-change: transform;
+            }
+          `}</style>
+          
           {/* Badge with floating animation */}
-          <motion.div 
-            animate={{ y: [-10, 10, -10] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            className="relative mb-10 group"
-          >
+          <div className="relative mb-10 group animate-float-badge">
             <div className="absolute inset-0 bg-blue-500/20 blur-[50px] rounded-full group-hover:bg-blue-500/40 transition-colors duration-500"></div>
             <img 
               src="http://hospitalveterinarioteran.com/wp-content/uploads/2017/11/acreditacion1.png" 
               alt="Certificación Colegio Médico Veterinario" 
               className="w-56 md:w-72 h-auto relative z-10 drop-shadow-2xl"
+              style={{ willChange: "transform" }}
             />
-          </motion.div>
+          </div>
 
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-100/50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 text-[#0277ab] dark:text-sky-400 font-bold text-xs tracking-[0.2em] uppercase mb-6 backdrop-blur-md">
             <Award className="w-3.5 h-3.5" />
