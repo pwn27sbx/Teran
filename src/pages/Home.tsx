@@ -5,7 +5,6 @@ import LogoLoop from "../components/LogoLoop";
 import CurvedInput from "../components/CurvedInput";
 import Scanner from "../components/Scanner";
 import PremiumFeatures from "../components/PremiumFeatures";
-import Topography from "../components/Topography";
 import {
   Menu,
   Store,
@@ -108,38 +107,14 @@ function App() {
   const heroOpacity = useTransform(scrollY, [0, 800, 1200], [1, 1, 0]);
 
   return (
-    <div className="relative font-sans selection:bg-[#f4484a] selection:text-white bg-[#f8f9fa] dark:bg-[#121212]">
-      {/* Animated Topography Background (User provided exact settings) */}
-      <div className="fixed inset-0 z-0 pointer-events-auto">
-        <Topography
-          lowColor="#5227FF"
-          midColor="#FF9FFC"
-          highColor="#FFFFFF"
-          speed={0.35}
-          morphAmount={3}
-          morphSpeed={0.05}
-          bands={2}
-          thickness={0.01}
-          scale={2}
-          pixelSize={1}
-          glow={0.5}
-          colorMode="elevation"
-          contrast={3}
-          brightness={1}
-          fillBands={false}
-          opacity={1}
-          grain={true}
-          grainIntensity={0.05}
-          mouseInteraction={true}
-          mouseRadius={0.3}
-          mouseStrength={0.4}
-        />
-      </div>
-      {/* Grid Overlay */}
-      <div className="fixed inset-0 z-0 pointer-events-none" style={{
-        backgroundImage: "linear-gradient(to right, rgba(2, 119, 171, 0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(2, 119, 171, 0.08) 1px, transparent 1px)",
+    <div
+      className="relative font-sans selection:bg-[#f4484a] selection:text-white bg-[#f8f9fa] dark:bg-[#121212]"
+      style={{
+        backgroundImage:
+          "linear-gradient(to right, rgba(2, 119, 171, 0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(2, 119, 171, 0.08) 1px, transparent 1px)",
         backgroundSize: "32px 32px",
-      }} />
+      }}
+    >
       {/* Fixed Header - stays on top of everything while scrolling */}
       <motion.header
         initial={{ y: -100, opacity: 0 }}
@@ -262,7 +237,7 @@ function App() {
               borderRadius: heroRadius,
               opacity: heroOpacity,
             }}
-            className="w-full h-full relative origin-center shadow-2xl overflow-hidden pointer-events-auto bg-transparent"
+            className="w-full h-full relative origin-center bg-white dark:bg-gray-900 shadow-2xl overflow-hidden pointer-events-auto"
           >
             <BrushReveal
               bgImage="/milo1_nobg.webp"
