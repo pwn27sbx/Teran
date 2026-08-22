@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Store, MapPin, Play, ArrowUpRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const features = [
   {
@@ -21,7 +22,8 @@ const features = [
     icon: MapPin,
     bgImg: '/gallery/3.webp',
     color: 'from-red-600/90 to-rose-500/80',
-    accent: 'bg-red-500 text-white'
+    accent: 'bg-red-500 text-white',
+    link: '/emergencias'
   },
   {
     id: 'tv',
@@ -38,6 +40,16 @@ const features = [
 
 export default function PremiumFeatures() {
   const [active, setActive] = useState<string>('sedes');
+  const navigate = useNavigate();
+
+  const handleLinkClick = (link?: string) => {
+    if (!link) return;
+    if (link.startsWith('http')) {
+      window.open(link, '_blank', 'noopener,noreferrer');
+    } else {
+      navigate(link);
+    }
+  };
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 md:px-6 relative z-10 h-[500px] md:h-[600px] flex flex-col md:flex-row gap-4 md:gap-6">
@@ -87,10 +99,11 @@ export default function PremiumFeatures() {
                 
                 <AnimatePresence>
                   {isActive && (
-                    <motion.a
-                      href={f.link || '#'}
-                      target={f.link ? "_blank" : undefined}
-                      rel={f.link ? "noopener noreferrer" : undefined}
+                    <motion.div
+                      onClick={(e) => {
+                        e.stopPropagation(); // prevent activating again
+                        handleLinkClick(f.link);
+                      }}
                       initial={{ opacity: 0, scale: 0.5, rotate: -45 }}
                       animate={{ opacity: 1, scale: 1, rotate: 0 }}
                       exit={{ opacity: 0, scale: 0.5, rotate: 45 }}
@@ -98,7 +111,7 @@ export default function PremiumFeatures() {
                       className="w-12 h-12 rounded-full bg-white text-gray-900 flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer"
                     >
                       <ArrowUpRight className="w-5 h-5" />
-                    </motion.a>
+                    </motion.div>
                   )}
                 </AnimatePresence>
               </div>
