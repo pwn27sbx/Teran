@@ -61,33 +61,37 @@ export default function Servicios() {
         </motion.div>
 
         {/* Services Grid - 4 Columns */}
-        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-4 w-full">
-          <AnimatePresence>
-            {filteredServices.map((service) => (
-              <motion.div
-                key={service.id}
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                whileHover={{ y: -3, scale: 1.02 }}
-                className={`p-4 xl:p-5 rounded-2xl bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border ${service.border} shadow-sm hover:shadow-lg transition-all cursor-pointer group flex items-start gap-4`}
-              >
-                <div className={`w-10 h-10 xl:w-12 xl:h-12 rounded-[0.8rem] shrink-0 ${service.color} flex items-center justify-center group-hover:rotate-6 transition-transform duration-300 mt-0.5`}>
-                  {service.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-[15px] xl:text-[17px] font-bold text-gray-800 dark:text-gray-100 leading-tight mb-1 truncate">{service.title}</h2>
-                  <h3 className="text-[9px] xl:text-[10px] font-bold text-[#0277ab] uppercase tracking-wider mb-1.5">{service.subtitle}</h3>
-                  <p className="text-gray-500 dark:text-gray-400 font-serif leading-snug text-[12px] xl:text-[13px] line-clamp-3">
-                    {service.description}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
+        <div className="w-full flex-1">
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key={activeCategory}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-4 w-full"
+            >
+              {filteredServices.map((service) => (
+                <motion.div
+                  key={service.id}
+                  whileHover={{ y: -3, scale: 1.02 }}
+                  className={`p-4 xl:p-5 rounded-2xl bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border ${service.border} shadow-sm hover:shadow-lg transition-all cursor-pointer group flex items-start gap-4`}
+                >
+                  <div className={`w-10 h-10 xl:w-12 xl:h-12 rounded-[0.8rem] shrink-0 ${service.color} flex items-center justify-center group-hover:rotate-6 transition-transform duration-300 mt-0.5`}>
+                    {service.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-[15px] xl:text-[17px] font-bold text-gray-800 dark:text-gray-100 leading-tight mb-1 truncate">{service.title}</h2>
+                    <h3 className="text-[9px] xl:text-[10px] font-bold text-[#0277ab] uppercase tracking-wider mb-1.5">{service.subtitle}</h3>
+                    <p className="text-gray-500 dark:text-gray-400 font-serif leading-snug text-[12px] xl:text-[13px] line-clamp-3">
+                      {service.description}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
           </AnimatePresence>
-        </motion.div>
+        </div>
 
       </main>
     </div>
