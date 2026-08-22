@@ -3,6 +3,7 @@ import React, { useRef, useEffect, useState } from 'react';
 export interface BrushRevealProps {
   bgImage: string;
   revealImage: string;
+  xrayImage?: string;
   brushSize?: number;
   revealScale?: number;
   bgScale?: number;
@@ -25,6 +26,7 @@ interface Framing {
 export default function BrushReveal({
   bgImage,
   revealImage,
+  xrayImage,
   brushSize = 80,
   revealScale = 1.0,
   bgScale = 0.90,
@@ -33,9 +35,11 @@ export default function BrushReveal({
 }: BrushRevealProps): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const xrayCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const [imagesLoaded, setImagesLoaded] = useState<boolean>(false);
   const bgImgRef = useRef<HTMLImageElement | null>(null);
   const revealImgRef = useRef<HTMLImageElement | null>(null);
+  const xrayImgRef = useRef<HTMLImageElement | null>(null);
 
   // Refs for animation and parallax
   const bgNodeRef = useRef<HTMLImageElement | null>(null);
@@ -55,12 +59,14 @@ export default function BrushReveal({
   const numNodes = 20; // Number of segments for a smooth curve
 
   useEffect(() => {
+    // If xrayImage is provided, we wait for 3 images instead of 2
+    const totalToLoad = xrayImage ? 3 : 2;
     let loadedCount = 0;
     let isMounted = true;
 
     const checkLoaded = () => {
       loadedCount++;
-      if (loadedCount === 2 && isMounted) {
+      if (loadedCount === totalToLoad && isMounted) {
         setImagesLoaded(true);
       }
     };
@@ -85,10 +91,22 @@ export default function BrushReveal({
       checkLoaded();
     };
 
+    if (xrayImage) {
+      const xray = new Image();
+      xray.src = xrayImage;
+      xray.onload = () => {
+        xrayImgRef.current = xray;
+        checkLoaded();
+      };
+      xray.onerror = () => {
+        checkLoaded();
+      };
+    }
+
     return () => {
       isMounted = false;
     };
-  }, [bgImage, revealImage]);
+  }, [bgImage, revealImage, xrayImage]);
 
   useEffect(() => {
     if (!imagesLoaded) return;
@@ -96,11 +114,11 @@ export default function BrushReveal({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    canvas.getContext('2d', { willReadFrequently: true });
+    canvas.getContext('2d');
 
     // Persistent offscreen canvas for the fading mask
     const offCanvas = document.createElement('canvas');
-    offCanvas.getContext('2d', { willReadFrequently: true });
+    offCanvas.getContext('2d');
     offCanvasRef.current = offCanvas;
 
     const handleResize = () => {
@@ -111,6 +129,10 @@ export default function BrushReveal({
       canvas.height = parent.clientHeight;
       offCanvas.width = canvas.width;
       offCanvas.height = canvas.height;
+      if (xrayCanvasRef.current) {
+        xrayCanvasRef.current.width = canvas.width;
+        xrayCanvasRef.current.height = canvas.height;
+      }
 
       if (currentPosRef.current.x === 0 && currentPosRef.current.y === 0 && canvas.width > 0) {
         currentPosRef.current = { x: canvas.width / 2, y: canvas.height / 2 };
@@ -329,6 +351,10 @@ export default function BrushReveal({
         // Add +15px downward buffer to match the background image
         canvasRef.current.style.transform = `translate(${canvasOffsetX}px, ${canvasOffsetY + 15}px) scale(${parallaxScale})`;
       }
+      if (xrayCanvasRef.current) {
+        xrayCanvasRef.current.style.transformOrigin = 'bottom center';
+        xrayCanvasRef.current.style.transform = `translate(${canvasOffsetX}px, ${canvasOffsetY + 15}px) scale(${parallaxScale})`;
+      }
 
       const s = parallaxScale;
       const originX = currentCanvas.width / 2;
@@ -494,6 +520,44 @@ export default function BrushReveal({
         }
       }
 
+      // 6. Draw X-Ray layer
+      if (xrayImgRef.current && xrayCanvasRef.current) {
+        const xctx = xrayCanvasRef.current.getContext('2d');
+        if (xctx) {
+          xctx.clearRect(0, 0, xrayCanvasRef.current.width, xrayCanvasRef.current.height);
+          const { w, h, x, y } = getCustomFraming(
+            xrayImgRef.current,
+            currentCanvas.width,
+            currentCanvas.height,
+            true
+          );
+          
+          // Draw the image with lower opacity
+          xctx.globalAlpha = 0.30; 
+          xctx.drawImage(xrayImgRef.current, x, y, w, h);
+          xctx.globalAlpha = 1.0;
+          
+          // Apply scanning mask
+          xctx.globalCompositeOperation = 'destination-in';
+          
+          // 2 seconds per cycle
+          const time = performance.now() / 2000;
+          const progress = time % 1; 
+          // band center goes from slightly above the image to slightly below
+          const bandY = y - h * 0.2 + h * 1.4 * progress; 
+          const bandHeight = h * 0.3; // thickness of the scan line
+          
+          const grad = xctx.createLinearGradient(0, bandY - bandHeight / 2, 0, bandY + bandHeight / 2);
+          grad.addColorStop(0, 'rgba(0,0,0,0)');
+          grad.addColorStop(0.5, 'rgba(0,0,0,1)');
+          grad.addColorStop(1, 'rgba(0,0,0,0)');
+          xctx.fillStyle = grad;
+          xctx.fillRect(0, 0, xrayCanvasRef.current.width, xrayCanvasRef.current.height);
+          
+          xctx.globalCompositeOperation = 'source-over';
+        }
+      }
+
       rafRef.current = requestAnimationFrame(renderLoop);
     };
 
@@ -574,6 +638,15 @@ export default function BrushReveal({
         className="absolute inset-0 w-full h-full touch-none pointer-events-none"
         style={{ willChange: 'transform' }}
       />
+
+      {/* X-Ray Layer */}
+      {xrayImage && (
+        <canvas
+          ref={xrayCanvasRef}
+          className="absolute inset-0 w-full h-full touch-none pointer-events-none"
+          style={{ willChange: 'transform' }}
+        />
+      )}
     </div>
   );
 }

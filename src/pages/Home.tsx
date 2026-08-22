@@ -219,8 +219,9 @@ function App() {
             className="w-full h-full relative origin-center bg-white dark:bg-gray-900 shadow-2xl overflow-hidden pointer-events-auto"
           >
             <BrushReveal
-              bgImage="/milo1_nobg.png"
-              revealImage="/atreus1_nobg.png"
+              bgImage="/milo1_nobg.webp"
+              revealImage="/atreus1_nobg.webp"
+              xrayImage="/atreusx_nobg.webp"
               brushSize={180}
               revealScale={0.73}
               bgScale={0.9}
@@ -447,7 +448,7 @@ function App() {
         >
           {/* Dog on the left */}
           <motion.img
-            src="/miloperfil.png"
+            src="/miloperfil.webp"
             alt="Dog"
             className="absolute -left-[15%] md:-left-[9%] bottom-0 w-[400px] md:w-[600px] lg:w-[780px] xl:w-[950px] object-contain pointer-events-none mix-blend-multiply"
             style={{ x: dogX, y: dogY, opacity: animalsOpacity }}
@@ -455,7 +456,7 @@ function App() {
 
           {/* Cat on the right */}
           <motion.img
-            src="/atreusperfil.png"
+            src="/atreusperfil.webp"
             alt="Cat"
             className="absolute -right-[10%] md:-right-[7%] bottom-0 w-[400px] md:w-[600px] lg:w-[780px] xl:w-[950px] object-contain pointer-events-none mix-blend-multiply"
             style={{ x: catX, y: catY, opacity: animalsOpacity }}
