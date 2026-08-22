@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 export default function Emergencias() {
   return (
-    <div className="h-[100dvh] w-full flex flex-col items-center justify-center p-4 md:p-8 relative overflow-hidden transition-colors duration-700 font-['Outfit']">
+    <div className="h-[100dvh] w-full bg-[#f5f5f7] dark:bg-black flex flex-col items-center justify-center p-4 md:p-8 relative overflow-hidden transition-colors duration-700 font-['Outfit']">
       
       {/* Background Orb */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vw] max-w-[800px] max-h-[800px] bg-red-600/5 dark:bg-red-600/10 blur-[100px] rounded-full pointer-events-none" />

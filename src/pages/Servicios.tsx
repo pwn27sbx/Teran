@@ -220,7 +220,7 @@ export default function Servicios() {
     : services.filter(s => s.category === activeCategory);
 
   return (
-    <div className="min-h-screen relative overflow-hidden font-['Outfit']">
+    <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#121212] relative overflow-hidden font-['Outfit'] selection:bg-[#0277ab] selection:text-white">
       {/* Background decoration */}
       <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-blue-100/40 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-red-100/30 rounded-full blur-3xl pointer-events-none"></div>
