@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 const Home = React.lazy(() => import("./pages/Home"));
 const Servicios = React.lazy(() => import("./pages/Servicios"));
 const Emergencias = React.lazy(() => import("./pages/Emergencias"));
+const Tienda = React.lazy(() => import("./pages/Tienda"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 
 // Fallback loader while chunks are downloading
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/servicios" element={<Servicios />} />
           <Route path="/emergencias" element={<Emergencias />} />
+          <Route path="/tienda" element={<Tienda />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

@@ -12,7 +12,8 @@ const features = [
     icon: Store,
     bgImg: '/gallery/1.webp',
     color: 'from-blue-600/90 to-cyan-500/80',
-    accent: 'bg-blue-500 text-white'
+    accent: 'bg-blue-500 text-white',
+    link: '/tienda'
   },
   {
     id: 'sedes',
