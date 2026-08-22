@@ -4,6 +4,7 @@ import DriftWall from "../components/DriftWall";
 import LogoLoop from "../components/LogoLoop";
 import CurvedInput from "../components/CurvedInput";
 import Scanner from "../components/Scanner";
+import PremiumFeatures from "../components/PremiumFeatures";
 import {
   Menu,
   Store,
@@ -15,7 +16,7 @@ import {
   Moon,
 } from "lucide-react";
 import { useDarkMode } from "../hooks/useDarkMode";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   motion,
   AnimatePresence,
@@ -48,6 +49,7 @@ const brandLogos = [
 ];
 
 function App() {
+  const navigate = useNavigate();
   const { isDark, toggleDark } = useDarkMode();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -121,7 +123,7 @@ function App() {
         className="fixed top-0 left-0 right-0 z-50 px-6 py-6 md:px-12 flex items-center justify-between pointer-events-none"
       >
         {/* Logo and Text */}
-        <div className="flex items-center gap-2 text-gray-900 dark:text-white drop-shadow-md">
+        <div className="flex items-center gap-2 text-gray-900 dark:text-white drop-shadow-md pointer-events-auto">
           <img
             src="/logoTeran.svg"
             alt="Logo Hospital Veterinario Terán"
@@ -137,40 +139,46 @@ function App() {
           </div>
         </div>
 
-        {/* Right Actions */}
-        <div ref={menuRef} className="relative pointer-events-auto flex items-center gap-3">
-          {/* Botón Dark Mode */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={toggleDark}
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-white/70 dark:bg-gray-900/70 backdrop-blur-md text-gray-800 dark:text-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-white/40 dark:border-gray-700/40 hover:bg-white/90 hover:shadow-[0_4px_25px_rgba(0,0,0,0.1)] transition-all"
-            aria-label="Toggle dark mode"
-          >
-            {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-          </motion.button>
+        {/* Right Actions: Glass Dock */}
+        <div ref={menuRef} className="group relative flex items-center p-1.5 bg-white/70 dark:bg-gray-900/70 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] pointer-events-auto">
+          
+          {/* Animated Border */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible z-0">
+            <motion.rect
+              width="100%"
+              height="100%"
+              rx="26"
+              fill="none"
+              stroke="#f4484a"
+              strokeWidth="2"
+              pathLength="100"
+              strokeDasharray="15 85"
+              strokeLinecap="round"
+              initial={{ strokeDashoffset: 100 }}
+              animate={{ strokeDashoffset: 0 }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              className="opacity-50 group-hover:opacity-100 transition-opacity duration-300"
+            />
+          </svg>
 
-          {/* Botón Emergencias (Glassmorphism + Pulse suave en sombra) */}
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full font-['Outfit'] font-bold text-[14px] bg-[#f4484a]/90 backdrop-blur-md text-white shadow-[0_4px_20px_rgba(244,72,74,0.4)] border border-white/20 dark:border-gray-700/20 hover:bg-[#f4484a] transition-all"
-            onClick={() => console.log("Emergencias clicked")}
+          {/* Botón Emergencias */}
+          <Link
+            to="/emergencias"
+            className="relative z-10 flex items-center gap-2 px-5 py-2.5 bg-[#f4484a] hover:bg-[#d63d3f] text-white rounded-full font-['Outfit'] font-bold text-[12px] md:text-[13px] tracking-widest shadow-[0_4px_15px_rgba(244,72,74,0.3)] transition-all hover:scale-105 active:scale-95"
           >
             <PhoneCall className="w-4 h-4" />
-            <span>EMERGENCIAS 24H</span>
-          </motion.button>
+            <span className="hidden sm:inline">EMERGENCIAS 24H</span>
+            <span className="sm:hidden">24H</span>
+          </Link>
 
-          {/* Botón Menú (Glassmorphism) */}
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full font-['Outfit'] font-bold text-[14px] bg-white/70 dark:bg-gray-900/70 backdrop-blur-md text-gray-800 dark:text-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-white/40 dark:border-gray-700/40 hover:bg-white/90 hover:shadow-[0_4px_25px_rgba(0,0,0,0.1)] transition-all"
+          {/* Botón Menú */}
+          <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="relative z-10 flex items-center justify-center w-10 h-10 ml-1 rounded-full text-gray-700 dark:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+            aria-label="Abrir menú"
           >
-            <Menu className="w-4 h-4" />
-            <span>MENÚ</span>
-          </motion.button>
+            <Menu className="w-5 h-5" />
+          </button>
 
           <AnimatePresence>
             {isMenuOpen && (
@@ -179,26 +187,39 @@ function App() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -15, scale: 0.95 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
-                className="absolute top-full right-0 mt-3 w-56 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl border border-white/40 dark:border-gray-700/40 shadow-[0_8px_32px_rgba(0,0,0,0.08)] flex flex-col p-2 z-50 origin-top-right"
+                className="absolute top-full right-0 mt-3 w-56 bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl rounded-2xl border border-white/40 dark:border-gray-700/40 shadow-[0_8px_32px_rgba(0,0,0,0.08)] flex flex-col p-2 z-50 origin-top-right"
               >
                 <Link
                   to="/"
-                  className="px-4 py-2.5 rounded-xl hover:bg-white/60 hover:shadow-sm font-['Outfit'] font-medium text-gray-800 dark:text-gray-100 transition-all flex items-center gap-2"
+                  className="px-4 py-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-white/10 hover:shadow-sm font-['Outfit'] font-medium text-gray-800 dark:text-gray-100 transition-all flex items-center gap-3"
                 >
                   Inicio
                 </Link>
                 <Link
                   to="/servicios"
-                  className="px-4 py-2.5 rounded-xl hover:bg-white/60 hover:shadow-sm font-['Outfit'] font-medium text-gray-800 dark:text-gray-100 transition-all flex items-center gap-2"
+                  className="px-4 py-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-white/10 hover:shadow-sm font-['Outfit'] font-medium text-gray-800 dark:text-gray-100 transition-all flex items-center gap-3"
                 >
                   Servicios
                 </Link>
                 <Link
                   to="/nosotros"
-                  className="px-4 py-2.5 rounded-xl hover:bg-white/60 hover:shadow-sm font-['Outfit'] font-medium text-gray-800 dark:text-gray-100 transition-all flex items-center gap-2"
+                  className="px-4 py-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-white/10 hover:shadow-sm font-['Outfit'] font-medium text-gray-800 dark:text-gray-100 transition-all flex items-center gap-3"
                 >
                   Nosotros
                 </Link>
+                
+                <div className="h-px bg-gray-200 dark:bg-gray-700/50 my-1 mx-2" />
+                
+                <button
+                  onClick={() => {
+                    toggleDark();
+                    setIsMenuOpen(false);
+                  }}
+                  className="px-4 py-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-white/10 hover:shadow-sm font-['Outfit'] font-medium text-gray-800 dark:text-gray-100 transition-all flex items-center gap-3 w-full text-left"
+                >
+                  {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                  {isDark ? "Modo Claro" : "Modo Oscuro"}
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
@@ -265,124 +286,8 @@ function App() {
           </p>
         </motion.div>
 
-        {/* 3 Columns Grid */}
-        <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 relative z-10">
-          {/* Card 1: Tienda Virtual */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{
-              type: "spring",
-              stiffness: 100,
-              damping: 20,
-              delay: 0.1,
-            }}
-            whileHover="hover"
-            variants={{
-              hover: {
-                y: -12,
-                scale: 1.02,
-                transition: { type: "spring", stiffness: 400, damping: 25 },
-              },
-            }}
-            className="flex flex-col items-center text-center p-10 md:p-12 rounded-[2.5rem] bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-100 dark:border-gray-800 shadow-[0_8px_32px_rgba(2,119,171,0.06)] hover:bg-white dark:bg-gray-900 hover:shadow-[0_12px_40px_rgba(2,119,171,0.1)] transition-all duration-300"
-          >
-            <motion.div
-              variants={{ hover: { rotate: 6, scale: 1.05 } }}
-              transition={{ type: "spring", stiffness: 400, damping: 15 }}
-              className="w-24 h-24 bg-gradient-to-br from-[#0277ab]/5 to-[#0277ab]/10 dark:from-[#0277ab]/20 dark:to-[#0277ab]/40 rounded-[2rem] flex items-center justify-center mb-8 shadow-inner outline outline-1 outline-[#0277ab]/10 [transform:translateZ(0)] [backface-visibility:hidden]"
-            >
-              <Store className="w-10 h-10 text-[#0277ab]" />
-            </motion.div>
-            <h3 className="font-['Outfit'] font-bold text-3xl text-[#0277ab] mb-4">
-              Tienda Virtual
-            </h3>
-            <p className="font-serif text-gray-600 dark:text-gray-400 leading-relaxed text-lg">
-              El más exclusivo Pet Shop con los mejores productos en alimentos,
-              juguetes, camas, accesorios, y mucho más para consentir a tu
-              mascota.
-            </p>
-          </motion.div>
-
-          {/* Card 2: Nuestras sedes */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{
-              type: "spring",
-              stiffness: 100,
-              damping: 20,
-              delay: 0.2,
-            }}
-            whileHover="hover"
-            variants={{
-              hover: {
-                y: -12,
-                scale: 1.02,
-                transition: { type: "spring", stiffness: 400, damping: 25 },
-              },
-            }}
-            className="flex flex-col items-center text-center p-10 md:p-12 rounded-[2.5rem] bg-gradient-to-b from-[#f4484a] to-[#e03a3c] backdrop-blur-xl border border-red-400 shadow-[0_8px_32px_rgba(244,72,74,0.3)] hover:shadow-[0_12px_40px_rgba(244,72,74,0.4)] transition-all duration-300"
-          >
-            <motion.div
-              variants={{ hover: { rotate: -6, scale: 1.05 } }}
-              transition={{ type: "spring", stiffness: 400, damping: 15 }}
-              className="w-24 h-24 bg-white/10 rounded-[2rem] flex items-center justify-center mb-8 shadow-inner outline outline-1 outline-white/30 [transform:translateZ(0)] [backface-visibility:hidden]"
-            >
-              <MapPin className="w-10 h-10 text-white" />
-            </motion.div>
-            <h3 className="font-['Outfit'] font-bold text-3xl text-white mb-4">
-              Nuestras sedes
-            </h3>
-            <p className="font-serif text-white/90 leading-relaxed text-lg">
-              Cada vez más cerca de ti. Encuentra una clínica veterinaria Terán
-              lista para atenderte con la mejor disposición y tecnología médica.
-            </p>
-          </motion.div>
-
-          {/* Card 3: Terán TV */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{
-              type: "spring",
-              stiffness: 100,
-              damping: 20,
-              delay: 0.3,
-            }}
-            whileHover="hover"
-            variants={{
-              hover: {
-                y: -12,
-                scale: 1.02,
-                transition: { type: "spring", stiffness: 400, damping: 25 },
-              },
-            }}
-            className="flex flex-col items-center text-center p-10 md:p-12 rounded-[2.5rem] bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-100 dark:border-gray-800 shadow-[0_8px_32px_rgba(2,119,171,0.06)] hover:bg-white dark:bg-gray-900 hover:shadow-[0_12px_40px_rgba(2,119,171,0.1)] transition-all duration-300"
-          >
-            <motion.div
-              variants={{ hover: { rotate: 6, scale: 1.05 } }}
-              transition={{ type: "spring", stiffness: 400, damping: 15 }}
-              className="w-24 h-24 bg-gradient-to-br from-[#0277ab]/5 to-[#0277ab]/10 dark:from-[#0277ab]/20 dark:to-[#0277ab]/40 rounded-[2rem] flex items-center justify-center mb-8 shadow-inner p-4 outline outline-1 outline-[#0277ab]/10 [transform:translateZ(0)] [backface-visibility:hidden]"
-            >
-              <img
-                src="/logoTeran.svg"
-                alt="Terán TV Logo"
-                className="w-full h-auto drop-shadow-sm brightness-110"
-              />
-            </motion.div>
-            <h3 className="font-['Outfit'] font-bold text-3xl text-[#0277ab] mb-4">
-              Terán TV
-            </h3>
-            <p className="font-serif text-gray-600 dark:text-gray-400 leading-relaxed text-lg">
-              Bienvenidos a TERÁN TV, nuestro archivo videográfico con nuestros
-              casos, testimonios, proyectos especiales y mucho más contenido.
-            </p>
-          </motion.div>
-        </div>
+        {/* Premium Bento Grid */}
+        <PremiumFeatures />
       </div>
 
       {/* ============================================================== */}
