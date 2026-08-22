@@ -35,7 +35,7 @@ export default function BrushReveal({
 }: BrushRevealProps): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const xrayCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
   const [imagesLoaded, setImagesLoaded] = useState<boolean>(false);
   const bgImgRef = useRef<HTMLImageElement | null>(null);
   const revealImgRef = useRef<HTMLImageElement | null>(null);
@@ -59,7 +59,7 @@ export default function BrushReveal({
   const idleTimerRef = useRef<number>(0); // Tracks how long the mouse has been still
   const momentumRef = useRef<Point>({ x: 0, y: 0 });
   const nodesRef = useRef<Point[] | null>(null);
-  const numNodes = 20; // Number of segments for a smooth curve
+  const numNodes = 12; // Reduced from 20 to 12 for 144fps performance optimization
 
   useEffect(() => {
     // If xrayImage is provided, we wait for 3 images instead of 2
@@ -134,11 +134,6 @@ export default function BrushReveal({
       canvas.height = parent.clientHeight;
       offCanvas.width = canvas.width;
       offCanvas.height = canvas.height;
-      if (xrayCanvasRef.current) {
-        xrayCanvasRef.current.width = canvas.width;
-        xrayCanvasRef.current.height = canvas.height;
-      }
-
       if (currentPosRef.current.x === 0 && currentPosRef.current.y === 0 && canvas.width > 0) {
         currentPosRef.current = { x: canvas.width / 2, y: canvas.height / 2 };
         autoTargetRef.current = { x: canvas.width / 2, y: canvas.height / 2 };
@@ -369,9 +364,9 @@ export default function BrushReveal({
         // Add +15px downward buffer to match the background image
         canvasRef.current.style.transform = `translate(${canvasOffsetX}px, ${canvasOffsetY + 15}px) scale(${parallaxScale})`;
       }
-      if (xrayCanvasRef.current) {
-        xrayCanvasRef.current.style.transformOrigin = 'bottom center';
-        xrayCanvasRef.current.style.transform = `translate(${canvasOffsetX}px, ${canvasOffsetY + 15}px) scale(${parallaxScale})`;
+      if (xrayImgRef.current) {
+        xrayImgRef.current.style.transformOrigin = 'bottom center';
+        xrayImgRef.current.style.transform = `translate(${canvasOffsetX}px, ${canvasOffsetY + 15}px) scale(${parallaxScale})`;
       }
 
       const s = parallaxScale;
@@ -490,87 +485,48 @@ export default function BrushReveal({
           cachedRevFramingRef.current = getCustomFraming(revImg, currentCanvas.width, currentCanvas.height, true);
         }
         const { w, h, x, y } = cachedRevFramingRef.current;
+        
+        // Draw the image
         ctx.drawImage(revImg, x, y, w, h);
 
         // Apply the mask
         ctx.globalCompositeOperation = 'destination-in';
         ctx.drawImage(currentOffCanvas, 0, 0);
 
-        // Feathering edges to eliminate artifacts
-        ctx.globalCompositeOperation = 'destination-out';
-        const featherSize = 250;
-        const overlap = 5;
+        // Optimization: Feathering gradients are incredibly heavy. We'll only calculate and draw them if x > 0 or y > 0
+        if (x > 0 || y > 0 || (x + w < currentCanvas.width)) {
+          ctx.globalCompositeOperation = 'destination-out';
+          const featherSize = 250;
+          const overlap = 5;
 
-        if (x > 0) {
-          const gradLeft = ctx.createLinearGradient(x + overlap, 0, x + featherSize, 0);
-          gradLeft.addColorStop(0, 'rgba(0,0,0,1)');
-          gradLeft.addColorStop(1, 'rgba(0,0,0,0)');
-          ctx.fillStyle = gradLeft;
-          ctx.fillRect(x - overlap, 0, featherSize + overlap * 2, currentCanvas.height);
-        }
-
-        if (x + w < currentCanvas.width) {
-          const gradRight = ctx.createLinearGradient(
-            x + w - overlap,
-            0,
-            x + w - featherSize,
-            0
-          );
-          gradRight.addColorStop(0, 'rgba(0,0,0,1)');
-          gradRight.addColorStop(1, 'rgba(0,0,0,0)');
-          ctx.fillStyle = gradRight;
-          ctx.fillRect(
-            x + w - featherSize - overlap,
-            0,
-            featherSize + overlap * 2,
-            currentCanvas.height
-          );
-        }
-
-        if (y > 0) {
-          const gradTop = ctx.createLinearGradient(0, y + overlap, 0, y + featherSize);
-          gradTop.addColorStop(0, 'rgba(0,0,0,1)');
-          gradTop.addColorStop(1, 'rgba(0,0,0,0)');
-          ctx.fillStyle = gradTop;
-          ctx.fillRect(0, y - overlap, currentCanvas.width, featherSize + overlap * 2);
-        }
-      }
-
-      // 6. Draw X-Ray layer
-      if (xrayImgRef.current && xrayCanvasRef.current) {
-        const xctx = xrayCanvasRef.current.getContext('2d');
-        if (xctx) {
-          xctx.clearRect(0, 0, xrayCanvasRef.current.width, xrayCanvasRef.current.height);
-          if (!cachedXrayFramingRef.current) {
-            cachedXrayFramingRef.current = getCustomFraming(xrayImgRef.current, currentCanvas.width, currentCanvas.height, true);
+          // Reusing cached gradients would be ideal, but for now we simplify the drawing calls
+          if (x > 0) {
+            const gradLeft = ctx.createLinearGradient(x + overlap, 0, x + featherSize, 0);
+            gradLeft.addColorStop(0, 'rgba(0,0,0,1)');
+            gradLeft.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = gradLeft;
+            ctx.fillRect(x - overlap, 0, featherSize + overlap * 2, currentCanvas.height);
           }
-          const { w, h, x, y } = cachedXrayFramingRef.current;
-          
-          // Draw the image with lower opacity
-          xctx.globalAlpha = 0.30; 
-          xctx.drawImage(xrayImgRef.current, x, y, w, h);
-          xctx.globalAlpha = 1.0;
-          
-          // Apply scanning mask
-          xctx.globalCompositeOperation = 'destination-in';
-          
-          // 2 seconds per cycle
-          const time = performance.now() / 2000;
-          const progress = time % 1; 
-          // band center goes from slightly above the image to slightly below
-          const bandY = y - h * 0.2 + h * 1.4 * progress; 
-          const bandHeight = h * 0.3; // thickness of the scan line
-          
-          const grad = xctx.createLinearGradient(0, bandY - bandHeight / 2, 0, bandY + bandHeight / 2);
-          grad.addColorStop(0, 'rgba(0,0,0,0)');
-          grad.addColorStop(0.5, 'rgba(0,0,0,1)');
-          grad.addColorStop(1, 'rgba(0,0,0,0)');
-          xctx.fillStyle = grad;
-          xctx.fillRect(0, 0, xrayCanvasRef.current.width, xrayCanvasRef.current.height);
-          
-          xctx.globalCompositeOperation = 'source-over';
+
+          if (x + w < currentCanvas.width) {
+            const gradRight = ctx.createLinearGradient(x + w - overlap, 0, x + w - featherSize, 0);
+            gradRight.addColorStop(0, 'rgba(0,0,0,1)');
+            gradRight.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = gradRight;
+            ctx.fillRect(x + w - featherSize - overlap, 0, featherSize + overlap * 2, currentCanvas.height);
+          }
+
+          if (y > 0) {
+            const gradTop = ctx.createLinearGradient(0, y + overlap, 0, y + featherSize);
+            gradTop.addColorStop(0, 'rgba(0,0,0,1)');
+            gradTop.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = gradTop;
+            ctx.fillRect(0, y - overlap, currentCanvas.width, featherSize + overlap * 2);
+          }
         }
       }
+
+      // X-Ray Layer is now handled entirely by GPU-accelerated CSS and an <img> tag
 
       rafRef.current = requestAnimationFrame(renderLoop);
     };
@@ -647,21 +603,39 @@ export default function BrushReveal({
         style={{ willChange: 'transform', objectPosition: bgObjectPosition }}
       />
 
-      {/* Reveal Layer */}
+      {/* Reveal Layer (Canvas) */}
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full touch-none pointer-events-none"
         style={{ willChange: 'transform' }}
       />
 
-      {/* X-Ray Layer */}
+      {/* X-Ray Layer (Optimized CSS version) */}
       {xrayImage && (
-        <canvas
-          ref={xrayCanvasRef}
-          className="absolute inset-0 w-full h-full touch-none pointer-events-none"
-          style={{ willChange: 'transform' }}
+        <img
+          ref={xrayImgRef}
+          src={xrayImage}
+          alt="X-Ray"
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-40 mix-blend-screen"
+          style={{ 
+            willChange: 'transform', 
+            objectPosition: bgObjectPosition,
+            maskImage: 'linear-gradient(to bottom, transparent, black 15%, transparent 30%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 15%, transparent 30%)',
+            maskSize: '100% 300%',
+            WebkitMaskSize: '100% 300%',
+            animation: 'scanline 3s linear infinite'
+          }}
         />
       )}
+      
+      {/* Add keyframes for the scanline dynamically */}
+      <style>{`
+        @keyframes scanline {
+          0% { mask-position: 0% -100%; -webkit-mask-position: 0% -100%; }
+          100% { mask-position: 0% 200%; -webkit-mask-position: 0% 200%; }
+        }
+      `}</style>
     </div>
   );
 }
