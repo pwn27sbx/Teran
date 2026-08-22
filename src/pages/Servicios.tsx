@@ -61,8 +61,8 @@ export default function Servicios() {
         </motion.div>
 
         {/* Services Grid - 4 Columns */}
-        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-4 flex-1 content-start">
-          <AnimatePresence mode="popLayout">
+        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-4 w-full">
+          <AnimatePresence>
             {filteredServices.map((service) => (
               <motion.div
                 key={service.id}
@@ -72,7 +72,7 @@ export default function Servicios() {
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
                 whileHover={{ y: -3, scale: 1.02 }}
-                className={`p-4 xl:p-5 rounded-2xl bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border ${service.border} shadow-sm hover:shadow-lg transition-all cursor-pointer group flex items-start gap-4 h-full`}
+                className={`p-4 xl:p-5 rounded-2xl bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border ${service.border} shadow-sm hover:shadow-lg transition-all cursor-pointer group flex items-start gap-4`}
               >
                 <div className={`w-10 h-10 xl:w-12 xl:h-12 rounded-[0.8rem] shrink-0 ${service.color} flex items-center justify-center group-hover:rotate-6 transition-transform duration-300 mt-0.5`}>
                   {service.icon}
