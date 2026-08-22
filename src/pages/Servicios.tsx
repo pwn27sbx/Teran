@@ -61,7 +61,7 @@ export default function Servicios() {
         </motion.div>
 
         {/* Services Grid - 4 Columns */}
-        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-4 flex-1">
+        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-4 flex-1 content-start">
           <AnimatePresence mode="popLayout">
             {filteredServices.map((service) => (
               <motion.div
