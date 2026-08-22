@@ -21,7 +21,7 @@ const features = [
     subtitle: 'CERCA DE TI',
     desc: 'Encuentra una clínica Terán lista para atenderte con la mejor tecnología.',
     icon: MapPin,
-    bgImg: '/gallery/3.webp',
+    bgImg: '/gallery/10.webp',
     color: 'from-red-600/90 to-rose-500/80',
     accent: 'bg-red-500 text-white',
     link: '/emergencias'
@@ -32,7 +32,7 @@ const features = [
     subtitle: 'ARCHIVO MÉDICO Y CASOS',
     desc: 'Nuestro archivo videográfico con casos clínicos, testimonios y proyectos especiales.',
     icon: Play,
-    bgImg: '/gallery/10.webp',
+    bgImg: '/gallery/3.webp',
     color: 'from-amber-500/90 to-orange-400/80',
     accent: 'bg-amber-400 text-gray-900',
     link: 'https://www.youtube.com/channel/UC7C7Yo0ILqCbQN6PK1wzWgg/featured'
