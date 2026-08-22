@@ -26,16 +26,16 @@ export default function Nosotros() {
       
       <Header variant="back" />
       
-      <main className="flex-1 flex flex-col relative z-10 pt-28 pb-8 px-4 lg:px-10 justify-center">
+      <main className="flex-1 flex flex-col relative z-10 pt-28 pb-8 px-4 lg:px-8 justify-center">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="max-w-[1600px] mx-auto w-full flex flex-col lg:flex-row gap-4 lg:gap-8 items-stretch h-auto lg:h-[calc(100vh-150px)] lg:min-h-[650px]"
+          className="max-w-[1350px] mx-auto w-full flex flex-col lg:flex-row gap-4 lg:gap-6 items-stretch h-auto lg:h-[calc(100vh-140px)] lg:min-h-[650px] lg:max-h-[780px]"
         >
           
           {/* Column 1: Image (Bento Block 1) */}
-          <div className="w-full lg:w-[35%] h-[400px] lg:h-auto relative rounded-[2.5rem] overflow-hidden shadow-xl shadow-[#0277ab]/10 border border-white/40 dark:border-white/10 shrink-0 group">
+          <div className="w-full lg:w-[32%] h-[400px] lg:h-auto relative rounded-[2.5rem] overflow-hidden shadow-xl shadow-[#0277ab]/10 border border-white/40 dark:border-white/10 shrink-0 group">
             <img 
               src="/staff.webp" 
               alt="MVZ Mario y Vanessa Terán Rivas" 
@@ -45,43 +45,43 @@ export default function Nosotros() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
             
             <div className="absolute bottom-10 left-10 right-10 text-white">
-              <div className="inline-block bg-white/20 backdrop-blur-md px-4 py-2 rounded-full text-xs uppercase tracking-widest font-bold mb-5 border border-white/30">Directores</div>
-              <h3 className="text-3xl lg:text-4xl font-bold leading-tight">MVZ Mario y<br/>Vanessa Terán</h3>
+              <div className="inline-block bg-white/20 backdrop-blur-md px-4 py-2 rounded-full text-[10px] uppercase tracking-widest font-bold mb-4 border border-white/30">Directores</div>
+              <h3 className="text-2xl lg:text-3xl font-bold leading-tight">MVZ Mario y<br/>Vanessa Terán</h3>
             </div>
           </div>
 
           {/* Column 2: Content wrapper */}
-          <div className="w-full lg:w-[65%] flex flex-col gap-4 lg:gap-8 min-h-0">
+          <div className="w-full lg:w-[68%] flex flex-col gap-4 lg:gap-6 min-h-0">
             
             {/* Top Row: Title + CTA (Bento Block 2) */}
-            <div className="bg-white/80 dark:bg-[#1e1e1e]/80 backdrop-blur-2xl rounded-[2.5rem] p-10 lg:p-12 border border-white/60 dark:border-white/10 shadow-xl shadow-gray-200/50 dark:shadow-none shrink-0 flex flex-col md:flex-row gap-8 items-center justify-between">
+            <div className="bg-white/80 dark:bg-[#1e1e1e]/80 backdrop-blur-2xl rounded-[2.5rem] p-10 lg:p-10 border border-white/60 dark:border-white/10 shadow-xl shadow-gray-200/50 dark:shadow-none shrink-0 flex flex-col md:flex-row gap-8 items-center justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2 text-[#0277ab] mb-4">
-                  <Star className="w-6 h-6 fill-current" />
-                  <span className="text-sm font-bold uppercase tracking-widest">Nuestra Historia</span>
+                  <Star className="w-5 h-5 fill-current" />
+                  <span className="text-xs font-bold uppercase tracking-widest">Nuestra Historia</span>
                 </div>
-                <h1 className="text-5xl md:text-6xl font-black text-gray-900 dark:text-white tracking-tight mb-5">Quiénes Somos</h1>
-                <p className="text-gray-600 dark:text-gray-400 text-lg md:text-xl font-medium leading-relaxed max-w-3xl">
+                <h1 className="text-4xl lg:text-5xl font-black text-gray-900 dark:text-white tracking-tight mb-4">Quiénes Somos</h1>
+                <p className="text-gray-600 dark:text-gray-400 text-base lg:text-lg font-medium leading-relaxed max-w-3xl">
                   Clínicas Veterinarias Terán nacen a través de una tradición familiar que se canaliza en una enorme vocación profesional por la medicina veterinaria generada en sus jóvenes directores.
                 </p>
               </div>
               <Link 
                 to="/emergencias" 
-                className="shrink-0 bg-[#f4484a] text-white px-10 py-6 rounded-[2rem] font-bold shadow-xl shadow-red-500/20 hover:scale-105 transition-all flex items-center gap-3 text-xl"
+                className="shrink-0 bg-[#f4484a] text-white px-8 py-5 rounded-[2rem] font-bold shadow-xl shadow-red-500/20 hover:scale-105 transition-all flex items-center gap-3 text-lg"
               >
-                Nuestras Sedes <ArrowRight className="w-7 h-7" />
+                Nuestras Sedes <ArrowRight className="w-6 h-6" />
               </Link>
             </div>
 
             {/* Bottom Row: Story + Stats */}
-            <div className="flex flex-col md:flex-row gap-4 lg:gap-8 flex-1 min-h-0">
+            <div className="flex flex-col md:flex-row gap-4 lg:gap-6 flex-1 min-h-0">
               
               {/* Story (Bento Block 3) */}
-              <div className="w-full md:w-[60%] bg-[#0277ab] rounded-[2.5rem] p-10 lg:p-12 text-white flex flex-col justify-center shadow-xl shadow-[#0277ab]/20 relative overflow-hidden">
+              <div className="w-full md:w-[60%] bg-[#0277ab] rounded-[2.5rem] p-8 lg:p-10 text-white flex flex-col justify-center shadow-xl shadow-[#0277ab]/20 relative overflow-hidden">
                 <div className="absolute -bottom-24 -right-24 opacity-10 rotate-12 pointer-events-none">
-                  <Star className="w-[400px] h-[400px] fill-current" />
+                  <Star className="w-[350px] h-[350px] fill-current" />
                 </div>
-                <div className="relative z-10 space-y-5 lg:space-y-6 text-sm lg:text-base leading-relaxed text-white/95 font-medium overflow-y-auto pr-3 custom-scrollbar">
+                <div className="relative z-10 space-y-4 lg:space-y-5 text-sm lg:text-[15px] leading-relaxed text-white/95 font-medium overflow-y-auto pr-3 custom-scrollbar">
                   <p>
                     El hecho de vivir en un entorno donde las mascotas son parte importante de la vida familiar e interrelacionarse con ellas ha sido la base para consolidar uno de sus proyectos institucionales más importantes a nivel profesional, la construcción del primer HOSPITAL VETERINARIO DEL SUR DEL PERÚ.
                   </p>
@@ -95,11 +95,11 @@ export default function Nosotros() {
               </div>
 
               {/* Stats Grid (Bento Block 4) */}
-              <div className="w-full md:w-[40%] grid grid-cols-2 grid-rows-2 gap-4 lg:gap-8 shrink-0 md:shrink">
+              <div className="w-full md:w-[40%] grid grid-cols-2 grid-rows-2 gap-4 lg:gap-6 shrink-0 md:shrink">
                 {stats.map((stat, i) => (
                   <div key={i} className="bg-white/80 dark:bg-[#1e1e1e]/80 backdrop-blur-2xl rounded-[2.5rem] border border-white/60 dark:border-white/10 flex flex-col items-center justify-center p-6 shadow-xl shadow-gray-200/50 dark:shadow-none hover:-translate-y-1 transition-transform cursor-default">
-                    <span className="text-5xl lg:text-6xl font-black text-[#f4484a] mb-2">{stat.value}</span>
-                    <span className="text-[11px] lg:text-xs font-bold uppercase tracking-widest text-gray-500 text-center">{stat.label}</span>
+                    <span className="text-4xl lg:text-5xl font-black text-[#f4484a] mb-2">{stat.value}</span>
+                    <span className="text-[10px] lg:text-[11px] font-bold uppercase tracking-widest text-gray-500 text-center">{stat.label}</span>
                   </div>
                 ))}
               </div>
