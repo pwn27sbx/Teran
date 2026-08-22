@@ -8,6 +8,7 @@ const Servicios = React.lazy(() => import("./pages/Servicios"));
 const Emergencias = React.lazy(() => import("./pages/Emergencias"));
 const Tienda = React.lazy(() => import("./pages/Tienda"));
 const Nosotros = React.lazy(() => import("./pages/Nosotros"));
+const Certificacion = React.lazy(() => import("./pages/Certificacion"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 
 // Fallback loader while chunks are downloading
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/servicios" element={<Servicios />} />
           <Route path="/emergencias" element={<Emergencias />} />
           <Route path="/tienda" element={<Tienda />} />
+          <Route path="/certificacion" element={<Certificacion />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
