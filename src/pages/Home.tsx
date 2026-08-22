@@ -71,12 +71,12 @@ function App() {
               borderRadius: heroRadius,
               opacity: heroOpacity,
             }}
-            className="w-full h-full relative origin-center bg-white dark:bg-gray-900 shadow-2xl overflow-hidden pointer-events-auto"
+            className="w-full h-full relative origin-center bg-white dark:bg-[#121212] shadow-2xl overflow-hidden pointer-events-auto"
           >
             <BrushReveal
-              bgImage="/milo1_nobg.webp"
-              revealImage="/atreus1_nobg.webp"
-              xrayImage="/atreusx_nobg.webp"
+              bgImage={isDark ? "/milo1_dark.webp" : "/milo1_nobg.webp"}
+              revealImage={isDark ? "/atreus1_dark.webp" : "/atreus1_nobg.webp"}
+              xrayImage={isDark ? "/atreusx_dark.webp" : "/atreusx_nobg.webp"}
               brushSize={180}
               revealScale={0.73}
               bgScale={0.9}
