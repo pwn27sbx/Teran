@@ -21,14 +21,14 @@ export default function Tienda() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-400/20 rounded-full blur-[100px] pointer-events-none z-0"></div>
 
       {/* Dog and Cat Images */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden mix-blend-multiply z-0">
         <motion.img
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
           src="/miloperfil.webp"
           alt="Perro feliz"
-          className="absolute -left-[15%] md:-left-[5%] bottom-0 w-[400px] md:w-[600px] object-contain mix-blend-multiply opacity-80"
+          className="absolute -left-[15%] md:-left-[5%] bottom-0 w-[400px] md:w-[600px] object-contain opacity-80"
         />
         
         <motion.img
@@ -37,7 +37,7 @@ export default function Tienda() {
           transition={{ duration: 0.8, delay: 0.5 }}
           src="/atreusperfil.webp"
           alt="Gato curioso"
-          className="absolute -right-[10%] md:-right-[5%] bottom-0 w-[400px] md:w-[600px] object-contain mix-blend-multiply opacity-80"
+          className="absolute -right-[10%] md:-right-[5%] bottom-0 w-[400px] md:w-[600px] object-contain opacity-80"
         />
       </div>
 
