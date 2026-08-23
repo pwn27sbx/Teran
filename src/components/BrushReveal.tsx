@@ -818,10 +818,10 @@ export default function BrushReveal({
       container.addEventListener("pointerleave", handlePointerLeave);
       container.addEventListener("touchstart", handleTouchStart, { passive: true });
       container.addEventListener("touchmove", handleTouchMove, { passive: false });
-      container.addEventListener("touchend", handleTouchEnd);
-      container.addEventListener("touchcancel", handleTouchEnd);
       container.addEventListener("contextmenu", handleContextMenu);
     }
+    window.addEventListener("touchend", handleTouchEnd);
+    window.addEventListener("touchcancel", handleTouchEnd);
 
     return () => {
       io.disconnect();
@@ -831,10 +831,10 @@ export default function BrushReveal({
         container.removeEventListener("pointerleave", handlePointerLeave);
         container.removeEventListener("touchstart", handleTouchStart);
         container.removeEventListener("touchmove", handleTouchMove);
-        container.removeEventListener("touchend", handleTouchEnd);
-        container.removeEventListener("touchcancel", handleTouchEnd);
         container.removeEventListener("contextmenu", handleContextMenu);
       }
+      window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("touchcancel", handleTouchEnd);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [imagesLoaded, brushSize, bgScale, revealScale, revealOffsetY]);
@@ -843,6 +843,11 @@ export default function BrushReveal({
     <div
       ref={containerRef}
       className="relative w-full h-full overflow-hidden bg-transparent"
+      style={{
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        WebkitTouchCallout: "none"
+      }}
     >
       {!imagesLoaded && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#f8f9fa] text-[#0277ab] font-serif text-xl tracking-widest">
@@ -855,6 +860,7 @@ export default function BrushReveal({
         ref={bgNodeRef}
         src={bgImage}
         alt="Base"
+        draggable={false}
         className="absolute inset-0 w-full h-full object-cover pointer-events-none"
         style={{ willChange: "transform", objectPosition: bgObjectPosition }}
       />
