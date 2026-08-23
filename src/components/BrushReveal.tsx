@@ -53,6 +53,7 @@ export default function BrushReveal({
   const currentPosRef = useRef<Point>({ x: 0, y: 0 });
   const targetPosRef = useRef<Point>({ x: 0, y: 0 });
   const autoTargetRef = useRef<Point>({ x: 0, y: 0 });
+  const sweepAngleRef = useRef<number>(Math.PI / 2);
   const mousePosRef = useRef<Point>({ x: 0, y: 0 });
   const lastMousePosRef = useRef<Point>({ x: 0, y: 0 });
   const exitVelocityRef = useRef<Point | null>(null); // Tracks the escape velocity when stopped
@@ -331,35 +332,70 @@ export default function BrushReveal({
       } else {
         // Auto-wander logic when completely not hovering (mouse off window)
         // Pick a new target occasionally to sweep across the screen
-        if (Math.random() < 0.015) {
+        const isMobileWander = window.innerWidth < 768;
+        const wanderChance = isMobileWander ? 0.04 : 0.015;
+        
+        if (Math.random() < wanderChance) {
           const cx = currentCanvas.width / 2;
           const cy = currentCanvas.height / 2;
 
-          let dx = cx - currentPosRef.current.x;
-          let dy = cy - currentPosRef.current.y;
-          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          if (isMobileWander) {
+            const padding = Math.max(currentCanvas.width, currentCanvas.height) * 1.0;
+            const dxToTarget = autoTargetRef.current.x - currentPosRef.current.x;
+            const dyToTarget = autoTargetRef.current.y - currentPosRef.current.y;
+            const distToTarget = Math.sqrt(dxToTarget * dxToTarget + dyToTarget * dyToTarget);
 
-          if (dist < 100) {
-            const angle = Math.random() * Math.PI * 2;
-            dx = Math.cos(angle);
-            dy = Math.sin(angle);
+            if (distToTarget < 200 || (autoTargetRef.current.x === cx && autoTargetRef.current.y === cy)) {
+              // 0: horizontal, PI/4: diagonal down-right, PI/2: vertical down, 3PI/4: diagonal down-left
+              const angles = [0, Math.PI / 4, Math.PI / 2, (Math.PI * 3) / 4];
+              let angle = angles[Math.floor(Math.random() * angles.length)];
+              if (Math.random() > 0.5) angle += Math.PI;
+
+              const startX = cx - Math.cos(angle) * padding;
+              const startY = cy - Math.sin(angle) * padding;
+
+              currentPosRef.current = { x: startX, y: startY };
+              targetPosRef.current = { x: startX, y: startY };
+              if (nodesRef.current) {
+                nodesRef.current.forEach((n) => {
+                  n.x = startX;
+                  n.y = startY;
+                });
+              }
+
+              autoTargetRef.current = {
+                x: cx + Math.cos(angle) * padding,
+                y: cy + Math.sin(angle) * padding,
+              };
+            }
           } else {
-            dx /= dist;
-            dy /= dist;
+            let dx = cx - currentPosRef.current.x;
+            let dy = cy - currentPosRef.current.y;
+            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+
+            if (dist < 100) {
+              const angle = Math.random() * Math.PI * 2;
+              dx = Math.cos(angle);
+              dy = Math.sin(angle);
+            } else {
+              dx /= dist;
+              dy /= dist;
+            }
+
+            const angleOffset = (Math.random() - 0.5) * Math.PI * 0.8; // +/- 72 degrees
+            const finalDx =
+              dx * Math.cos(angleOffset) - dy * Math.sin(angleOffset);
+            const finalDy =
+              dx * Math.sin(angleOffset) + dy * Math.cos(angleOffset);
+
+            const padding =
+              Math.max(currentCanvas.width, currentCanvas.height) * 1.0;
+              
+            autoTargetRef.current = {
+              x: cx + finalDx * padding,
+              y: cy + finalDy * padding,
+            };
           }
-
-          const angleOffset = (Math.random() - 0.5) * Math.PI * 0.8; // +/- 72 degrees
-          const finalDx =
-            dx * Math.cos(angleOffset) - dy * Math.sin(angleOffset);
-          const finalDy =
-            dx * Math.sin(angleOffset) + dy * Math.cos(angleOffset);
-
-          const padding =
-            Math.max(currentCanvas.width, currentCanvas.height) * 1.0;
-          autoTargetRef.current = {
-            x: cx + finalDx * padding,
-            y: cy + finalDy * padding,
-          };
         }
         targetPosRef.current.x +=
           (autoTargetRef.current.x - targetPosRef.current.x) * 0.03;
@@ -688,19 +724,6 @@ export default function BrushReveal({
       isHoveringRef.current = true;
     };
 
-    const handleTouchMove = (e: TouchEvent) => {
-      e.preventDefault();
-      const touch = e.touches[0];
-      const container = containerRef.current;
-      if (!touch || !container) return;
-      const rect = container.getBoundingClientRect();
-      mousePosRef.current = {
-        x: touch.clientX - rect.left,
-        y: touch.clientY - rect.top,
-      };
-      isHoveringRef.current = true;
-    };
-
     const handlePointerLeave = () => {
       isHoveringRef.current = false;
       autoTargetRef.current = { ...targetPosRef.current };
@@ -710,10 +733,6 @@ export default function BrushReveal({
     if (container) {
       container.addEventListener("pointermove", handlePointerMove);
       container.addEventListener("pointerleave", handlePointerLeave);
-      container.addEventListener("touchmove", handleTouchMove, {
-        passive: false,
-      });
-      container.addEventListener("touchend", handlePointerLeave);
     }
 
     return () => {
@@ -722,8 +741,6 @@ export default function BrushReveal({
       if (container) {
         container.removeEventListener("pointermove", handlePointerMove);
         container.removeEventListener("pointerleave", handlePointerLeave);
-        container.removeEventListener("touchmove", handleTouchMove);
-        container.removeEventListener("touchend", handlePointerLeave);
       }
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
