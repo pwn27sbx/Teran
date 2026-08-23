@@ -27,13 +27,13 @@ const testimonials = [
 
 export default function Certificacion() {
   return (
-    <div className="h-screen w-full overflow-hidden bg-[#f3f4f6] dark:bg-[#0a0a0a] font-sans selection:bg-[#0277ab] selection:text-white flex flex-col relative">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#f3f4f6] dark:bg-[#0a0a0a] font-sans selection:bg-[#0277ab] selection:text-white flex flex-col relative">
       {/* Background ambient glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-400/20 dark:bg-blue-600/10 blur-[120px] rounded-full pointer-events-none z-0"></div>
+      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] md:w-[800px] md:h-[800px] bg-blue-400/20 dark:bg-blue-600/10 blur-[100px] md:blur-[120px] rounded-full pointer-events-none z-0"></div>
 
       <Header variant="back" />
       
-      <main className="flex-1 w-full max-w-[1500px] mx-auto px-6 pt-32 pb-12 flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-12 min-h-0 relative z-10">
+      <main className="flex-1 w-full max-w-[1500px] mx-auto px-6 pt-28 md:pt-32 pb-16 md:pb-12 flex flex-col lg:flex-row items-center justify-center gap-12 min-h-0 relative z-10">
         
         {/* Left Column: Testimonials 1 & 2 (Shifted Up) */}
         <div className="hidden lg:flex w-1/3 flex-col gap-6 h-full justify-center pb-16">
@@ -49,7 +49,7 @@ export default function Certificacion() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="w-full lg:w-1/3 flex flex-col items-center justify-center text-center h-full relative"
         >
-          {/* Custom style for hardware accelerated floating */}
+          {/* Custom style for hardware accelerated floating and marquee */}
           <style>{`
             @keyframes float-badge {
               0%, 100% { transform: translateY(-12px); }
@@ -59,10 +59,37 @@ export default function Certificacion() {
               animation: float-badge 6s ease-in-out infinite;
               will-change: transform;
             }
+            @keyframes scroll-mobile {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+            .animate-scroll-mobile {
+              animation: scroll-mobile 35s linear infinite;
+              will-change: transform;
+            }
           `}</style>
           
+          {/* Tag */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-100/50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 text-[#0277ab] dark:text-sky-400 font-bold text-xs tracking-[0.2em] uppercase mb-6 backdrop-blur-md">
+            <Award className="w-3.5 h-3.5" />
+            Excelencia Médica
+          </div>
+          
+          {/* Title */}
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 dark:text-white mb-6 leading-[1.1] tracking-tight">
+            Certificación <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0277ab] to-blue-400">
+              Oficial
+            </span>
+          </h1>
+          
+          {/* Description */}
+          <p className="text-base md:text-lg text-gray-600 dark:text-gray-400 font-serif leading-relaxed max-w-sm mx-auto mb-10">
+            Avalados por el Colegio Médico Veterinario de Arequipa. Conoce la vocación que impulsa a nuestros especialistas cada día.
+          </p>
+
           {/* Badge with floating animation */}
-          <div className="relative mb-10 group animate-float-badge">
+          <div className="relative mb-6 lg:mb-0 group animate-float-badge">
             <div className="absolute inset-0 bg-blue-500/20 blur-[50px] rounded-full group-hover:bg-blue-500/40 transition-colors duration-500"></div>
             <img 
               src="http://hospitalveterinarioteran.com/wp-content/uploads/2017/11/acreditacion1.png" 
@@ -71,22 +98,6 @@ export default function Certificacion() {
               style={{ willChange: "transform" }}
             />
           </div>
-
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-100/50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 text-[#0277ab] dark:text-sky-400 font-bold text-xs tracking-[0.2em] uppercase mb-6 backdrop-blur-md">
-            <Award className="w-3.5 h-3.5" />
-            Excelencia Médica
-          </div>
-          
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 dark:text-white mb-6 leading-[1.1] tracking-tight">
-            Certificación <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0277ab] to-blue-400">
-              Oficial
-            </span>
-          </h1>
-          
-          <p className="text-base md:text-lg text-gray-600 dark:text-gray-400 font-serif leading-relaxed max-w-sm mx-auto">
-            Avalados por el Colegio Médico Veterinario de Arequipa. Conoce la vocación que impulsa a nuestros especialistas cada día.
-          </p>
         </motion.div>
 
         {/* Right Column: Testimonials 3 & 4 (Shifted Down) */}
@@ -96,13 +107,28 @@ export default function Certificacion() {
           ))}
         </div>
 
-        {/* Mobile View: Scrollable Row */}
-        <div className="flex lg:hidden w-full overflow-x-auto gap-4 pb-4 snap-x snap-mandatory custom-scrollbar">
-          {testimonials.map((t, i) => (
-            <div key={i} className="min-w-[85vw] snap-center">
-              <TestimonialCard testimonial={t} index={i} direction={0} />
+        {/* Mobile View: Auto-scrolling Marquee */}
+        <div className="flex lg:hidden w-full overflow-hidden pb-4 relative -mx-6 px-6">
+          {/* Gradient masks for smooth fading on edges */}
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#f3f4f6] dark:from-[#0a0a0a] to-transparent z-20 pointer-events-none"></div>
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#f3f4f6] dark:from-[#0a0a0a] to-transparent z-20 pointer-events-none"></div>
+          
+          <div className="flex w-max animate-scroll-mobile hover:[animation-play-state:paused] active:[animation-play-state:paused]">
+            <div className="flex gap-4 pr-4">
+              {testimonials.map((t, i) => (
+                <div key={i} className="w-[85vw] shrink-0">
+                  <TestimonialCard testimonial={t} index={i} direction={0} />
+                </div>
+              ))}
             </div>
-          ))}
+            <div className="flex gap-4 pr-4">
+              {testimonials.map((t, i) => (
+                <div key={`dup-${i}`} className="w-[85vw] shrink-0">
+                  <TestimonialCard testimonial={t} index={i} direction={0} />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
       </main>
@@ -117,8 +143,7 @@ function TestimonialCard({ testimonial, index, direction }: { testimonial: any, 
       initial={{ opacity: 0, x: direction * 50 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.6, delay: 0.2 + index * 0.1, ease: "easeOut" }}
-      className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-3xl p-6 lg:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-white/50 dark:border-gray-800 flex flex-col relative group hover:-translate-y-1 transition-transform duration-300 h-[320px]"
-
+      className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-3xl p-6 lg:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-white/50 dark:border-gray-800 flex flex-col relative group hover:-translate-y-1 transition-transform duration-300 h-full min-h-[350px] lg:h-[320px] lg:min-h-0"
     >
       <div className="absolute top-6 right-6 text-[#0277ab]/10 dark:text-blue-400/10 group-hover:scale-110 group-hover:text-[#0277ab]/20 transition-all duration-300">
         <Quote size={80} className="transform rotate-180" />

@@ -7,11 +7,7 @@ import Footer from "../components/Footer";
 import { Activity } from "lucide-react";
 import { useDarkMode } from "../hooks/useDarkMode";
 import { useNavigate } from "react-router-dom";
-import {
-  motion,
-  useScroll,
-  useTransform,
-} from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 const baseGalleryItems = Array.from({ length: 27 }, (_, i) => ({
   image: `/gallery/${i + 1}.webp`,
@@ -30,9 +26,13 @@ const galleryItems = [
 function App() {
   const navigate = useNavigate();
   const { isDark, toggleDark } = useDarkMode();
-  
-  
-
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
   const { scrollY } = useScroll();
 
   const galleryRef = useRef(null);
@@ -77,12 +77,29 @@ function App() {
               bgImage="/milo1_nobg.webp"
               revealImage="/atreus1_nobg.webp"
               xrayImage={isDark ? "/atreusx_dark.webp" : "/atreusx_nobg.webp"}
-              brushSize={180}
+              brushSize={isMobile ? 90 : 180}
               revealScale={0.73}
-              bgScale={0.9}
+              bgScale={isMobile ? 0.95 : 0.9}
               bgObjectPosition="center 10%"
-              revealOffsetY={-0.29}
+              revealOffsetY={isMobile ? -0.35 : -0.29}
             />
+            {isMobile && (
+              <div className="absolute top-[16vh] left-1/2 -translate-x-1/2 flex flex-col items-center text-gray-900 dark:text-white drop-shadow-md z-10 pointer-events-none w-full">
+                <img
+                  src="/logoTeran.svg"
+                  alt="Logo Hospital Veterinario Terán"
+                  className="h-[85px] w-auto mt-0"
+                />
+                <div className="flex flex-col justify-center items-center mt-2">
+                  <span className="font-['Outfit'] font-black text-[56px] tracking-tighter uppercase leading-none text-gray-900 dark:text-white mb-0 drop-shadow-sm text-center">
+                    TERAN
+                  </span>
+                  <span className="font-['Outfit'] font-bold text-[14px] tracking-[0.09em] uppercase text-gray-700 dark:text-gray-300 leading-none mt-1.5 drop-shadow-sm text-center">
+                    Hospital Veterinario
+                  </span>
+                </div>
+              </div>
+            )}
             {/* No fade gradient at the bottom as requested */}
           </motion.div>
         </div>
@@ -132,30 +149,30 @@ function App() {
         <div className="sticky top-0 w-full h-[100dvh] overflow-hidden flex flex-col z-10 bg-transparent">
           <motion.div
             style={{ x: galleryX }}
-            className="relative z-30 w-full h-full flex items-center overflow-hidden px-6 md:px-12"
+            className="relative z-30 w-full h-full flex flex-col md:flex-row items-center overflow-hidden"
           >
-            {/* Left Side: Text */}
-            <div className="relative z-10 w-full md:w-[35%] flex flex-col items-start pl-4 md:pl-12">
-              <h2 className="font-['Outfit'] font-black text-6xl md:text-7xl lg:text-8xl text-[#0277ab] tracking-tight drop-shadow-sm leading-[0.9]">
-                Nuestra
-                <br />
-                Galería
+            {/* Top Half (Mobile) / Left Side (Desktop): Text */}
+            <div className="relative z-20 w-full md:w-[35%] h-[40%] md:h-auto flex flex-col justify-center items-center md:items-start text-center md:text-left px-6 md:p-0 md:pl-12 pt-28 md:pt-0 mx-auto md:mx-0">
+              <h2 className="font-['Outfit'] font-black text-5xl md:text-7xl lg:text-8xl text-[#0277ab] dark:text-sky-400 tracking-tight drop-shadow-md leading-tight md:leading-[0.9]">
+                Nuestra Galería
               </h2>
-              <div className="w-20 h-2 bg-[#f4484a] rounded-full mt-6 mb-6 shadow-sm"></div>
-              <p className="font-serif text-lg md:text-xl leading-relaxed text-gray-600 dark:text-gray-400 font-light max-w-sm">
+              <div className="w-16 md:w-20 h-1.5 md:h-2 bg-[#f4484a] rounded-full mt-4 md:mt-6 mb-4 md:mb-6 shadow-sm"></div>
+              <p className="font-serif text-base md:text-xl leading-relaxed text-gray-900 dark:text-gray-100 md:text-gray-600 md:dark:text-gray-400 font-medium md:font-light max-w-[320px] md:max-w-sm drop-shadow-sm">
                 Un vistazo a la excelencia de nuestras instalaciones y los
                 pacientes felices que confían en nosotros día a día.
               </p>
             </div>
 
-            {/* Right Side: DriftWall seamlessly fading into the background */}
-            <div className="absolute right-[-5vw] top-0 w-[120%] md:w-[75%] h-full z-0 pointer-events-auto">
+            {/* Bottom Half (Mobile) / Right Side (Desktop): DriftWall seamlessly fading */}
+            <div className="relative md:absolute bottom-0 right-0 md:right-[-5vw] w-full md:w-[75%] h-[60%] md:h-full z-0 pointer-events-auto">
+              {/* Fade for mobile to smoothly blend the images into the text boundary */}
+              <div className="md:hidden absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-[#f8f9fa] dark:from-[#121212] to-transparent z-10 pointer-events-none"></div>
               <DriftWall
                 items={galleryItems}
-                columns={5}
-                tileWidth={220}
-                tileHeight={145}
-                gap={20}
+                columns={isMobile ? 4 : 5}
+                tileWidth={isMobile ? 160 : 220}
+                tileHeight={isMobile ? 105 : 145}
+                gap={isMobile ? 12 : 20}
                 tilt={15}
                 turn={-15}
                 perspective={1200}

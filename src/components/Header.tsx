@@ -28,7 +28,7 @@ export default function Header({ variant = "home" }: HeaderProps) {
     <>
       {/* Left Side */}
       {variant === "home" ? (
-        <div className="flex items-center gap-2 text-gray-900 dark:text-white drop-shadow-md pointer-events-auto">
+        <div className="hidden md:flex items-center gap-2 text-gray-900 dark:text-white drop-shadow-md pointer-events-auto">
           <img
             src="/logoTeran.svg"
             alt="Logo Hospital Veterinario Terán"
@@ -44,7 +44,10 @@ export default function Header({ variant = "home" }: HeaderProps) {
           </div>
         </div>
       ) : (
-        <Link to="/" className="flex items-center gap-3 group pointer-events-auto">
+        <Link
+          to="/"
+          className="hidden md:flex items-center gap-3 group pointer-events-auto"
+        >
           <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-900 shadow-sm flex items-center justify-center border border-gray-100 dark:border-gray-800 group-hover:shadow-md transition-all">
             <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:-translate-x-1 transition-transform" />
           </div>
@@ -54,11 +57,16 @@ export default function Header({ variant = "home" }: HeaderProps) {
         </Link>
       )}
 
-      {/* Right Actions: Glass Dock */}
-      <div ref={menuRef} className="group relative flex items-center p-1.5 bg-white/70 dark:bg-gray-900/70 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] pointer-events-auto">
-        
+      {/* Right Actions: Glass Dock (Solo Menú y Regresar) */}
+      <div
+        ref={menuRef}
+        className="group relative w-full md:w-auto p-1.5 bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-[26px] shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] pointer-events-auto transition-colors"
+      >
         {/* Animated Border */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible z-0" aria-hidden="true">
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none overflow-visible z-10"
+          aria-hidden="true"
+        >
           <motion.rect
             width="100%"
             height="100%"
@@ -76,35 +84,69 @@ export default function Header({ variant = "home" }: HeaderProps) {
           />
         </svg>
 
-        {/* Botón Emergencias */}
-        <Link
-          to="/emergencias"
-          className="relative z-10 flex items-center gap-2 px-5 py-2.5 bg-[#f4484a] hover:bg-[#d63d3f] text-white rounded-full font-['Outfit'] font-bold text-[12px] md:text-[13px] tracking-widest shadow-[0_4px_15px_rgba(244,72,74,0.3)] transition-all hover:scale-105 active:scale-95"
-        >
-          <PhoneCall className="w-4 h-4" />
-          <span className="hidden sm:inline">EMERGENCIAS 24H</span>
-          <span className="sm:hidden">24H</span>
-        </Link>
+        {/* Top Row: Botones */}
+        <div className="relative flex items-center justify-between w-full z-20">
+            
+          {/* Lado Izquierdo de la pastilla */}
+          <div className="flex items-center gap-2">
+            {variant !== "home" ? (
+              <Link to="/" className="md:hidden flex items-center gap-2 pl-0.5 pr-2">
+                <div className="flex items-center justify-center w-9 h-9 rounded-full bg-white dark:bg-gray-900 shadow-sm border border-gray-100 dark:border-gray-800 transition-all">
+                  <ChevronLeft className="w-4 h-4 text-[#0277ab]" />
+                </div>
+                <span className="font-black text-lg tracking-tight text-[#0277ab]">
+                  TERAN
+                </span>
+              </Link>
+            ) : (
+              /* Botón Emergencias A LA IZQUIERDA en Home */
+              <Link
+                to="/emergencias"
+                className="relative z-20 flex items-center gap-2 px-5 py-2.5 bg-[#f4484a] hover:bg-[#d63d3f] text-white rounded-full font-['Outfit'] font-bold text-[12px] md:text-[13px] tracking-widest shadow-[0_4px_15px_rgba(244,72,74,0.3)] transition-all hover:scale-105 active:scale-95"
+              >
+                <PhoneCall className="w-4 h-4" />
+                <span className="hidden sm:inline">EMERGENCIAS 24H</span>
+                <span className="sm:hidden">24H</span>
+              </Link>
+            )}
+          </div>
 
-        {/* Botón Menú */}
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          aria-expanded={isMenuOpen}
-          aria-haspopup="true"
-          className="relative z-10 flex items-center justify-center w-10 h-10 ml-1 rounded-full text-gray-700 dark:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-[#f4484a]"
-          aria-label="Abrir menú"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
+          {/* Lado Derecho de la pastilla */}
+          <div className="flex items-center gap-1.5 ml-auto">
+            {/* Botón Emergencias A LA DERECHA en páginas individuales */}
+            {variant !== "home" && (
+              <Link
+                to="/emergencias"
+                className="relative z-20 flex items-center gap-2 px-5 py-2.5 bg-[#f4484a] hover:bg-[#d63d3f] text-white rounded-full font-['Outfit'] font-bold text-[12px] md:text-[13px] tracking-widest shadow-[0_4px_15px_rgba(244,72,74,0.3)] transition-all hover:scale-105 active:scale-95"
+              >
+                <PhoneCall className="w-4 h-4" />
+                <span className="hidden sm:inline">EMERGENCIAS 24H</span>
+                <span className="sm:hidden">24H</span>
+              </Link>
+            )}
 
+            {/* Botón Menú */}
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-expanded={isMenuOpen}
+              aria-haspopup="true"
+              className="relative z-20 flex items-center justify-center w-10 h-10 rounded-full text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-[#f4484a]"
+              aria-label="Abrir menú"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Dropdown Menu Integrado */}
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div
-              initial={{ opacity: 0, y: -15, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -15, scale: 0.95 }}
+              initial={{ opacity: 0, height: 0, marginTop: 0 }}
+              animate={{ opacity: 1, height: "auto", marginTop: 8 }}
+              exit={{ opacity: 0, height: 0, marginTop: 0 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="absolute top-full right-0 mt-3 w-56 bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl rounded-2xl border border-white/40 dark:border-gray-700/40 shadow-[0_8px_32px_rgba(0,0,0,0.08)] flex flex-col p-2 z-50 origin-top-right"
+              className="overflow-hidden flex flex-col gap-3 px-2 pb-4 z-20 relative"
               role="menu"
             >
               <Link

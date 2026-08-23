@@ -89,15 +89,32 @@ export default function PremiumFeatures() {
             <div className={`absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent transition-opacity duration-500 ${isActive ? 'opacity-80' : 'opacity-40'}`} />
 
             {/* Content Area */}
-            <div className="relative z-10 p-6 md:p-8 flex flex-col h-full justify-between">
-              {/* Top Icon */}
-              <div className="flex justify-between items-start">
-                <motion.div 
-                  layout
-                  className={`w-14 h-14 rounded-full backdrop-blur-md bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-xl transition-all duration-300 ${isActive ? f.accent + ' border-transparent scale-110' : 'group-hover:bg-white/20'}`}
-                >
-                  <Icon className="w-6 h-6" />
-                </motion.div>
+            <div className={`relative z-10 p-4 md:p-8 flex flex-col h-full ${isActive ? 'justify-between' : 'justify-center md:justify-between'}`}>
+              {/* Top Row: Icon + Mobile Inactive Title */}
+              <div className="flex justify-between items-center md:items-start w-full">
+                <div className="flex items-center gap-4">
+                  <motion.div 
+                    layout
+                    className={`w-14 h-14 rounded-full backdrop-blur-md bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-xl transition-all duration-300 shrink-0 ${isActive ? f.accent + ' border-transparent scale-110' : 'group-hover:bg-white/20'}`}
+                  >
+                    <Icon className="w-6 h-6" />
+                  </motion.div>
+
+                  {/* Mobile Inactive Horizontal Title (Perfectly Aligned) */}
+                  <AnimatePresence>
+                    {!isActive && (
+                      <motion.h3
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10, transition: { duration: 0.2 } }}
+                        transition={{ duration: 0.3 }}
+                        className="md:hidden font-['Outfit'] font-black text-white text-2xl whitespace-nowrap opacity-90 group-hover:opacity-100"
+                      >
+                        {f.title}
+                      </motion.h3>
+                    )}
+                  </AnimatePresence>
+                </div>
                 
                 <AnimatePresence>
                   {isActive && (
@@ -106,7 +123,7 @@ export default function PremiumFeatures() {
                       animate={{ opacity: 1, scale: 1, rotate: 0 }}
                       exit={{ opacity: 0, scale: 0.5, rotate: 45 }}
                       transition={{ duration: 0.3 }}
-                      className="w-12 h-12 rounded-full bg-white text-gray-900 flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer"
+                      className="w-12 h-12 rounded-full bg-white text-gray-900 flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer shrink-0"
                       onClick={(e) => e.stopPropagation()}
                     >
                       {f.link?.startsWith('http') ? (
@@ -132,7 +149,7 @@ export default function PremiumFeatures() {
               </div>
 
               {/* Bottom Text Area */}
-              <div className="relative mt-auto flex flex-col justify-end min-h-[150px]">
+              <div className={`${isActive ? 'mt-auto' : 'mt-0 md:mt-auto'} flex flex-col justify-end ${isActive ? 'min-h-[80px] md:min-h-[150px]' : 'md:min-h-[150px]'}`}>
                 {/* Active Content */}
                 <AnimatePresence>
                   {isActive && (
@@ -156,7 +173,7 @@ export default function PremiumFeatures() {
                   )}
                 </AnimatePresence>
 
-                {/* Inactive Vertical Title */}
+                {/* Desktop Inactive Vertical Title */}
                 <AnimatePresence>
                   {!isActive && (
                     <motion.h3
@@ -164,7 +181,7 @@ export default function PremiumFeatures() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0, transition: { duration: 0.2 } }}
                       transition={{ duration: 0.4 }}
-                      className="absolute bottom-0 left-0 font-['Outfit'] font-black text-white text-2xl md:text-3xl whitespace-nowrap opacity-70 group-hover:opacity-100 [writing-mode:vertical-rl] rotate-180"
+                      className="hidden md:block absolute md:bottom-8 md:left-8 font-['Outfit'] font-black text-white text-3xl whitespace-nowrap opacity-70 group-hover:opacity-100 md:[writing-mode:vertical-rl] md:rotate-180"
                     >
                       {f.title}
                     </motion.h3>

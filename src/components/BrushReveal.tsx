@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState } from "react";
 
 export interface BrushRevealProps {
   bgImage: string;
@@ -29,8 +29,8 @@ export default function BrushReveal({
   xrayImage,
   brushSize = 80,
   revealScale = 1.0,
-  bgScale = 0.90,
-  bgObjectPosition = 'center 20%',
+  bgScale = 0.9,
+  bgObjectPosition = "center 20%",
   revealOffsetY = 0,
 }: BrushRevealProps): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -117,11 +117,11 @@ export default function BrushReveal({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    canvas.getContext('2d');
+    canvas.getContext("2d");
 
     // Persistent offscreen canvas for the fading mask
-    const offCanvas = document.createElement('canvas');
-    offCanvas.getContext('2d');
+    const offCanvas = document.createElement("canvas");
+    offCanvas.getContext("2d");
     offCanvasRef.current = offCanvas;
 
     const handleResize = () => {
@@ -139,7 +139,11 @@ export default function BrushReveal({
         xrayCanvasRef.current.height = canvas.height;
       }
 
-      if (currentPosRef.current.x === 0 && currentPosRef.current.y === 0 && canvas.width > 0) {
+      if (
+        currentPosRef.current.x === 0 &&
+        currentPosRef.current.y === 0 &&
+        canvas.width > 0
+      ) {
         currentPosRef.current = { x: canvas.width / 2, y: canvas.height / 2 };
         autoTargetRef.current = { x: canvas.width / 2, y: canvas.height / 2 };
         mousePosRef.current = { x: canvas.width / 2, y: canvas.height / 2 };
@@ -152,9 +156,12 @@ export default function BrushReveal({
       }
     };
 
-    window.addEventListener('resize', handleResize);
-    handleResize();
-
+    const ro = new ResizeObserver(() => {
+      handleResize();
+    });
+    if (containerRef.current) {
+      ro.observe(containerRef.current);
+    }
     const io = new IntersectionObserver(([entry]) => {
       isVisibleRef.current = entry.isIntersecting;
       if (entry.isIntersecting && rafRef.current === null) {
@@ -163,12 +170,14 @@ export default function BrushReveal({
     });
     if (containerRef.current) io.observe(containerRef.current);
 
-    // Calculate dimensions to match CSS object-cover with a 20% top offset
+    // Calculate custom framing
     const getCustomFraming = (
       img: HTMLImageElement,
       canvasW: number,
       canvasH: number,
-      isReveal = false
+      hPos: number,
+      vPos: number,
+      isReveal = false,
     ): Framing => {
       const canvasRatio = canvasW / canvasH;
       const imgRatio = img.width / img.height;
@@ -179,10 +188,10 @@ export default function BrushReveal({
 
       if (imgRatio > canvasRatio) {
         w = canvasH * imgRatio;
-        x = (canvasW - w) / 2;
+        x = (canvasW - w) * hPos;
       } else {
         h = canvasW / imgRatio;
-        y = (canvasH - h) * 0.2;
+        y = (canvasH - h) * vPos;
       }
 
       if (isReveal) {
@@ -194,10 +203,10 @@ export default function BrushReveal({
         y = cy - h / 2;
         y += h * revealOffsetY;
 
-        // Apply scaleFactor anchored to bottom center to match the CSS behavior!
+        // Apply scaleFactor anchored to bgObjectPosition to match the CSS behavior!
         const globalScale = bgScale;
-        const elemX = (canvasW * (1 - globalScale)) / 2;
-        const elemY = canvasH * (1 - globalScale);
+        const elemX = canvasW * hPos * (1 - globalScale);
+        const elemY = canvasH * vPos * (1 - globalScale);
 
         w *= globalScale;
         h *= globalScale;
@@ -219,13 +228,31 @@ export default function BrushReveal({
       const currentOffCanvas = offCanvasRef.current;
       if (!currentCanvas || !currentOffCanvas) return;
 
-      const ctx = currentCanvas.getContext('2d');
-      const offCtx = currentOffCanvas.getContext('2d');
+      const ctx = currentCanvas.getContext("2d");
+      const offCtx = currentOffCanvas.getContext("2d");
       if (!ctx || !offCtx) return;
 
       if (!currentCanvas.width || !currentCanvas.height) {
         rafRef.current = requestAnimationFrame(renderLoop);
         return;
+      }
+
+      let hPos = 0.5;
+      let vPos = 0.2;
+      if (bgObjectPosition) {
+        const parts = bgObjectPosition.trim().split(/\s+/);
+        const hPart = parts[0];
+        const vPart = parts.length > 1 ? parts[1] : parts[0];
+
+        if (hPart === "left") hPos = 0;
+        else if (hPart === "right") hPos = 1;
+        else if (hPart === "center") hPos = 0.5;
+        else if (hPart.endsWith("%")) hPos = parseFloat(hPart) / 100;
+
+        if (vPart === "top") vPos = 0;
+        else if (vPart === "bottom") vPos = 1;
+        else if (vPart === "center") vPos = 0.5;
+        else if (vPart.endsWith("%")) vPos = parseFloat(vPart) / 100;
       }
 
       // Core Mouse Physics and Momentum
@@ -250,7 +277,7 @@ export default function BrushReveal({
             // Changed to 800 to prevent false-positive teleporting during very fast mouse sweeps!
             const dist = Math.sqrt(
               Math.pow(currentPosRef.current.x - mousePosRef.current.x, 2) +
-                Math.pow(currentPosRef.current.y - mousePosRef.current.y, 2)
+                Math.pow(currentPosRef.current.y - mousePosRef.current.y, 2),
             );
             if (dist > 800) {
               currentPosRef.current = { ...mousePosRef.current };
@@ -322,22 +349,29 @@ export default function BrushReveal({
           }
 
           const angleOffset = (Math.random() - 0.5) * Math.PI * 0.8; // +/- 72 degrees
-          const finalDx = dx * Math.cos(angleOffset) - dy * Math.sin(angleOffset);
-          const finalDy = dx * Math.sin(angleOffset) + dy * Math.cos(angleOffset);
+          const finalDx =
+            dx * Math.cos(angleOffset) - dy * Math.sin(angleOffset);
+          const finalDy =
+            dx * Math.sin(angleOffset) + dy * Math.cos(angleOffset);
 
-          const padding = Math.max(currentCanvas.width, currentCanvas.height) * 1.0;
+          const padding =
+            Math.max(currentCanvas.width, currentCanvas.height) * 1.0;
           autoTargetRef.current = {
             x: cx + finalDx * padding,
             y: cy + finalDy * padding,
           };
         }
-        targetPosRef.current.x += (autoTargetRef.current.x - targetPosRef.current.x) * 0.03;
-        targetPosRef.current.y += (autoTargetRef.current.y - targetPosRef.current.y) * 0.03;
+        targetPosRef.current.x +=
+          (autoTargetRef.current.x - targetPosRef.current.x) * 0.03;
+        targetPosRef.current.y +=
+          (autoTargetRef.current.y - targetPosRef.current.y) * 0.03;
       }
 
       // Smooth interpolation for the brush position
-      currentPosRef.current.x += (targetPosRef.current.x - currentPosRef.current.x) * 0.15;
-      currentPosRef.current.y += (targetPosRef.current.y - currentPosRef.current.y) * 0.15;
+      currentPosRef.current.x +=
+        (targetPosRef.current.x - currentPosRef.current.x) * 0.15;
+      currentPosRef.current.y +=
+        (targetPosRef.current.y - currentPosRef.current.y) * 0.15;
 
       // Update Parallax Transforms
       // Use mousePosRef instead of currentPosRef so the background doesn't drift infinitely when the brush flies away
@@ -349,34 +383,44 @@ export default function BrushReveal({
       pY = Math.max(-0.6, Math.min(0.6, pY));
 
       // Reduce parallax intensity per user request
-      const bgOffsetX = pX * -8;
-      const bgOffsetY = pY * -8;
-      const canvasOffsetX = pX * -15;
-      const canvasOffsetY = pY * -15;
+      const isMobile = window.innerWidth < 768;
+      const additionalY = isMobile ? 350 : 0; // Push down on mobile
 
-      // Compute final transforms adding the +15 buffer
+      const bgOffsetX = pX * -8;
+      const bgOffsetY = pY * -8 + additionalY;
+      const canvasOffsetX = pX * -15;
+      const canvasOffsetY = pY * -15 + additionalY;
+
+      // Compute final transforms
       const scaleFactor = bgScale;
       const parallaxScale = 1.05;
       const finalBgScale = scaleFactor * parallaxScale;
 
+      const origin = bgObjectPosition || "center 10%";
       if (bgNodeRef.current) {
-        bgNodeRef.current.style.transformOrigin = 'bottom center';
-        // Add +15px downward buffer to hide the bottom cut line below the screen edge
-        bgNodeRef.current.style.transform = `translate(${bgOffsetX}px, ${bgOffsetY + 15}px) scale(${finalBgScale})`;
+        bgNodeRef.current.style.transformOrigin = origin;
+        bgNodeRef.current.style.transform = `translate(${bgOffsetX}px, ${bgOffsetY}px) scale(${finalBgScale})`;
       }
+
+      const maskStyle = isMobile
+        ? "linear-gradient(to bottom, black 50%, transparent 85%)"
+        : "none";
       if (canvasRef.current) {
-        canvasRef.current.style.transformOrigin = 'bottom center';
-        // Add +15px downward buffer to match the background image
-        canvasRef.current.style.transform = `translate(${canvasOffsetX}px, ${canvasOffsetY + 15}px) scale(${parallaxScale})`;
+        canvasRef.current.style.transformOrigin = origin;
+        canvasRef.current.style.transform = `translate(${canvasOffsetX}px, ${canvasOffsetY}px) scale(${parallaxScale})`;
+        canvasRef.current.style.webkitMaskImage = maskStyle;
+        canvasRef.current.style.maskImage = maskStyle;
       }
       if (xrayCanvasRef.current) {
-        xrayCanvasRef.current.style.transformOrigin = 'bottom center';
-        xrayCanvasRef.current.style.transform = `translate(${canvasOffsetX}px, ${canvasOffsetY + 15}px) scale(${parallaxScale})`;
+        xrayCanvasRef.current.style.transformOrigin = origin;
+        xrayCanvasRef.current.style.transform = `translate(${canvasOffsetX}px, ${canvasOffsetY}px) scale(${parallaxScale})`;
+        xrayCanvasRef.current.style.webkitMaskImage = maskStyle;
+        xrayCanvasRef.current.style.maskImage = maskStyle;
       }
 
       const s = parallaxScale;
-      const originX = currentCanvas.width / 2;
-      const originY = currentCanvas.height; // Anchor to bottom
+      const originX = currentCanvas.width * hPos;
+      const originY = currentCanvas.height * vPos;
 
       const getCanvasCoords = (screenX: number, screenY: number): Point => {
         // Use the same clamped pX/pY logic for calculating offsets when drawing the brush
@@ -385,21 +429,26 @@ export default function BrushReveal({
         curPX = Math.max(-0.6, Math.min(0.6, curPX));
         curPY = Math.max(-0.6, Math.min(0.6, curPY));
 
-        // Reduce parallax intensity per user request
+        // Reduce parallax intensity per user request, and apply the mobile shift
         const cOffX = curPX * -15;
-        const cOffY = curPY * -15;
+        const cOffY = curPY * -15 + additionalY;
 
         return {
           x: (screenX - cOffX - originX) / s + originX,
-          y: (screenY - cOffY - 15 - originY) / s + originY,
+          y: (screenY - cOffY - originY) / s + originY,
         };
       };
 
       // --- Kinematic Spring Chain Physics ---
-      const head = getCanvasCoords(currentPosRef.current.x, currentPosRef.current.y);
+      const head = getCanvasCoords(
+        currentPosRef.current.x,
+        currentPosRef.current.y,
+      );
 
       if (!nodesRef.current) {
-        nodesRef.current = Array.from({ length: numNodes }, () => ({ ...head }));
+        nodesRef.current = Array.from({ length: numNodes }, () => ({
+          ...head,
+        }));
       }
 
       const nodes = nodesRef.current;
@@ -415,13 +464,13 @@ export default function BrushReveal({
 
       // 1. Clear offscreen canvas
       offCtx.clearRect(0, 0, currentOffCanvas.width, currentOffCanvas.height);
-      offCtx.globalCompositeOperation = 'source-over';
+      offCtx.globalCompositeOperation = "source-over";
 
       // 2. Draw the continuous curved oil drop (Trapezoid & Circle Spline)
       const baseRadius = brushSize * 1.3; // Always full thickness when rendering
 
       if (baseRadius > 0.1) {
-        offCtx.fillStyle = 'black';
+        offCtx.fillStyle = "black";
 
         // Calculate Aerodynamic Squash based on head velocity
         const dxHead = nodes[0].x - nodes[1].x;
@@ -484,83 +533,142 @@ export default function BrushReveal({
 
       // 5. Draw reveal image masked by the melted fluid shape
       if (revImg) {
-        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalCompositeOperation = "source-over";
 
         if (!cachedRevFramingRef.current) {
-          cachedRevFramingRef.current = getCustomFraming(revImg, currentCanvas.width, currentCanvas.height, true);
+          cachedRevFramingRef.current = getCustomFraming(
+            revImg,
+            currentCanvas.width,
+            currentCanvas.height,
+            hPos,
+            vPos,
+            true,
+          );
         }
         const { w, h, x, y } = cachedRevFramingRef.current;
         ctx.drawImage(revImg, x, y, w, h);
 
         // Apply the mask
-        ctx.globalCompositeOperation = 'destination-in';
+        ctx.globalCompositeOperation = "destination-in";
         ctx.drawImage(currentOffCanvas, 0, 0);
 
         // Optimization: Feathering edges are incredibly heavy. We'll only calculate and draw them if x > 0 or y > 0
-        if (x > 0 || y > 0 || (x + w < currentCanvas.width)) {
-          ctx.globalCompositeOperation = 'destination-out';
+        if (x > 0 || y > 0 || x + w < currentCanvas.width) {
+          ctx.globalCompositeOperation = "destination-out";
           const featherSize = 250;
           const overlap = 5;
 
           if (x > 0) {
-            const gradLeft = ctx.createLinearGradient(x + overlap, 0, x + featherSize, 0);
-            gradLeft.addColorStop(0, 'rgba(0,0,0,1)');
-            gradLeft.addColorStop(1, 'rgba(0,0,0,0)');
+            const gradLeft = ctx.createLinearGradient(
+              x + overlap,
+              0,
+              x + featherSize,
+              0,
+            );
+            gradLeft.addColorStop(0, "rgba(0,0,0,1)");
+            gradLeft.addColorStop(1, "rgba(0,0,0,0)");
             ctx.fillStyle = gradLeft;
-            ctx.fillRect(x - overlap, 0, featherSize + overlap * 2, currentCanvas.height);
+            ctx.fillRect(
+              x - overlap,
+              0,
+              featherSize + overlap * 2,
+              currentCanvas.height,
+            );
           }
 
           if (x + w < currentCanvas.width) {
-            const gradRight = ctx.createLinearGradient(x + w - overlap, 0, x + w - featherSize, 0);
-            gradRight.addColorStop(0, 'rgba(0,0,0,1)');
-            gradRight.addColorStop(1, 'rgba(0,0,0,0)');
+            const gradRight = ctx.createLinearGradient(
+              x + w - overlap,
+              0,
+              x + w - featherSize,
+              0,
+            );
+            gradRight.addColorStop(0, "rgba(0,0,0,1)");
+            gradRight.addColorStop(1, "rgba(0,0,0,0)");
             ctx.fillStyle = gradRight;
-            ctx.fillRect(x + w - featherSize - overlap, 0, featherSize + overlap * 2, currentCanvas.height);
+            ctx.fillRect(
+              x + w - featherSize - overlap,
+              0,
+              featherSize + overlap * 2,
+              currentCanvas.height,
+            );
           }
 
           if (y > 0) {
-            const gradTop = ctx.createLinearGradient(0, y + overlap, 0, y + featherSize);
-            gradTop.addColorStop(0, 'rgba(0,0,0,1)');
-            gradTop.addColorStop(1, 'rgba(0,0,0,0)');
+            const gradTop = ctx.createLinearGradient(
+              0,
+              y + overlap,
+              0,
+              y + featherSize,
+            );
+            gradTop.addColorStop(0, "rgba(0,0,0,1)");
+            gradTop.addColorStop(1, "rgba(0,0,0,0)");
             ctx.fillStyle = gradTop;
-            ctx.fillRect(0, y - overlap, currentCanvas.width, featherSize + overlap * 2);
+            ctx.fillRect(
+              0,
+              y - overlap,
+              currentCanvas.width,
+              featherSize + overlap * 2,
+            );
           }
         }
       }
 
       // 6. Draw X-Ray layer
       if (xrayImgRef.current && xrayCanvasRef.current) {
-        const xctx = xrayCanvasRef.current.getContext('2d');
+        const xctx = xrayCanvasRef.current.getContext("2d");
         if (xctx) {
-          xctx.clearRect(0, 0, xrayCanvasRef.current.width, xrayCanvasRef.current.height);
+          xctx.clearRect(
+            0,
+            0,
+            xrayCanvasRef.current.width,
+            xrayCanvasRef.current.height,
+          );
           if (!cachedXrayFramingRef.current) {
-            cachedXrayFramingRef.current = getCustomFraming(xrayImgRef.current, currentCanvas.width, currentCanvas.height, true);
+            cachedXrayFramingRef.current = getCustomFraming(
+              xrayImgRef.current,
+              currentCanvas.width,
+              currentCanvas.height,
+              hPos,
+              vPos,
+              true,
+            );
           }
           const { w, h, x, y } = cachedXrayFramingRef.current;
-          
+
           // Draw the image with lower opacity
-          xctx.globalAlpha = 0.30; 
+          xctx.globalAlpha = 0.3;
           xctx.drawImage(xrayImgRef.current, x, y, w, h);
           xctx.globalAlpha = 1.0;
-          
+
           // Apply scanning mask
-          xctx.globalCompositeOperation = 'destination-in';
-          
+          xctx.globalCompositeOperation = "destination-in";
+
           // 2 seconds per cycle
           const time = performance.now() / 2000;
-          const progress = time % 1; 
+          const progress = time % 1;
           // band center goes from slightly above the image to slightly below
-          const bandY = y - h * 0.2 + h * 1.4 * progress; 
+          const bandY = y - h * 0.2 + h * 1.4 * progress;
           const bandHeight = h * 0.3; // thickness of the scan line
-          
-          const grad = xctx.createLinearGradient(0, bandY - bandHeight / 2, 0, bandY + bandHeight / 2);
-          grad.addColorStop(0, 'rgba(0,0,0,0)');
-          grad.addColorStop(0.5, 'rgba(0,0,0,1)');
-          grad.addColorStop(1, 'rgba(0,0,0,0)');
+
+          const grad = xctx.createLinearGradient(
+            0,
+            bandY - bandHeight / 2,
+            0,
+            bandY + bandHeight / 2,
+          );
+          grad.addColorStop(0, "rgba(0,0,0,0)");
+          grad.addColorStop(0.5, "rgba(0,0,0,1)");
+          grad.addColorStop(1, "rgba(0,0,0,0)");
           xctx.fillStyle = grad;
-          xctx.fillRect(0, 0, xrayCanvasRef.current.width, xrayCanvasRef.current.height);
-          
-          xctx.globalCompositeOperation = 'source-over';
+          xctx.fillRect(
+            0,
+            0,
+            xrayCanvasRef.current.width,
+            xrayCanvasRef.current.height,
+          );
+
+          xctx.globalCompositeOperation = "source-over";
         }
       }
 
@@ -600,20 +708,22 @@ export default function BrushReveal({
 
     const container = containerRef.current;
     if (container) {
-      container.addEventListener('pointermove', handlePointerMove);
-      container.addEventListener('pointerleave', handlePointerLeave);
-      container.addEventListener('touchmove', handleTouchMove, { passive: false });
-      container.addEventListener('touchend', handlePointerLeave);
+      container.addEventListener("pointermove", handlePointerMove);
+      container.addEventListener("pointerleave", handlePointerLeave);
+      container.addEventListener("touchmove", handleTouchMove, {
+        passive: false,
+      });
+      container.addEventListener("touchend", handlePointerLeave);
     }
 
     return () => {
       io.disconnect();
-      window.removeEventListener('resize', handleResize);
+      ro.disconnect();
       if (container) {
-        container.removeEventListener('pointermove', handlePointerMove);
-        container.removeEventListener('pointerleave', handlePointerLeave);
-        container.removeEventListener('touchmove', handleTouchMove);
-        container.removeEventListener('touchend', handlePointerLeave);
+        container.removeEventListener("pointermove", handlePointerMove);
+        container.removeEventListener("pointerleave", handlePointerLeave);
+        container.removeEventListener("touchmove", handleTouchMove);
+        container.removeEventListener("touchend", handlePointerLeave);
       }
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
@@ -636,14 +746,14 @@ export default function BrushReveal({
         src={bgImage}
         alt="Base"
         className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-        style={{ willChange: 'transform', objectPosition: bgObjectPosition }}
+        style={{ willChange: "transform", objectPosition: bgObjectPosition }}
       />
 
       {/* Reveal Layer */}
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full touch-none pointer-events-none"
-        style={{ willChange: 'transform' }}
+        style={{ willChange: "transform" }}
       />
 
       {/* X-Ray Layer */}
@@ -651,10 +761,9 @@ export default function BrushReveal({
         <canvas
           ref={xrayCanvasRef}
           className="absolute inset-0 w-full h-full touch-none pointer-events-none"
-          style={{ willChange: 'transform' }}
+          style={{ willChange: "transform" }}
         />
       )}
     </div>
   );
 }
-

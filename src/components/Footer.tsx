@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Activity, ChevronUp } from "lucide-react";
 import CurvedInput from "./CurvedInput";
@@ -18,6 +18,14 @@ const brandLogos = [
 export default function Footer() {
   const { isDark } = useDarkMode();
   const footerRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const { scrollYProgress: footerProgress } = useScroll({
     target: footerRef,
@@ -33,13 +41,13 @@ export default function Footer() {
   return (
     <footer
       ref={footerRef}
-      className="relative z-20 flex flex-col items-center pt-32 w-full min-h-screen overflow-hidden bg-[#f8f9fa] shadow-[0_-20px_50px_rgba(0,0,0,0.3)]"
+      className="relative z-20 flex flex-col items-center pt-24 md:pt-32 w-full min-h-screen overflow-hidden bg-[#f8f9fa] shadow-[0_-20px_50px_rgba(0,0,0,0.3)]"
     >
       {/* Dog on the left */}
       <motion.img
         src="/miloperfil.webp"
         alt="Dog"
-        className="absolute -left-[15%] md:-left-[9%] bottom-0 w-[400px] md:w-[600px] lg:w-[780px] xl:w-[950px] object-contain pointer-events-none mix-blend-multiply"
+        className="absolute -left-[13%] sm:-left-[10%] md:-left-[9%] -bottom-5 md:bottom-0 w-[220px] sm:w-[300px] md:w-[600px] lg:w-[780px] xl:w-[950px] object-contain pointer-events-none mix-blend-multiply"
         style={{ x: dogX, y: dogY, opacity: animalsOpacity }}
       />
 
@@ -47,11 +55,11 @@ export default function Footer() {
       <motion.img
         src="/atreusperfil.webp"
         alt="Cat"
-        className="absolute -right-[10%] md:-right-[7%] bottom-0 w-[400px] md:w-[600px] lg:w-[780px] xl:w-[950px] object-contain pointer-events-none mix-blend-multiply"
+        className="absolute -right-[10%] sm:-right-[10%] md:-right-[7%] -bottom-5 md:bottom-0 w-[220px] sm:w-[300px] md:w-[600px] lg:w-[780px] xl:w-[950px] object-contain pointer-events-none mix-blend-multiply"
         style={{ x: catX, y: catY, opacity: animalsOpacity }}
       />
 
-      <div className="relative z-10 w-full max-w-2xl mx-auto flex flex-col items-center text-center px-6 mt-10 md:mt-20">
+      <div className="relative z-10 w-full max-w-2xl mx-auto flex flex-col items-center text-center px-6 mt-4 md:mt-20">
         <h2 className="font-['Outfit'] font-black text-4xl md:text-5xl text-[#0277ab] mb-4">
           Boletín Terrancito
         </h2>
@@ -59,9 +67,9 @@ export default function Footer() {
           Suscríbete y recibe nuestras ofertas y novedades
         </p>
 
-        <div className="w-full max-w-md mx-auto flex flex-col -space-y-4 items-center mt-4">
+        <div className="w-full max-w-[320px] md:max-w-md mx-auto flex flex-col -space-y-4 items-center mt-4 md:mt-8">
           <CurvedInput
-            theme={isDark ? 'dark' : 'light'}
+            theme={isDark ? "dark" : "light"}
             showButton={false}
             showIcon={false}
             placeholder="Nombre y Apellidos*"
@@ -75,12 +83,12 @@ export default function Footer() {
             placeholderColor={isDark ? "#9ca3af" : "#9aa0b6"}
             shadowSize="md"
             shadowColor="#000000"
-            width={450}
+            width={isMobile ? 320 : 450}
             height={64}
-            bend={18}
+            bend={isMobile ? 14 : 18}
           />
           <CurvedInput
-            theme={isDark ? 'dark' : 'light'}
+            theme={isDark ? "dark" : "light"}
             showButton={true}
             buttonText="Enviar"
             showIcon={false}
@@ -97,15 +105,15 @@ export default function Footer() {
             buttonTextColor="#ffffff"
             shadowSize="md"
             shadowColor="#000000"
-            width={450}
+            width={isMobile ? 320 : 450}
             height={64}
-            bend={18}
+            bend={isMobile ? 14 : 18}
           />
         </div>
       </div>
 
-      <div className="w-full flex flex-col items-center px-6 relative z-10 mt-auto mb-10">
-        <h3 className="font-['Outfit'] font-bold text-sm md:text-base tracking-[0.25em] uppercase text-gray-500 dark:text-gray-400 mb-10">
+      <div className="w-full flex flex-col items-center px-6 relative z-10 mt-14 md:mt-24 mb-4 md:mb-10">
+        <h3 className="font-['Outfit'] font-bold text-sm md:text-base tracking-[0.25em] uppercase text-gray-500 dark:text-gray-400 mb-3 md:mb-6">
           NUESTROS COLABORADORES
         </h3>
         <div className="w-full max-w-xl mx-auto overflow-hidden">
@@ -124,9 +132,9 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="w-full text-gray-500 dark:text-gray-400 font-['Outfit'] mt-20 py-8 px-6 relative z-30">
-        <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 text-sm md:text-base">
-          <div className="flex flex-col items-center gap-1 text-center">
+      <div className="w-full text-gray-500 dark:text-gray-400 font-['Outfit'] mt-auto mb-32 md:mb-0 py-2 md:py-8 px-6 relative z-30">
+        <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-3 lg:gap-16 text-[13px] md:text-base">
+          <div className="flex flex-col items-center gap-0 md:gap-1 text-center">
             <p className="font-medium">
               © 2026 Dommomedia. Todos los derechos reservados.
             </p>
@@ -146,7 +154,9 @@ export default function Footer() {
               <Activity className="w-4 h-4 text-gray-400" />
               <span>
                 Nº de visitas:{" "}
-                <strong className="text-gray-700 dark:text-gray-300">126.935</strong>
+                <strong className="text-gray-700 dark:text-gray-300">
+                  126.935
+                </strong>
               </span>
             </div>
           </div>

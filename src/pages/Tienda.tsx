@@ -28,7 +28,7 @@ export default function Tienda() {
           transition={{ duration: 0.8, delay: 0.3 }}
           src="/miloperfil.webp"
           alt="Perro feliz"
-          className="absolute -left-[15%] md:-left-[5%] bottom-0 w-[400px] md:w-[600px] object-contain opacity-80"
+          className="absolute -left-[20%] md:-left-[5%] bottom-0 w-[250px] md:w-[600px] object-contain opacity-30 md:opacity-80"
         />
         
         <motion.img
@@ -37,13 +37,13 @@ export default function Tienda() {
           transition={{ duration: 0.8, delay: 0.5 }}
           src="/atreusperfil.webp"
           alt="Gato curioso"
-          className="absolute -right-[10%] md:-right-[5%] bottom-0 w-[400px] md:w-[600px] object-contain opacity-80"
+          className="absolute -right-[15%] md:-right-[5%] bottom-0 w-[250px] md:w-[600px] object-contain opacity-30 md:opacity-80"
         />
       </div>
 
       <Header variant="back" />
       
-      <main className="flex-1 flex flex-col items-center justify-center relative z-10 px-6 text-center mt-20">
+      <main className="flex-1 flex flex-col items-center justify-center relative z-10 px-6 text-center mt-20 pb-56 md:pb-0">
         
         <motion.div
           initial={{ opacity: 0, y: 20 }}
