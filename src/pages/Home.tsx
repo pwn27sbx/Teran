@@ -73,16 +73,19 @@ function App() {
             }}
             className="w-full h-full relative origin-center bg-white dark:bg-[#121212] shadow-2xl overflow-hidden pointer-events-auto"
           >
-            <BrushReveal
-              bgImage="/milo1_nobg.webp"
-              revealImage="/atreus1_nobg.webp"
-              xrayImage={isDark ? "/atreusx_dark.webp" : "/atreusx_nobg.webp"}
-              brushSize={isMobile ? 90 : 180}
-              revealScale={0.73}
-              bgScale={isMobile ? 0.95 : 0.9}
-              bgObjectPosition="center 10%"
-              revealOffsetY={isMobile ? -0.35 : -0.29}
-            />
+            {/* Contenedor para ajustar tamaño y posición en PC sin romper las capas */}
+            <div className="w-full h-full md:scale-[1] md:translate-y-[5vh] origin-bottom">
+              <BrushReveal
+                bgImage="/milo1_nobg.webp"
+                revealImage="/atreus1_nobg.webp"
+                xrayImage={isDark ? "/atreusx_dark.webp" : "/atreusx_nobg.webp"}
+                brushSize={isMobile ? 90 : 180}
+                revealScale={0.73}
+                bgScale={isMobile ? 0.95 : 1}
+                bgObjectPosition="center 5%"
+                revealOffsetY={isMobile ? -0.35 : -0.355}
+              />
+            </div>
             {isMobile && (
               <div className="absolute top-[16vh] left-1/2 -translate-x-1/2 flex flex-col items-center text-gray-900 dark:text-white drop-shadow-md z-10 pointer-events-none w-full">
                 <img
