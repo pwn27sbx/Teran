@@ -714,6 +714,7 @@ export default function BrushReveal({
     rafRef.current = requestAnimationFrame(renderLoop);
 
     const handlePointerMove = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
       const container = containerRef.current;
       if (!container) return;
       const rect = container.getBoundingClientRect();
@@ -724,15 +725,96 @@ export default function BrushReveal({
       isHoveringRef.current = true;
     };
 
-    const handlePointerLeave = () => {
+    const handlePointerLeave = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
       isHoveringRef.current = false;
       autoTargetRef.current = { ...targetPosRef.current };
+    };
+
+    let touchTimer: ReturnType<typeof setTimeout> | null = null;
+    let isWaitingForBrush = false;
+    let isBrushActive = false;
+    let touchStartPos = { x: 0, y: 0 };
+    let lastTouchPos = { x: 0, y: 0 };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      if (!touch) return;
+      
+      touchStartPos = { x: touch.clientX, y: touch.clientY };
+      lastTouchPos = { ...touchStartPos };
+      
+      isWaitingForBrush = true;
+      isBrushActive = false;
+      
+      if (touchTimer) clearTimeout(touchTimer);
+      touchTimer = setTimeout(() => {
+        if (isWaitingForBrush) {
+          isBrushActive = true;
+          isWaitingForBrush = false;
+          isHoveringRef.current = true;
+          
+          const container = containerRef.current;
+          if (container) {
+            const rect = container.getBoundingClientRect();
+            mousePosRef.current = {
+              x: lastTouchPos.x - rect.left,
+              y: lastTouchPos.y - rect.top,
+            };
+          }
+        }
+      }, 500); // Medio segundo para activar
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      if (!touch) return;
+      
+      lastTouchPos = { x: touch.clientX, y: touch.clientY };
+
+      if (isWaitingForBrush) {
+        // Si se mueve mucho antes del medio segundo, es scroll
+        const dist = Math.hypot(touch.clientX - touchStartPos.x, touch.clientY - touchStartPos.y);
+        if (dist > 15) {
+          isWaitingForBrush = false;
+          if (touchTimer) clearTimeout(touchTimer);
+        }
+      }
+
+      if (isBrushActive) {
+        // Si el brush está activo, prevenimos el scroll
+        e.preventDefault();
+        const container = containerRef.current;
+        if (container) {
+          const rect = container.getBoundingClientRect();
+          mousePosRef.current = {
+            x: touch.clientX - rect.left,
+            y: touch.clientY - rect.top,
+          };
+          isHoveringRef.current = true;
+        }
+      }
+    };
+
+    const handleTouchEnd = () => {
+      isWaitingForBrush = false;
+      if (touchTimer) clearTimeout(touchTimer);
+      
+      if (isBrushActive) {
+        isBrushActive = false;
+        isHoveringRef.current = false;
+        autoTargetRef.current = { ...targetPosRef.current };
+      }
     };
 
     const container = containerRef.current;
     if (container) {
       container.addEventListener("pointermove", handlePointerMove);
       container.addEventListener("pointerleave", handlePointerLeave);
+      container.addEventListener("touchstart", handleTouchStart, { passive: true });
+      container.addEventListener("touchmove", handleTouchMove, { passive: false });
+      container.addEventListener("touchend", handleTouchEnd);
+      container.addEventListener("touchcancel", handleTouchEnd);
     }
 
     return () => {
@@ -741,6 +823,10 @@ export default function BrushReveal({
       if (container) {
         container.removeEventListener("pointermove", handlePointerMove);
         container.removeEventListener("pointerleave", handlePointerLeave);
+        container.removeEventListener("touchstart", handleTouchStart);
+        container.removeEventListener("touchmove", handleTouchMove);
+        container.removeEventListener("touchend", handleTouchEnd);
+        container.removeEventListener("touchcancel", handleTouchEnd);
       }
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
