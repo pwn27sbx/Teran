@@ -803,7 +803,19 @@ export default function BrushReveal({
       if (isBrushActive) {
         isBrushActive = false;
         isHoveringRef.current = false;
-        autoTargetRef.current = { ...targetPosRef.current };
+        
+        // Push the brush far off-screen seamlessly so it doesn't look stuck
+        const container = containerRef.current;
+        if (container) {
+          const angle = Math.random() * Math.PI * 2;
+          const padding = Math.max(container.clientWidth, container.clientHeight) * 1.5;
+          autoTargetRef.current = {
+            x: targetPosRef.current.x + Math.cos(angle) * padding,
+            y: targetPosRef.current.y + Math.sin(angle) * padding
+          };
+        } else {
+          autoTargetRef.current = { ...targetPosRef.current };
+        }
       }
     };
 
