@@ -1,15 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { PhoneCall, Menu, Sun, Moon, ChevronLeft } from "lucide-react";
-import { useDarkMode } from "../hooks/useDarkMode";
+import { PhoneCall, Menu, ChevronLeft } from "lucide-react";
 
 interface HeaderProps {
   variant?: "home" | "back";
 }
 
 export default function Header({ variant = "home" }: HeaderProps) {
-  const { isDark, toggleDark } = useDarkMode();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -141,20 +139,6 @@ export default function Header({ variant = "home" }: HeaderProps) {
               >
                 Certificación
               </Link>
-
-              <div className="h-px bg-gray-200 dark:bg-gray-700/50 my-1 mx-2" />
-              
-              <button
-                onClick={() => {
-                  toggleDark();
-                  setIsMenuOpen(false);
-                }}
-                role="menuitem"
-                className="px-4 py-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-white/10 hover:shadow-sm font-['Outfit'] font-medium text-gray-800 dark:text-gray-100 transition-all flex items-center gap-3 w-full text-left"
-              >
-                {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                {isDark ? "Modo Claro" : "Modo Oscuro"}
-              </button>
             </motion.div>
           )}
         </AnimatePresence>
