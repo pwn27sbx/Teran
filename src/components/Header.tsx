@@ -60,7 +60,7 @@ export default function Header({ variant = "home" }: HeaderProps) {
       {/* Right Actions: Glass Dock (Solo Menú y Regresar) */}
       <div
         ref={menuRef}
-        className="group relative w-full md:w-auto p-1.5 bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-[26px] shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] pointer-events-auto transition-colors"
+        className="group relative w-full md:w-auto p-1.5 bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-[26px] shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] pointer-events-auto transition-colors md:mt-[14px]"
       >
         {/* Animated Border */}
         <svg
@@ -142,45 +142,47 @@ export default function Header({ variant = "home" }: HeaderProps) {
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div
-              initial={{ opacity: 0, height: 0, marginTop: 0 }}
-              animate={{ opacity: 1, height: "auto", marginTop: 8 }}
-              exit={{ opacity: 0, height: 0, marginTop: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="overflow-hidden flex flex-col gap-3 px-2 pb-4 z-20 relative"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="overflow-hidden z-20 relative w-full"
               role="menu"
             >
-              <Link
-                to="/"
-                onClick={() => setIsMenuOpen(false)}
-                role="menuitem"
-                className={`px-4 py-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-white/10 hover:shadow-sm font-['Outfit'] font-medium transition-all flex items-center gap-3 ${location.pathname === "/" ? "bg-gray-50 dark:bg-gray-800/50 text-[#0277ab] dark:text-sky-400" : "text-gray-800 dark:text-gray-100"}`}
-              >
-                Inicio
-              </Link>
-              <Link
-                to="/servicios"
-                onClick={() => setIsMenuOpen(false)}
-                role="menuitem"
-                className={`px-4 py-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-white/10 hover:shadow-sm font-['Outfit'] font-medium transition-all flex items-center gap-3 ${location.pathname === "/servicios" ? "bg-gray-50 dark:bg-gray-800/50 text-[#0277ab] dark:text-sky-400" : "text-gray-800 dark:text-gray-100"}`}
-              >
-                Servicios
-              </Link>
-              <Link
-                to="/nosotros"
-                onClick={() => setIsMenuOpen(false)}
-                role="menuitem"
-                className={`px-4 py-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-white/10 hover:shadow-sm font-['Outfit'] font-medium transition-all flex items-center gap-3 ${location.pathname === "/nosotros" ? "bg-gray-50 dark:bg-gray-800/50 text-[#0277ab] dark:text-sky-400" : "text-gray-800 dark:text-gray-100"}`}
-              >
-                Nosotros
-              </Link>
-              <Link
-                to="/certificacion"
-                onClick={() => setIsMenuOpen(false)}
-                role="menuitem"
-                className={`px-4 py-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-white/10 hover:shadow-sm font-['Outfit'] font-medium transition-all flex items-center gap-3 ${location.pathname === "/certificacion" ? "bg-gray-50 dark:bg-gray-800/50 text-[#0277ab] dark:text-sky-400" : "text-gray-800 dark:text-gray-100"}`}
-              >
-                Certificación
-              </Link>
+              <div className="flex flex-col gap-3 px-2 pt-2 pb-4">
+                <Link
+                  to="/"
+                  onClick={() => setIsMenuOpen(false)}
+                  role="menuitem"
+                  className={`px-4 py-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-white/10 hover:shadow-sm font-['Outfit'] font-medium transition-all flex items-center gap-3 ${location.pathname === "/" ? "bg-gray-50 dark:bg-gray-800/50 text-[#0277ab] dark:text-sky-400" : "text-gray-800 dark:text-gray-100"}`}
+                >
+                  Inicio
+                </Link>
+                <Link
+                  to="/servicios"
+                  onClick={() => setIsMenuOpen(false)}
+                  role="menuitem"
+                  className={`px-4 py-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-white/10 hover:shadow-sm font-['Outfit'] font-medium transition-all flex items-center gap-3 ${location.pathname === "/servicios" ? "bg-gray-50 dark:bg-gray-800/50 text-[#0277ab] dark:text-sky-400" : "text-gray-800 dark:text-gray-100"}`}
+                >
+                  Servicios
+                </Link>
+                <Link
+                  to="/nosotros"
+                  onClick={() => setIsMenuOpen(false)}
+                  role="menuitem"
+                  className={`px-4 py-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-white/10 hover:shadow-sm font-['Outfit'] font-medium transition-all flex items-center gap-3 ${location.pathname === "/nosotros" ? "bg-gray-50 dark:bg-gray-800/50 text-[#0277ab] dark:text-sky-400" : "text-gray-800 dark:text-gray-100"}`}
+                >
+                  Nosotros
+                </Link>
+                <Link
+                  to="/certificacion"
+                  onClick={() => setIsMenuOpen(false)}
+                  role="menuitem"
+                  className={`px-4 py-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-white/10 hover:shadow-sm font-['Outfit'] font-medium transition-all flex items-center gap-3 ${location.pathname === "/certificacion" ? "bg-gray-50 dark:bg-gray-800/50 text-[#0277ab] dark:text-sky-400" : "text-gray-800 dark:text-gray-100"}`}
+                >
+                  Certificación
+                </Link>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -194,7 +196,7 @@ export default function Header({ variant = "home" }: HeaderProps) {
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-        className="fixed top-0 left-0 right-0 z-50 px-6 py-6 md:px-12 flex items-center justify-between pointer-events-none"
+        className="fixed top-0 left-0 right-0 z-50 px-6 py-6 md:px-12 flex items-start justify-between pointer-events-none"
       >
         {headerContent}
       </motion.header>
@@ -202,7 +204,7 @@ export default function Header({ variant = "home" }: HeaderProps) {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 py-6 pointer-events-none">
+    <header className="fixed top-0 left-0 right-0 z-50 flex items-start justify-between px-6 md:px-12 py-6 pointer-events-none">
       {headerContent}
     </header>
   );

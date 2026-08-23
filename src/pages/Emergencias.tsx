@@ -5,7 +5,7 @@ import LocationCard from "../components/LocationCard";
 
 export default function Emergencias() {
   return (
-    <div className="min-h-[100dvh] w-full bg-[#f5f5f7] dark:bg-black flex flex-col items-center justify-start pt-24 pb-12 p-4 md:p-8 relative overflow-x-hidden transition-colors duration-700 font-['Outfit']">
+    <div className="min-h-[100dvh] w-full bg-[#f5f5f7] dark:bg-black flex flex-col items-center justify-start md:justify-center pt-24 pb-12 p-4 md:p-8 relative overflow-x-hidden transition-colors duration-700 font-['Outfit']">
       
       {/* Background Orb */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vw] max-w-[800px] max-h-[800px] bg-red-600/5 dark:bg-red-600/10 blur-[100px] rounded-full pointer-events-none" />
@@ -24,7 +24,7 @@ export default function Emergencias() {
         </Link>
       </motion.div>
 
-      <div className="w-full max-w-5xl z-10 flex flex-col items-center text-center h-full justify-start gap-8 mt-4 md:mt-8">
+      <div className="w-full max-w-5xl z-10 flex flex-col items-center text-center h-full justify-start md:justify-center gap-8 mt-4 md:mt-0">
         
         {/* Header Section */}
         <motion.div 

@@ -30,6 +30,16 @@ const colorMap = {
 };
 
 export default function LocationCard({ title, address, phones, mapUrl, embedUrl, is24Hours, themeColor }: LocationCardProps) {
+  const [loadMap, setLoadMap] = React.useState(false);
+  
+  React.useEffect(() => {
+    // Retrasar la carga pesada del iframe para no congelar la animación de la página
+    const timer = setTimeout(() => {
+      setLoadMap(true);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
+
   const colors = colorMap[themeColor];
   
   return (
@@ -40,11 +50,15 @@ export default function LocationCard({ title, address, phones, mapUrl, embedUrl,
       className={`group bg-white/80 dark:bg-white/5 backdrop-blur-3xl border border-gray-200/80 dark:border-white/10 rounded-[2rem] p-2 md:p-2.5 flex flex-col hover:shadow-xl ${colors.hoverShadow} transition-all duration-500 hover:-translate-y-1`}
     >
       <div className="w-full h-24 md:h-28 rounded-[1.5rem] overflow-hidden mb-3 relative bg-gray-100 dark:bg-gray-900">
-        <iframe 
-          src={embedUrl} 
-          className="absolute inset-0 w-full h-full border-0 filter grayscale-[50%] contrast-110 opacity-80 group-hover:opacity-100 group-hover:grayscale-0 dark:invert-[.95] dark:hue-rotate-180 dark:grayscale-[.2] dark:contrast-[1.2] transition-all duration-700 pointer-events-none"
-          loading="lazy" 
-        />
+        {loadMap ? (
+          <iframe 
+            src={embedUrl} 
+            className="absolute inset-0 w-full h-full border-0 filter grayscale-[50%] contrast-110 opacity-80 group-hover:opacity-100 group-hover:grayscale-0 dark:invert-[.95] dark:hue-rotate-180 dark:grayscale-[.2] dark:contrast-[1.2] transition-all duration-700 pointer-events-none"
+            loading="lazy" 
+          />
+        ) : (
+          <div className="absolute inset-0 w-full h-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+        )}
         <div className="absolute inset-0 ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[1.5rem] pointer-events-none" />
         {is24Hours && (
           <div className={`absolute top-2 right-2 ${colors.badge} backdrop-blur-md text-white text-[8px] font-bold px-2 py-1 rounded-full uppercase tracking-widest shadow-md`}>

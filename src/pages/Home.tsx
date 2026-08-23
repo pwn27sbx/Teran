@@ -83,7 +83,7 @@ function App() {
                 revealScale={0.73}
                 bgScale={isMobile ? 0.95 : 1}
                 bgObjectPosition="center 5%"
-                revealOffsetY={isMobile ? -0.35 : -0.355}
+                revealOffsetY={isMobile ? -0.35 : -0.354}
               />
             </div>
             {isMobile && (

@@ -112,7 +112,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="w-full flex flex-col items-center px-6 relative z-10 mt-14 md:mt-24 mb-4 md:mb-10">
+      <div className="w-full flex flex-col items-center px-6 relative z-10 mt-14 md:mt-[20vh] mb-4 md:mb-10">
         <h3 className="font-['Outfit'] font-bold text-sm md:text-base tracking-[0.25em] uppercase text-gray-500 dark:text-gray-400 mb-3 md:mb-6">
           NUESTROS COLABORADORES
         </h3>
