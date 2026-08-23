@@ -807,6 +807,11 @@ export default function BrushReveal({
       }
     };
 
+    const handleContextMenu = (e: Event) => {
+      // Evita que salga el menú contextual al dejar presionado (tanto en móvil como simuladores de PC)
+      e.preventDefault();
+    };
+
     const container = containerRef.current;
     if (container) {
       container.addEventListener("pointermove", handlePointerMove);
@@ -815,6 +820,7 @@ export default function BrushReveal({
       container.addEventListener("touchmove", handleTouchMove, { passive: false });
       container.addEventListener("touchend", handleTouchEnd);
       container.addEventListener("touchcancel", handleTouchEnd);
+      container.addEventListener("contextmenu", handleContextMenu);
     }
 
     return () => {
@@ -827,6 +833,7 @@ export default function BrushReveal({
         container.removeEventListener("touchmove", handleTouchMove);
         container.removeEventListener("touchend", handleTouchEnd);
         container.removeEventListener("touchcancel", handleTouchEnd);
+        container.removeEventListener("contextmenu", handleContextMenu);
       }
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
