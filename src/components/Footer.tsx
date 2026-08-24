@@ -16,6 +16,7 @@ const brandLogos = [
 ];
 
 export default function Footer() {
+  const { t } = useTranslation();
   const { isDark } = useDarkMode();
   const footerRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
@@ -158,7 +159,7 @@ export default function Footer() {
         <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-3 lg:gap-16 text-[13px] md:text-base">
           <div className="flex flex-col items-center gap-0 md:gap-1 text-center">
             <p className="font-medium">
-              © 2026 Dommomedia. Todos los derechos reservados.
+              © 2026 Dommomedia. {t("footer.rights")}
             </p>
             <div className="flex flex-wrap justify-center gap-4 text-gray-400 font-medium">
               <a href="#" className="hover:text-[#0277ab] transition-colors">

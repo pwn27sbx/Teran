@@ -1,8 +1,3 @@
-import { 
-  Activity, HeartPulse, Stethoscope, Droplet, Zap, Eye, Heart, Pill, 
-  Bed, Baby, Truck, Scissors, Syringe, Flame, BookOpen, Package, Cpu, Plane
-} from "lucide-react";
-import React from "react";
 
 export const categories = [
   { id: "todos", label: "Todos" },
@@ -19,7 +14,7 @@ export const services = [
     title: "Rayos X",
     subtitle: "Digitalizador de alta resolución",
     description: "Equipamiento de última generación para diagnósticos por imagen rápidos y precisos.",
-    icon: <Zap className="w-6 h-6 text-[#0277ab]" />,
+    iconName: "Zap",
     color: "bg-blue-50/50",
     border: "border-[#0277ab]/20"
   },
@@ -29,7 +24,7 @@ export const services = [
     title: "Laboratorio Veterinario",
     subtitle: "Resultados en tiempo real",
     description: "Análisis clínicos completos in situ. Tecnología avanzada para evaluar la salud de tu mascota.",
-    icon: <Activity className="w-6 h-6 text-[#f4484a]" />,
+    iconName: "Activity",
     color: "bg-red-50/50",
     border: "border-[#f4484a]/20"
   },
@@ -39,7 +34,7 @@ export const services = [
     title: "Ecografía",
     subtitle: "Diagnóstico por imagen",
     description: "Imágenes de ultrasonido precisas para una evaluación no invasiva de los órganos internos.",
-    icon: <Eye className="w-6 h-6 text-teal-600" />,
+    iconName: "Eye",
     color: "bg-teal-50/50",
     border: "border-teal-600/20"
   },
@@ -49,7 +44,7 @@ export const services = [
     title: "Eco cardiología",
     subtitle: "Salud cardiovascular",
     description: "Evaluación detallada del corazón para detectar y tratar anomalías cardíacas a tiempo.",
-    icon: <Heart className="w-6 h-6 text-rose-500" />,
+    iconName: "Heart",
     color: "bg-rose-50/50",
     border: "border-rose-500/20"
   },
@@ -59,7 +54,7 @@ export const services = [
     title: "UCI",
     subtitle: "Cuidados Intensivos",
     description: "Unidad especializada para la monitorización y atención de pacientes en estado crítico las 24 horas.",
-    icon: <HeartPulse className="w-6 h-6 text-orange-500" />,
+    iconName: "HeartPulse",
     color: "bg-orange-50/50",
     border: "border-orange-500/20"
   },
@@ -69,7 +64,7 @@ export const services = [
     title: "Centro Quirúrgico",
     subtitle: "Quirófano equipado",
     description: "Intervenciones quirúrgicas seguras con monitoreo constante y profesionales capacitados.",
-    icon: <Stethoscope className="w-6 h-6 text-emerald-600" />,
+    iconName: "Stethoscope",
     color: "bg-emerald-50/50",
     border: "border-emerald-600/20"
   },
@@ -79,7 +74,7 @@ export const services = [
     title: "Hospitalización",
     subtitle: "Cuidado continuo",
     description: "Áreas confortables y seguras para la recuperación bajo supervisión médica constante.",
-    icon: <Bed className="w-6 h-6 text-blue-500" />,
+    iconName: "Bed",
     color: "bg-blue-50/50",
     border: "border-blue-500/20"
   },
@@ -89,7 +84,7 @@ export const services = [
     title: "Sala de maternidad",
     subtitle: "Atención neonatal",
     description: "Ambiente cálido, tranquilo y supervisado para partos y cuidado de los recién nacidos.",
-    icon: <Baby className="w-6 h-6 text-pink-500" />,
+    iconName: "Baby",
     color: "bg-pink-50/50",
     border: "border-pink-500/20"
   },
@@ -99,7 +94,7 @@ export const services = [
     title: "Hidroterapia",
     subtitle: "Rehabilitación física",
     description: "Terapias en agua para mejorar la movilidad, aliviar dolores articulares y acelerar la recuperación.",
-    icon: <Droplet className="w-6 h-6 text-teal-600" />,
+    iconName: "Droplet",
     color: "bg-teal-50/50",
     border: "border-teal-600/20"
   },
@@ -109,7 +104,7 @@ export const services = [
     title: "Estética animal",
     subtitle: "Grooming profesional",
     description: "Cortes de raza, baños medicados y cuidado del pelaje para mantenerlos hermosos y sanos.",
-    icon: <Scissors className="w-6 h-6 text-fuchsia-500" />,
+    iconName: "Scissors",
     color: "bg-fuchsia-50/50",
     border: "border-fuchsia-500/20"
   },
@@ -119,7 +114,7 @@ export const services = [
     title: "Vacunación",
     subtitle: "Prevención",
     description: "Calendarios de vacunación completos para protegerlos de las principales enfermedades.",
-    icon: <Syringe className="w-6 h-6 text-yellow-600" />,
+    iconName: "Syringe",
     color: "bg-yellow-50/50",
     border: "border-yellow-600/20"
   },
@@ -129,7 +124,7 @@ export const services = [
     title: "Educación",
     subtitle: "Adiestramiento",
     description: "Programas de comportamiento para mejorar la convivencia y obediencia de tu mascota.",
-    icon: <BookOpen className="w-6 h-6 text-cyan-600" />,
+    iconName: "BookOpen",
     color: "bg-cyan-50/50",
     border: "border-cyan-600/20"
   },
@@ -139,7 +134,7 @@ export const services = [
     title: "Farmacia",
     subtitle: "Medicamentos veterinarios",
     description: "Amplio stock de medicinas y tratamientos prescritos listos para el cuidado de tu mascota.",
-    icon: <Pill className="w-6 h-6 text-indigo-500" />,
+    iconName: "Pill",
     color: "bg-indigo-50/50",
     border: "border-indigo-500/20"
   },
@@ -149,7 +144,7 @@ export const services = [
     title: "Ambulancia",
     subtitle: "Traslado seguro",
     description: "Vehículo equipado para emergencias y traslados seguros hacia nuestras instalaciones.",
-    icon: <Truck className="w-6 h-6 text-red-600" />,
+    iconName: "Truck",
     color: "bg-red-50/50",
     border: "border-red-600/20"
   },
@@ -159,7 +154,7 @@ export const services = [
     title: "Crematorio",
     subtitle: "Despedida digna",
     description: "Un servicio respetuoso y cálido para acompañarte en el momento de la despedida.",
-    icon: <Flame className="w-6 h-6 text-gray-500 dark:text-gray-400" />,
+    iconName: "Flame",
     color: "bg-gray-50/50",
     border: "border-gray-500/20"
   },
@@ -169,7 +164,7 @@ export const services = [
     title: "Delivery",
     subtitle: "Envíos a casa",
     description: "Llevamos medicamentos, alimentos y accesorios directamente a la puerta de tu hogar.",
-    icon: <Package className="w-6 h-6 text-orange-400" />,
+    iconName: "Package",
     color: "bg-orange-50/50",
     border: "border-orange-400/20"
   },
@@ -179,7 +174,7 @@ export const services = [
     title: "Microchip",
     subtitle: "Identificación",
     description: "Implantación indolora de microchip para la identificación internacional de tu mascota.",
-    icon: <Cpu className="w-6 h-6 text-[#0277ab]" />,
+    iconName: "Cpu",
     color: "bg-blue-50/50",
     border: "border-[#0277ab]/20"
   },
@@ -189,7 +184,7 @@ export const services = [
     title: "Certificación de viaje",
     subtitle: "Al extranjero",
     description: "Gestión de certificados de salud y trámites necesarios para viajar con tu mascota.",
-    icon: <Plane className="w-6 h-6 text-sky-500" />,
+    iconName: "Plane",
     color: "bg-sky-50/50",
     border: "border-sky-500/20"
   }

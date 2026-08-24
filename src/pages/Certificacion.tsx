@@ -99,7 +99,7 @@ export default function Certificacion() {
                   <div className="relative z-10 flex flex-col h-full pointer-events-none">
                     <div className="flex items-center gap-4 mb-3">
                       <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white dark:border-gray-800 shadow-sm shrink-0">
-                        <img src={testimonial.image} alt={testimonial.name} className="w-full h-full object-cover" />
+                        <img loading="lazy" src={testimonial.image} alt={testimonial.name} className="w-full h-full object-cover" />
                       </div>
                       <div>
                         <h3 className="text-base font-black text-gray-900 dark:text-white leading-tight">{testimonial.name}</h3>
@@ -140,7 +140,7 @@ function TestimonialCard({ testimonial, index, direction }: { testimonial: Testi
       <div className="relative z-10 flex flex-col h-full">
         <div className="flex items-center gap-4 mb-4">
           <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white dark:border-gray-800 shadow-md shrink-0">
-            <img src={testimonial.image} alt={testimonial.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+            <img loading="lazy" src={testimonial.image} alt={testimonial.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
           </div>
           <div>
             <h3 className="text-lg font-black text-gray-900 dark:text-white leading-tight">{testimonial.name}</h3>

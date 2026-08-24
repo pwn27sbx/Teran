@@ -37,6 +37,7 @@ export default function Nosotros() {
           {/* Column 1: Image (Bento Block 1) */}
           <div className="order-2 lg:order-none w-full lg:w-[32%] h-[300px] sm:h-[400px] lg:h-auto relative rounded-[2.5rem] overflow-hidden shadow-xl shadow-[#0277ab]/10 border border-white/40 dark:border-white/10 shrink-0 group">
             <img 
+              loading="lazy"
               src="/staff.webp" 
               alt="MVZ Mario y Vanessa Terán Rivas" 
               className="absolute inset-0 w-full h-full object-cover object-[50%_15%] lg:object-top group-hover:scale-105 transition-transform duration-700"
