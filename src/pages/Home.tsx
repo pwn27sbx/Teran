@@ -5,8 +5,8 @@ import PremiumFeatures from "../components/PremiumFeatures";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Activity } from "lucide-react";
-import { useDarkMode } from "../hooks/useDarkMode";
-import { useNavigate } from "react-router-dom";
+
+
 import { motion, useScroll, useTransform } from "framer-motion";
 
 const baseGalleryItems = Array.from({ length: 27 }, (_, i) => ({
@@ -24,8 +24,8 @@ const galleryItems = [
 ];
 
 function App() {
-  const navigate = useNavigate();
-  const { isDark, toggleDark } = useDarkMode();
+  
+  const { isDark } = useDarkMode();
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);

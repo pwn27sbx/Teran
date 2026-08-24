@@ -19,7 +19,7 @@ export default function Footer() {
   const { isDark } = useDarkMode();
   const footerRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
-  const [isSafari, setIsSafari] = useState(() => {
+  const [isSafari] = useState(() => {
     if (typeof navigator === 'undefined') return false;
     const ua = navigator.userAgent.toLowerCase();
     return ua.includes('safari') && !ua.includes('chrome') && !ua.includes('android');

@@ -53,7 +53,6 @@ export default function BrushReveal({
   const currentPosRef = useRef<Point>({ x: 0, y: 0 });
   const targetPosRef = useRef<Point>({ x: 0, y: 0 });
   const autoTargetRef = useRef<Point>({ x: 0, y: 0 });
-  const sweepAngleRef = useRef<number>(Math.PI / 2);
   const mousePosRef = useRef<Point>({ x: 0, y: 0 });
   const lastMousePosRef = useRef<Point>({ x: 0, y: 0 });
   const exitVelocityRef = useRef<Point | null>(null); // Tracks the escape velocity when stopped
@@ -849,7 +848,7 @@ export default function BrushReveal({
       window.removeEventListener("touchcancel", handleTouchEnd);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [imagesLoaded, brushSize, bgScale, revealScale, revealOffsetY]);
+  }, [imagesLoaded, brushSize, bgScale, revealScale, revealOffsetY, bgObjectPosition]);
 
   return (
     <div

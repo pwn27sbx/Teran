@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, PhoneCall, Smartphone } from "lucide-react";
+import { ArrowLeft, PhoneCall } from "lucide-react";
 import { motion } from "framer-motion";
 import LocationCard from "../components/LocationCard";
 
