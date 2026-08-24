@@ -13,7 +13,8 @@ export default function Header({ variant = "home" }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { t, i18n } = useTranslation();
   const toggleLanguage = () => {
-    i18n.changeLanguage(i18n.language.startsWith('es') ? 'en' : 'es');
+    const currentLang = i18n.resolvedLanguage || i18n.language || 'es';
+    i18n.changeLanguage(currentLang.startsWith('es') ? 'en' : 'es');
   };
   const menuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();

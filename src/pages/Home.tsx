@@ -1,5 +1,6 @@
 import { useDarkMode } from "../hooks/useDarkMode";
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import BrushReveal from "../components/BrushReveal";
 import DriftWall from "../components/DriftWall";
 import PremiumFeatures from "../components/PremiumFeatures";
@@ -25,6 +26,7 @@ const galleryItems = [
 ];
 
 function App() {
+  const { t } = useTranslation();
   
   const { isDark } = useDarkMode();
   const [isMobile, setIsMobile] = useState(false);
@@ -129,16 +131,12 @@ function App() {
             </span>
           </div>
           <h2 className="font-['Outfit'] font-black text-5xl md:text-7xl text-[#0277ab] mb-8 tracking-tight drop-shadow-sm">
-            ¿Por qué elegirnos?
+            {t('home.why_us')}
           </h2>
-          <p className="font-serif text-lg md:text-2xl leading-relaxed text-gray-600 dark:text-gray-400 font-light max-w-3xl">
-            Veterinarias Terán es sinónimo de profesionalismo y pasión. Son{" "}
-            <strong className="font-bold text-[#0277ab]">24 años</strong>{" "}
-            salvaguardando el bienestar de las mascotas del Perú, siendo
-            precursores en tecnología médica de punta y capacitación constante
-            de nuestro staff. Cada día es un reto para salvar una vida y mejorar
-            nuestro país.
-          </p>
+          <p 
+            className="font-serif text-lg md:text-2xl leading-relaxed text-gray-600 dark:text-gray-400 font-light max-w-3xl"
+            dangerouslySetInnerHTML={{ __html: t('home.why_us_desc') }}
+          />
         </motion.div>
 
         {/* Premium Bento Grid */}
@@ -158,12 +156,11 @@ function App() {
             {/* Top Half (Mobile) / Left Side (Desktop): Text */}
             <div className="relative z-20 w-full md:w-[35%] h-[35%] md:h-auto flex flex-col justify-center items-center md:items-start text-center md:text-left px-6 md:p-0 md:pl-12 pt-20 md:pt-0 mx-auto md:mx-0">
               <h2 className="font-['Outfit'] font-black text-5xl md:text-7xl lg:text-8xl text-[#0277ab] dark:text-sky-400 tracking-tight drop-shadow-md leading-tight md:leading-[0.9]">
-                Nuestra Galería
+                {t('home.gallery')}
               </h2>
               <div className="w-16 md:w-20 h-1.5 md:h-2 bg-[#f4484a] rounded-full mt-4 md:mt-6 mb-4 md:mb-6 shadow-sm"></div>
               <p className="font-serif text-base md:text-xl leading-relaxed text-gray-900 dark:text-gray-100 md:text-gray-600 md:dark:text-gray-400 font-medium md:font-light max-w-[320px] md:max-w-sm drop-shadow-sm">
-                Un vistazo a la excelencia de nuestras instalaciones y los
-                pacientes felices que confían en nosotros día a día.
+                {t('home.gallery_desc')}
               </p>
             </div>
 
