@@ -313,10 +313,10 @@ export const CurvedInput: React.FC<CurvedInputProps> = ({
     const ro = new ResizeObserver((entries: ResizeObserverEntry[]) => {
       const cw = entries[0]?.contentRect?.width ?? el.clientWidth;
       setW(Math.round(cw));
-    }, [display, caretIndex, geom, layout]);
+    });
     ro.observe(el);
     return () => ro.disconnect();
-  }, [display, geom, layout, caretIndex]);
+  }, []);
 
   // Re-measure once webfonts finish loading
   useEffect(() => {
@@ -324,12 +324,12 @@ export const CurvedInput: React.FC<CurvedInputProps> = ({
     if (document.fonts?.ready) {
       document.fonts.ready.then(() => {
         if (alive) setFontTick(t => t + 1);
-      }, [display, caretIndex, geom, layout]);
+      });
     }
     return () => {
       alive = false;
     };
-  }, [display, geom, layout, caretIndex]);
+  }, []);
 
   const pad = Math.ceil(borderWidth / 2) + 6;
   const geom = useMemo<Geometry | null>(
