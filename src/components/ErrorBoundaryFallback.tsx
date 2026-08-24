@@ -11,6 +11,9 @@ export function ErrorBoundaryFallback({ error, resetErrorBoundary }: any) {
         <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-3">
           ¡Ups! Algo salió mal
         </h2>
+        <p className="text-red-500 font-mono text-sm mb-4 bg-red-50 dark:bg-red-900/10 p-2 rounded">
+          {error?.message || "Error desconocido"}
+        </p>
         <p className="text-gray-600 dark:text-gray-400 mb-8">
           Tuvimos un problema técnico inesperado. Por favor, intenta recargar la página.
         </p>
