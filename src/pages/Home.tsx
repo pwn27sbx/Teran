@@ -155,7 +155,7 @@ function App() {
             className="relative z-30 w-full h-full flex flex-col md:flex-row items-center overflow-hidden"
           >
             {/* Top Half (Mobile) / Left Side (Desktop): Text */}
-            <div className="relative z-20 w-full md:w-[35%] h-[40%] md:h-auto flex flex-col justify-center items-center md:items-start text-center md:text-left px-6 md:p-0 md:pl-12 pt-28 md:pt-0 mx-auto md:mx-0">
+            <div className="relative z-20 w-full md:w-[35%] h-[35%] md:h-auto flex flex-col justify-center items-center md:items-start text-center md:text-left px-6 md:p-0 md:pl-12 pt-20 md:pt-0 mx-auto md:mx-0">
               <h2 className="font-['Outfit'] font-black text-5xl md:text-7xl lg:text-8xl text-[#0277ab] dark:text-sky-400 tracking-tight drop-shadow-md leading-tight md:leading-[0.9]">
                 Nuestra Galería
               </h2>
@@ -167,7 +167,7 @@ function App() {
             </div>
 
             {/* Bottom Half (Mobile) / Right Side (Desktop): DriftWall seamlessly fading */}
-            <div className="relative md:absolute bottom-0 right-0 md:right-[-5vw] w-full md:w-[75%] h-[60%] md:h-full z-0 pointer-events-auto">
+            <div className="relative md:absolute bottom-0 right-0 md:right-[-5vw] w-full md:w-[75%] h-[65%] md:h-full z-0 pointer-events-auto">
               {/* Fade for mobile to smoothly blend the images into the text boundary */}
               <div className="md:hidden absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-[#f8f9fa] dark:from-[#121212] to-transparent z-10 pointer-events-none"></div>
               <DriftWall

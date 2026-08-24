@@ -1,6 +1,8 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import Header from "../components/Header";
 import { Award, Quote } from "lucide-react";
+import Stack from "../components/Stack";
 
 const testimonials = [
   {
@@ -26,6 +28,7 @@ const testimonials = [
 ];
 
 export default function Certificacion() {
+
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-[#f3f4f6] dark:bg-[#0a0a0a] font-sans selection:bg-[#0277ab] selection:text-white flex flex-col relative">
       {/* Background ambient glow */}
@@ -33,7 +36,7 @@ export default function Certificacion() {
 
       <Header variant="back" />
       
-      <main className="flex-1 w-full max-w-[1500px] mx-auto px-6 pt-28 md:pt-32 pb-16 md:pb-12 flex flex-col lg:flex-row items-center justify-center gap-12 min-h-0 relative z-10">
+      <main className="flex-1 w-full max-w-[1500px] mx-auto px-6 pt-28 md:pt-32 pb-16 md:pb-12 flex flex-col lg:flex-row items-center justify-center gap-4 lg:gap-12 min-h-0 relative z-10">
         
         {/* Left Column: Testimonials 1 & 2 (Shifted Up) */}
         <div className="hidden lg:flex w-1/3 flex-col gap-6 h-full justify-center pb-16">
@@ -57,14 +60,6 @@ export default function Certificacion() {
             }
             .animate-float-badge {
               animation: float-badge 6s ease-in-out infinite;
-              will-change: transform;
-            }
-            @keyframes scroll-mobile {
-              0% { transform: translateX(0); }
-              100% { transform: translateX(-50%); }
-            }
-            .animate-scroll-mobile {
-              animation: scroll-mobile 35s linear infinite;
               will-change: transform;
             }
           `}</style>
@@ -92,7 +87,7 @@ export default function Certificacion() {
           <div className="relative mb-6 lg:mb-0 group animate-float-badge">
             <div className="absolute inset-0 bg-blue-500/20 blur-[50px] rounded-full group-hover:bg-blue-500/40 transition-colors duration-500"></div>
             <img 
-              src="http://hospitalveterinarioteran.com/wp-content/uploads/2017/11/acreditacion1.png" 
+              src="/acreditacion.webp" 
               alt="Certificación Colegio Médico Veterinario" 
               className="w-56 md:w-72 h-auto relative z-10 drop-shadow-2xl"
               style={{ willChange: "transform" }}
@@ -107,27 +102,43 @@ export default function Certificacion() {
           ))}
         </div>
 
-        {/* Mobile View: Auto-scrolling Marquee */}
-        <div className="flex lg:hidden w-full overflow-hidden pb-4 relative -mx-6 px-6">
-          {/* Gradient masks for smooth fading on edges */}
-          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#f3f4f6] dark:from-[#0a0a0a] to-transparent z-20 pointer-events-none"></div>
-          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#f3f4f6] dark:from-[#0a0a0a] to-transparent z-20 pointer-events-none"></div>
-          
-          <div className="flex w-max animate-scroll-mobile hover:[animation-play-state:paused] active:[animation-play-state:paused]">
-            <div className="flex gap-4 pr-4">
-              {testimonials.map((t, i) => (
-                <div key={i} className="w-[85vw] shrink-0">
-                  <TestimonialCard testimonial={t} index={i} direction={0} />
+        {/* Mobile View: Stacked Cards Carousel using ReactBits Stack */}
+        <div className="flex lg:hidden w-full pb-8 pt-4 justify-center items-center h-[400px]">
+          <div className="w-[85vw] max-w-[340px] h-[340px]">
+            <Stack
+              randomRotation={false}
+              sensitivity={100}
+              sendToBackOnClick={false}
+              autoplay={true}
+              autoplayDelay={4000}
+              pauseOnHover={true}
+              mobileClickOnly={false}
+              cards={testimonials.map((testimonial, i) => (
+                <div key={i} className="w-full h-full bg-white dark:bg-gray-900 rounded-[2rem] p-6 shadow-xl border border-white/50 dark:border-gray-800 flex flex-col relative overflow-hidden pointer-events-none">
+                  <div className="absolute top-4 right-4 text-[#0277ab]/10 dark:text-blue-400/10 pointer-events-none">
+                    <Quote size={60} className="transform rotate-180" />
+                  </div>
+                  
+                  <div className="relative z-10 flex flex-col h-full pointer-events-none">
+                    <div className="flex items-center gap-4 mb-3">
+                      <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white dark:border-gray-800 shadow-sm shrink-0">
+                        <img src={testimonial.image} alt={testimonial.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-black text-gray-900 dark:text-white leading-tight">{testimonial.name}</h3>
+                        <p className="text-[#0277ab] font-bold text-[9px] tracking-widest uppercase mt-0.5">Médico Veterinario</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex-1 overflow-hidden pr-1 mt-1 flex flex-col justify-center">
+                      <p className="text-gray-700 dark:text-gray-300 font-serif leading-relaxed text-[16px] italic line-clamp-6">
+                        "{testimonial.text}"
+                      </p>
+                    </div>
+                  </div>
                 </div>
               ))}
-            </div>
-            <div className="flex gap-4 pr-4">
-              {testimonials.map((t, i) => (
-                <div key={`dup-${i}`} className="w-[85vw] shrink-0">
-                  <TestimonialCard testimonial={t} index={i} direction={0} />
-                </div>
-              ))}
-            </div>
+            />
           </div>
         </div>
 

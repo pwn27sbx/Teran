@@ -18,11 +18,15 @@ const brandLogos = [
 export default function Footer() {
   const { isDark } = useDarkMode();
   const footerRef = useRef<HTMLDivElement>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+  const [isSafari, setIsSafari] = useState(() => {
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent.toLowerCase();
+    return ua.includes('safari') && !ua.includes('chrome') && !ua.includes('android');
+  });
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
@@ -38,26 +42,44 @@ export default function Footer() {
   const catY = useTransform(footerProgress, [0.3, 1], [150, 0]);
   const animalsOpacity = useTransform(footerProgress, [0.3, 0.9], [0, 0.95]);
 
+  const shouldAnimate = !isMobile && !isSafari;
+
   return (
     <footer
       ref={footerRef}
       className="relative z-20 flex flex-col items-center pt-24 md:pt-32 w-full min-h-screen overflow-hidden bg-[#f8f9fa] shadow-[0_-20px_50px_rgba(0,0,0,0.3)]"
     >
       {/* Dog on the left */}
-      <motion.img
-        src="/miloperfil.webp"
-        alt="Dog"
-        className="absolute -left-[13%] sm:-left-[10%] md:-left-[9%] -bottom-5 md:bottom-0 w-[220px] sm:w-[300px] md:w-[600px] lg:w-[780px] xl:w-[950px] object-contain pointer-events-none mix-blend-multiply"
-        style={{ x: dogX, y: dogY, opacity: animalsOpacity }}
-      />
+      {shouldAnimate ? (
+        <motion.img
+          src="/miloperfil.webp"
+          alt="Dog"
+          className="absolute -left-[13%] sm:-left-[10%] md:-left-[9%] -bottom-5 md:bottom-0 w-[220px] sm:w-[300px] md:w-[600px] lg:w-[780px] xl:w-[950px] object-contain pointer-events-none mix-blend-multiply"
+          style={{ x: dogX, y: dogY, opacity: animalsOpacity }}
+        />
+      ) : (
+        <img
+          src="/miloperfil.webp"
+          alt="Dog"
+          className="absolute -left-[13%] sm:-left-[10%] md:-left-[9%] -bottom-5 md:bottom-0 w-[220px] sm:w-[300px] md:w-[600px] lg:w-[780px] xl:w-[950px] object-contain pointer-events-none mix-blend-multiply opacity-95"
+        />
+      )}
 
       {/* Cat on the right */}
-      <motion.img
-        src="/atreusperfil.webp"
-        alt="Cat"
-        className="absolute -right-[10%] sm:-right-[10%] md:-right-[7%] -bottom-5 md:bottom-0 w-[220px] sm:w-[300px] md:w-[600px] lg:w-[780px] xl:w-[950px] object-contain pointer-events-none mix-blend-multiply"
-        style={{ x: catX, y: catY, opacity: animalsOpacity }}
-      />
+      {shouldAnimate ? (
+        <motion.img
+          src="/atreusperfil.webp"
+          alt="Cat"
+          className="absolute -right-[10%] sm:-right-[10%] md:-right-[7%] -bottom-5 md:bottom-0 w-[220px] sm:w-[300px] md:w-[600px] lg:w-[780px] xl:w-[950px] object-contain pointer-events-none mix-blend-multiply"
+          style={{ x: catX, y: catY, opacity: animalsOpacity }}
+        />
+      ) : (
+        <img
+          src="/atreusperfil.webp"
+          alt="Cat"
+          className="absolute -right-[10%] sm:-right-[10%] md:-right-[7%] -bottom-5 md:bottom-0 w-[220px] sm:w-[300px] md:w-[600px] lg:w-[780px] xl:w-[950px] object-contain pointer-events-none mix-blend-multiply opacity-95"
+        />
+      )}
 
       <div className="relative z-10 w-full max-w-2xl mx-auto flex flex-col items-center text-center px-6 mt-4 md:mt-20">
         <h2 className="font-['Outfit'] font-black text-4xl md:text-5xl text-[#0277ab] mb-4">
