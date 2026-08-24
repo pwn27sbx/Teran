@@ -1,3 +1,4 @@
+import { useDarkMode } from "../hooks/useDarkMode";
 import { useState, useRef, useEffect } from "react";
 import BrushReveal from "../components/BrushReveal";
 import DriftWall from "../components/DriftWall";
