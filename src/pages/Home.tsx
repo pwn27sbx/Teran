@@ -1,5 +1,4 @@
 import { useDarkMode } from "../hooks/useDarkMode";
-import { useTranslation } from "react-i18next";
 import { useState, useRef, useEffect } from "react";
 import BrushReveal from "../components/BrushReveal";
 import DriftWall from "../components/DriftWall";
