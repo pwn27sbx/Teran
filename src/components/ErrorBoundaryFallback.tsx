@@ -1,7 +1,32 @@
-import React from 'react';
-import { AlertTriangle, RefreshCcw } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { AlertTriangle, RefreshCcw, Loader2 } from 'lucide-react';
 
 export function ErrorBoundaryFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
+  const [isReloading, setIsReloading] = useState(false);
+
+  useEffect(() => {
+    const isChunkError = error?.message?.toLowerCase().includes('dynamically imported module') || error?.message?.includes('ChunkLoadError');
+    if (isChunkError) {
+      const hasReloaded = sessionStorage.getItem('chunk_reload');
+      if (!hasReloaded) {
+        sessionStorage.setItem('chunk_reload', 'true');
+        setIsReloading(true);
+        window.location.reload();
+      } else {
+        // We already tried reloading and it failed again, clear the flag so they can manually try
+        sessionStorage.removeItem('chunk_reload');
+      }
+    }
+  }, [error]);
+
+  if (isReloading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <Loader2 className="w-10 h-10 animate-spin text-[#0277ab]" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-6">
       <div className="max-w-md w-full bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-xl border border-red-100 dark:border-red-900/30 text-center">

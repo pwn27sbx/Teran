@@ -7,6 +7,9 @@ import App from './App'
 import { ErrorBoundary } from 'react-error-boundary'
 import { ErrorBoundaryFallback } from './components/ErrorBoundaryFallback'
 
+// Clear the auto-reload flag on successful app boot
+sessionStorage.removeItem('chunk_reload');
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary FallbackComponent={ErrorBoundaryFallback}>
