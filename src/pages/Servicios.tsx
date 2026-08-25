@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import { Stethoscope } from "lucide-react";
 import { categories, services } from "@/data/servicesData";
 import * as Icons from "lucide-react";
+import { SEO } from "@/components/SEO";
 
 export default function Servicios() {
   const [activeCategory, setActiveCategory] = useState("todos");
@@ -14,6 +15,7 @@ export default function Servicios() {
 
   return (
     <div className="min-h-screen lg:h-[100dvh] bg-[#f8f9fa] dark:bg-[#121212] relative overflow-x-hidden lg:overflow-hidden font-['Outfit'] selection:bg-[#0277ab] selection:text-white">
+      <SEO title="Nuestros Servicios" url="/servicios" />
       {/* Background decoration */}
       <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-blue-100/40 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-red-100/30 rounded-full blur-3xl pointer-events-none"></div>

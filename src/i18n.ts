@@ -27,7 +27,16 @@ const resources = {
       "home.why_us": "¿Por qué elegirnos?",
       "home.why_us_desc": "Veterinarias Terán es sinónimo de profesionalismo y pasión. Son <strong class='font-bold text-[#0277ab]'>24 años</strong> salvaguardando el bienestar de las mascotas del Perú, siendo precursores en tecnología médica de punta y capacitación constante de nuestro staff. Cada día es un reto para salvar una vida y mejorar nuestro país.",
       "home.gallery": "Nuestra Galería",
-      "home.gallery_desc": "Un vistazo a la excelencia de nuestras instalaciones y los pacientes felices que confían en nosotros día a día."
+      "home.gallery_desc": "Un vistazo a la excelencia de nuestras instalaciones y los pacientes felices que confían en nosotros día a día.",
+      "premium.store.title": "Tienda Virtual",
+      "premium.store.subtitle": "PET SHOP EXCLUSIVO",
+      "premium.store.desc": "Los mejores productos en alimentos, juguetes, camas y accesorios para consentir a tu mascota.",
+      "premium.locations.title": "Nuestras Sedes",
+      "premium.locations.subtitle": "CERCA DE TI",
+      "premium.locations.desc": "Encuentra una clínica Terán lista para atenderte con la mejor tecnología.",
+      "premium.tv.title": "Terán TV",
+      "premium.tv.subtitle": "ARCHIVO MÉDICO Y CASOS",
+      "premium.tv.desc": "Nuestro archivo videográfico con casos clínicos, testimonios y proyectos especiales."
     }
   },
   "en": {
@@ -54,7 +63,16 @@ const resources = {
       "home.why_us": "Why Choose Us?",
       "home.why_us_desc": "Teran Veterinary is synonymous with professionalism and passion. For <strong class='font-bold text-[#0277ab]'>24 years</strong> we have safeguarded the well-being of pets in Peru, being pioneers in cutting-edge medical technology and continuous training for our staff. Every day is a challenge to save a life and improve our country.",
       "home.gallery": "Our Gallery",
-      "home.gallery_desc": "A glimpse into the excellence of our facilities and the happy patients who trust us every day."
+      "home.gallery_desc": "A glimpse into the excellence of our facilities and the happy patients who trust us every day.",
+      "premium.store.title": "Virtual Store",
+      "premium.store.subtitle": "EXCLUSIVE PET SHOP",
+      "premium.store.desc": "The best products in food, toys, beds, and accessories to pamper your pet.",
+      "premium.locations.title": "Our Locations",
+      "premium.locations.subtitle": "CLOSE TO YOU",
+      "premium.locations.desc": "Find a Terán clinic ready to attend you with the best technology.",
+      "premium.tv.title": "Terán TV",
+      "premium.tv.subtitle": "MEDICAL ARCHIVE & CASES",
+      "premium.tv.desc": "Our video archive with clinical cases, testimonials, and special projects."
     }
   }
 };

@@ -7,11 +7,18 @@ import PremiumFeatures from "@/components/PremiumFeatures";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Activity } from "lucide-react";
-
+import { SEO } from "@/components/SEO";
+import { VisualErrorBoundary } from "@/components/VisualErrorBoundary";
 
 import { motion, useScroll, useTransform } from "framer-motion";
 
 import { galleryItems } from "@/data/gallery";
+
+const SCROLL_RANGE = [0, 800, 1200];
+const HERO_SCALE_RANGE = [1, 0.35];
+const HERO_RADIUS_RANGE = ["0px", "48px"];
+const HERO_OPACITY_RANGE = [1, 1, 0];
+const GALLERY_SCROLL_OFFSET = ["start end", "start 20%"] as any;
 
 function Home() {
   const { t } = useTranslation();
@@ -31,14 +38,14 @@ function Home() {
   // Tie the slide-in directly to the scroll wheel for gallery
   const { scrollYProgress: galleryProgress } = useScroll({
     target: galleryRef,
-    offset: ["start end", "start 20%"],
+    offset: GALLERY_SCROLL_OFFSET,
   });
 
   const galleryX = useTransform(galleryProgress, [0, 1], ["100%", "0%"]);
 
-  const heroScale = useTransform(scrollY, [0, 800], [1, 0.35]);
-  const heroRadius = useTransform(scrollY, [0, 800], ["0px", "48px"]);
-  const heroOpacity = useTransform(scrollY, [0, 800, 1200], [1, 1, 0]);
+  const heroScale = useTransform(scrollY, [SCROLL_RANGE[0], SCROLL_RANGE[1]], HERO_SCALE_RANGE);
+  const heroRadius = useTransform(scrollY, [SCROLL_RANGE[0], SCROLL_RANGE[1]], HERO_RADIUS_RANGE);
+  const heroOpacity = useTransform(scrollY, SCROLL_RANGE, HERO_OPACITY_RANGE);
 
   return (
     <div
@@ -49,6 +56,7 @@ function Home() {
         backgroundSize: "32px 32px",
       }}
     >
+      <SEO url="/" />
       <Header variant="home" />
 
       {/* ============================================================== */}
@@ -66,16 +74,18 @@ function Home() {
           >
             {/* Contenedor para ajustar tamaño y posición en PC sin romper las capas */}
             <div className="w-full h-full md:scale-[1] md:translate-y-[5vh] origin-bottom">
-              <BrushReveal
-                bgImage="/milo1_nobg.webp"
-                revealImage="/atreus1_nobg.webp"
-                xrayImage={isDark ? "/atreusx_dark.webp" : "/atreusx_nobg.webp"}
-                brushSize={isMobile ? 90 : 180}
-                revealScale={0.73}
-                bgScale={isMobile ? 0.95 : 1}
-                bgObjectPosition="center 5%"
-                revealOffsetY={isMobile ? -0.35 : -0.354}
-              />
+              <VisualErrorBoundary fallbackMessage="Error loading hero effect">
+                <BrushReveal
+                  bgImage="/milo1_nobg.webp"
+                  revealImage="/atreus1_nobg.webp"
+                  xrayImage={isDark ? "/atreusx_dark.webp" : "/atreusx_nobg.webp"}
+                  brushSize={isMobile ? 90 : 180}
+                  revealScale={0.73}
+                  bgScale={isMobile ? 0.95 : 1}
+                  bgObjectPosition="center 5%"
+                  revealOffsetY={isMobile ? -0.35 : -0.354}
+                />
+              </VisualErrorBoundary>
             </div>
             {isMobile && (
               <div className="absolute top-[16vh] left-1/2 -translate-x-1/2 flex flex-col items-center text-gray-900 dark:text-white drop-shadow-md z-10 pointer-events-none w-full">
@@ -156,29 +166,31 @@ function Home() {
             <div className="relative md:absolute bottom-0 right-0 md:right-[-5vw] w-full md:w-[75%] h-[65%] md:h-full z-0 pointer-events-auto">
               {/* Fade for mobile to smoothly blend the images into the text boundary */}
               <div className="md:hidden absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-[#f8f9fa] dark:from-[#121212] to-transparent z-10 pointer-events-none"></div>
-              <DriftWall
-                items={galleryItems}
-                columns={isMobile ? 4 : 5}
-                tileWidth={isMobile ? 160 : 220}
-                tileHeight={isMobile ? 105 : 145}
-                gap={isMobile ? 12 : 20}
-                tilt={15}
-                turn={-15}
-                perspective={1200}
-                depth={120}
-                speed={35}
-                direction="up"
-                variance={0.45}
-                parallax={0.6}
-                lift={64}
-                fade={0.2}
-                dim={0.9}
-                overlayColor="transparent" /* Allow animated background to show */
-                radius={20}
-                roll={0}
-                pauseOnHover={false}
-                grayscale={false}
-              />
+              <VisualErrorBoundary fallbackMessage="Error loading gallery">
+                <DriftWall
+                  items={galleryItems}
+                  columns={isMobile ? 4 : 5}
+                  tileWidth={isMobile ? 160 : 220}
+                  tileHeight={isMobile ? 105 : 145}
+                  gap={isMobile ? 12 : 20}
+                  tilt={15}
+                  turn={-15}
+                  perspective={1200}
+                  depth={120}
+                  speed={35}
+                  direction="up"
+                  variance={0.45}
+                  parallax={0.6}
+                  lift={64}
+                  fade={0.2}
+                  dim={0.9}
+                  overlayColor="transparent" /* Allow animated background to show */
+                  radius={20}
+                  roll={0}
+                  pauseOnHover={false}
+                  grayscale={false}
+                />
+              </VisualErrorBoundary>
             </div>
           </motion.div>
         </div>
