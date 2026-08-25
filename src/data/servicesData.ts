@@ -1,3 +1,15 @@
+import { 
+  Zap, Activity, Eye, Heart, HeartPulse, Stethoscope, 
+  Bed, Baby, Droplet, Scissors, Syringe, BookOpen, 
+  Pill, Truck, Flame, Package, Cpu, Plane,
+  type LucideIcon
+} from 'lucide-react';
+
+export const IconMap: Record<string, LucideIcon> = {
+  Zap, Activity, Eye, Heart, HeartPulse, Stethoscope, 
+  Bed, Baby, Droplet, Scissors, Syringe, BookOpen, 
+  Pill, Truck, Flame, Package, Cpu, Plane
+};
 
 export const categories = [
   { id: "todos", label: "Todos" },

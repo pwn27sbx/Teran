@@ -243,14 +243,6 @@ export const DriftWall: React.FC<DriftWallProps> = ({
           y: (e.clientY - rect.top) / rect.height - 0.5
         };
       }
-      const hit = document.elementFromPoint(e.clientX, e.clientY);
-      const tile = hit?.closest('[data-tile-id]') as HTMLElement | null;
-      if (!tile) return;
-      const id = tile.dataset.tileId ?? null;
-      if (id === activeIdRef.current) return;
-      activeIdRef.current = id;
-      hoveredColRef.current = Number(tile.dataset.col);
-      setActiveId(id);
     },
     [parallax, reduced]
   );
@@ -332,7 +324,9 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       'data-tile-id': id,
       'data-col': colIndex,
       onFocus: () => activate(id, colIndex),
-      onBlur: release
+      onBlur: release,
+      onPointerEnter: () => activate(id, colIndex),
+      onPointerLeave: release
     };
     if (item.href) {
       return (

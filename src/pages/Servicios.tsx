@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Header from "@/components/Header";
 import { Stethoscope } from "lucide-react";
-import { categories, services } from "@/data/servicesData";
-import * as Icons from "lucide-react";
+import { categories, services, IconMap } from "@/data/servicesData";
 import { SEO } from "@/components/SEO";
 import { useTranslation } from "react-i18next";
 
@@ -83,7 +82,7 @@ export default function Servicios() {
                   className={`p-4 lg:p-3 xl:p-4 rounded-2xl bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border ${service.border} shadow-sm hover:shadow-lg transition-all cursor-pointer group flex items-start gap-3 lg:gap-4`}
                 >
                   <div className={`w-10 h-10 xl:w-11 xl:h-11 rounded-[0.8rem] shrink-0 ${service.color} flex items-center justify-center group-hover:rotate-6 transition-transform duration-300 mt-0.5`}>
-                    {React.createElement(Icons[service.iconName as keyof typeof Icons] as React.ElementType, { className: "w-6 h-6 " + (service.color.includes("blue") ? "text-[#0277ab]" : service.color.includes("red") ? "text-red-500" : service.color.includes("teal") ? "text-teal-600" : service.color.includes("rose") ? "text-rose-500" : service.color.includes("orange") ? "text-orange-500" : service.color.includes("emerald") ? "text-emerald-600" : service.color.includes("pink") ? "text-pink-500" : service.color.includes("fuchsia") ? "text-fuchsia-500" : service.color.includes("yellow") ? "text-yellow-600" : service.color.includes("cyan") ? "text-cyan-600" : service.color.includes("indigo") ? "text-indigo-500" : service.color.includes("gray") ? "text-gray-500" : service.color.includes("sky") ? "text-sky-500" : "text-[#0277ab]") })}
+                    {React.createElement(IconMap[service.iconName] || Stethoscope, { className: "w-6 h-6 " + (service.color.includes("blue") ? "text-[#0277ab]" : service.color.includes("red") ? "text-red-500" : service.color.includes("teal") ? "text-teal-600" : service.color.includes("rose") ? "text-rose-500" : service.color.includes("orange") ? "text-orange-500" : service.color.includes("emerald") ? "text-emerald-600" : service.color.includes("pink") ? "text-pink-500" : service.color.includes("fuchsia") ? "text-fuchsia-500" : service.color.includes("yellow") ? "text-yellow-600" : service.color.includes("cyan") ? "text-cyan-600" : service.color.includes("indigo") ? "text-indigo-500" : service.color.includes("gray") ? "text-gray-500" : service.color.includes("sky") ? "text-sky-500" : "text-[#0277ab]") })}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h2 className="text-[15px] lg:text-[14px] xl:text-[16px] font-bold text-gray-800 dark:text-gray-100 leading-tight mb-1 truncate">{service.title}</h2>
