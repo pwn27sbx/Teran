@@ -18,7 +18,13 @@ export function ErrorBoundaryFallback({ error, resetErrorBoundary }: { error: Er
           Tuvimos un problema técnico inesperado. Por favor, intenta recargar la página.
         </p>
         <button
-          onClick={resetErrorBoundary}
+          onClick={() => {
+            if (error?.message?.toLowerCase().includes('dynamically imported module') || error?.message?.includes('ChunkLoadError')) {
+              window.location.reload();
+            } else {
+              resetErrorBoundary();
+            }
+          }}
           className="flex items-center justify-center gap-2 w-full py-3 px-6 bg-[#0277ab] text-white rounded-xl font-bold hover:bg-[#02628c] transition-colors"
         >
           <RefreshCcw className="w-5 h-5" />
