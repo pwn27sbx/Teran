@@ -3,10 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Store, MapPin, Play, ArrowUpRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { SmartLink } from './SmartLink';
+import { useNavigate } from 'react-router-dom';
 
 export default function PremiumFeatures() {
   const [active, setActive] = useState<string>('sedes');
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const features = [
     {
@@ -44,6 +46,18 @@ export default function PremiumFeatures() {
     }
   ];
 
+  const handleAction = (f: typeof features[0], isActive: boolean) => {
+    if (!isActive) {
+      setActive(f.id);
+    } else if (f.link) {
+      if (f.link.startsWith('http')) {
+        window.open(f.link, '_blank', 'noopener,noreferrer');
+      } else {
+        navigate(f.link);
+      }
+    }
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 md:px-6 relative z-10 h-[500px] md:h-[600px] flex flex-col md:flex-row gap-4 md:gap-6">
       {features.map((f) => {
@@ -61,23 +75,10 @@ export default function PremiumFeatures() {
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                if (!isActive) {
-                  setActive(f.id);
-                } else if (f.link) {
-                   const isExternal = f.link.startsWith('http');
-                   if(isExternal) {
-                       window.open(f.link, '_blank', 'noopener,noreferrer');
-                   } else {
-                       window.location.href = f.link; // simple fallback if not using navigate hook inside onKeyDown
-                   }
-                }
+                handleAction(f, isActive);
               }
             }}
-            onClick={() => {
-              if (!isActive) {
-                setActive(f.id);
-              }
-            }}
+            onClick={() => handleAction(f, isActive)}
             animate={{
               flex: isActive ? 3 : 1,
             }}
