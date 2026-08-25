@@ -25,7 +25,7 @@ export function SmartLink({ href, className, children, ...props }: SmartLinkProp
   }
 
   return (
-    <Link to={href} className={className} {...(props as any)}>
+    <Link to={href} className={className} {...(props as Record<string, unknown>)}>
       {children}
     </Link>
   );

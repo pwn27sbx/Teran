@@ -369,7 +369,7 @@ const Scanner: React.FC<ScannerProps> = ({
     const ctx = ctxMap.get(container);
     if (!ctx) return;
     const { program } = ctx;
-    const u = program.uniforms as Record<string, { value: any }>;
+    const u = program.uniforms as Record<string, { value: unknown }>;
 
     u.uSpeed.value = speed;
     u.uSweepSpeed.value = sweepSpeed;

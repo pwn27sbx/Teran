@@ -18,7 +18,7 @@ const SCROLL_RANGE = [0, 800, 1200];
 const HERO_SCALE_RANGE = [1, 0.35];
 const HERO_RADIUS_RANGE = ["0px", "48px"];
 const HERO_OPACITY_RANGE = [1, 1, 0];
-const GALLERY_SCROLL_OFFSET = ["start end", "start 20%"] as any;
+const GALLERY_SCROLL_OFFSET: ["start end", "start 20%"] = ["start end", "start 20%"];
 
 function Home() {
   const { t } = useTranslation();

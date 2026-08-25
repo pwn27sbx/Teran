@@ -5,9 +5,11 @@ import { Stethoscope } from "lucide-react";
 import { categories, services } from "@/data/servicesData";
 import * as Icons from "lucide-react";
 import { SEO } from "@/components/SEO";
+import { useTranslation } from "react-i18next";
 
 export default function Servicios() {
   const [activeCategory, setActiveCategory] = useState("todos");
+  const { t } = useTranslation();
 
   const filteredServices = activeCategory === "todos" 
     ? services 
@@ -15,7 +17,7 @@ export default function Servicios() {
 
   return (
     <div className="min-h-screen lg:h-[100dvh] bg-[#f8f9fa] dark:bg-[#121212] relative overflow-x-hidden lg:overflow-hidden font-['Outfit'] selection:bg-[#0277ab] selection:text-white">
-      <SEO title="Nuestros Servicios" url="/servicios" />
+      <SEO title={t('services.title') + " " + t('services.title_highlight')} url="/servicios" />
       {/* Background decoration */}
       <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-blue-100/40 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-red-100/30 rounded-full blur-3xl pointer-events-none"></div>
@@ -35,13 +37,13 @@ export default function Servicios() {
           <div className="text-left max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900 border border-blue-100 dark:border-blue-800 text-[#0277ab] font-bold text-[10px] tracking-widest uppercase mb-2 lg:mb-3 shadow-sm">
               <Stethoscope className="w-3 h-3" />
-              Especialidades
+              {t('services.specialties')}
             </div>
             <h1 className="text-4xl lg:text-5xl font-black text-gray-900 dark:text-white leading-tight mb-2">
-              Nuestros <span className="text-[#0277ab]">Servicios</span>
+              {t('services.title')} <span className="text-[#0277ab]">{t('services.title_highlight')}</span>
             </h1>
             <p className="text-[15px] lg:text-base text-gray-500 dark:text-gray-400 font-serif">
-              Más de 21 años mejorando la salud de tu mascota con la mejor tecnología.
+              {t('services.desc')}
             </p>
           </div>
 
@@ -81,7 +83,7 @@ export default function Servicios() {
                   className={`p-4 lg:p-3 xl:p-4 rounded-2xl bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border ${service.border} shadow-sm hover:shadow-lg transition-all cursor-pointer group flex items-start gap-3 lg:gap-4`}
                 >
                   <div className={`w-10 h-10 xl:w-11 xl:h-11 rounded-[0.8rem] shrink-0 ${service.color} flex items-center justify-center group-hover:rotate-6 transition-transform duration-300 mt-0.5`}>
-                    {React.createElement(Icons[service.iconName as keyof typeof Icons] as any, { className: "w-6 h-6 " + (service.color.includes("blue") ? "text-[#0277ab]" : service.color.includes("red") ? "text-red-500" : service.color.includes("teal") ? "text-teal-600" : service.color.includes("rose") ? "text-rose-500" : service.color.includes("orange") ? "text-orange-500" : service.color.includes("emerald") ? "text-emerald-600" : service.color.includes("pink") ? "text-pink-500" : service.color.includes("fuchsia") ? "text-fuchsia-500" : service.color.includes("yellow") ? "text-yellow-600" : service.color.includes("cyan") ? "text-cyan-600" : service.color.includes("indigo") ? "text-indigo-500" : service.color.includes("gray") ? "text-gray-500" : service.color.includes("sky") ? "text-sky-500" : "text-[#0277ab]") })}
+                    {React.createElement(Icons[service.iconName as keyof typeof Icons] as React.ElementType, { className: "w-6 h-6 " + (service.color.includes("blue") ? "text-[#0277ab]" : service.color.includes("red") ? "text-red-500" : service.color.includes("teal") ? "text-teal-600" : service.color.includes("rose") ? "text-rose-500" : service.color.includes("orange") ? "text-orange-500" : service.color.includes("emerald") ? "text-emerald-600" : service.color.includes("pink") ? "text-pink-500" : service.color.includes("fuchsia") ? "text-fuchsia-500" : service.color.includes("yellow") ? "text-yellow-600" : service.color.includes("cyan") ? "text-cyan-600" : service.color.includes("indigo") ? "text-indigo-500" : service.color.includes("gray") ? "text-gray-500" : service.color.includes("sky") ? "text-sky-500" : "text-[#0277ab]") })}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h2 className="text-[15px] lg:text-[14px] xl:text-[16px] font-bold text-gray-800 dark:text-gray-100 leading-tight mb-1 truncate">{service.title}</h2>

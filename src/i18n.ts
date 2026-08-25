@@ -36,7 +36,20 @@ const resources = {
       "premium.locations.desc": "Encuentra una clínica Terán lista para atenderte con la mejor tecnología.",
       "premium.tv.title": "Terán TV",
       "premium.tv.subtitle": "ARCHIVO MÉDICO Y CASOS",
-      "premium.tv.desc": "Nuestro archivo videográfico con casos clínicos, testimonios y proyectos especiales."
+      "premium.tv.desc": "Nuestro archivo videográfico con casos clínicos, testimonios y proyectos especiales.",
+      "emergencies.title": "Emergencias",
+      "emergencies.subtitle": "Unidad de Trauma Activa",
+      "emergencies.desc": "Atención veterinaria inmediata las 24 horas. Nuestro equipo de cuidados intensivos está preparado para recibirte.",
+      "emergencies.phone": "Central Telefónica",
+      "emergencies.whatsapp": "WhatsApp de Emergencia",
+      "services.title": "Nuestros",
+      "services.title_highlight": "Servicios",
+      "services.specialties": "Especialidades",
+      "services.desc": "Más de 21 años mejorando la salud de tu mascota con la mejor tecnología.",
+      "store.title": "Próximamente",
+      "store.subtitle": "Tienda Virtual Terán",
+      "store.desc": "Estamos preparando el mejor catálogo de alimentos, juguetes y accesorios para consentir a tu mascota. ¡Vuelve pronto!",
+      "store.back": "Regresar al Inicio"
     }
   },
   "en": {
@@ -72,7 +85,20 @@ const resources = {
       "premium.locations.desc": "Find a Terán clinic ready to attend you with the best technology.",
       "premium.tv.title": "Terán TV",
       "premium.tv.subtitle": "MEDICAL ARCHIVE & CASES",
-      "premium.tv.desc": "Our video archive with clinical cases, testimonials, and special projects."
+      "premium.tv.desc": "Our video archive with clinical cases, testimonials, and special projects.",
+      "emergencies.title": "Emergencies",
+      "emergencies.subtitle": "Active Trauma Unit",
+      "emergencies.desc": "Immediate veterinary care 24/7. Our intensive care team is ready to receive you.",
+      "emergencies.phone": "Call Center",
+      "emergencies.whatsapp": "Emergency WhatsApp",
+      "services.title": "Our",
+      "services.title_highlight": "Services",
+      "services.specialties": "Specialties",
+      "services.desc": "Over 21 years improving your pet's health with the best technology.",
+      "store.title": "Coming Soon",
+      "store.subtitle": "Terán Virtual Store",
+      "store.desc": "We are preparing the best catalog of food, toys, and accessories to pamper your pet. Come back soon!",
+      "store.back": "Back to Home"
     }
   }
 };

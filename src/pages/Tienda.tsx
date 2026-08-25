@@ -3,10 +3,15 @@ import { Link } from "react-router-dom";
 import { Store, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import Header from "@/components/Header";
+import { SEO } from "@/components/SEO";
+import { useTranslation } from "react-i18next";
 
 export default function Tienda() {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#121212] flex flex-col font-sans relative overflow-hidden">
+      <SEO title={t('store.subtitle')} url="/tienda" />
       {/* Background Grid */}
       <div 
         className="absolute inset-0 pointer-events-none"
@@ -56,15 +61,15 @@ export default function Tienda() {
           </div>
           
           <h1 className="text-4xl md:text-6xl font-black text-gray-900 dark:text-white mb-4 tracking-tight">
-            Próximamente
+            {t('store.title')}
           </h1>
           
           <h2 className="text-xl md:text-2xl font-bold text-[#0277ab] mb-6 font-['Outfit'] tracking-widest uppercase">
-            Tienda Virtual Terán
+            {t('store.subtitle')}
           </h2>
           
           <p className="text-gray-600 dark:text-gray-400 text-lg mb-8 max-w-lg leading-relaxed">
-            Estamos preparando el mejor catálogo de alimentos, juguetes y accesorios para consentir a tu mascota. ¡Vuelve pronto!
+            {t('store.desc')}
           </p>
 
           <Link 
@@ -72,7 +77,7 @@ export default function Tienda() {
             className="flex items-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-8 py-3.5 rounded-full font-bold shadow-xl hover:scale-105 transition-all"
           >
             <ArrowLeft className="w-5 h-5" />
-            Regresar al Inicio
+            {t('store.back')}
           </Link>
         </motion.div>
       </main>

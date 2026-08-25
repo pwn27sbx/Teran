@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertTriangle, RefreshCcw } from 'lucide-react';
 
-export function ErrorBoundaryFallback({ error, resetErrorBoundary }: any) {
+export function ErrorBoundaryFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-6">
       <div className="max-w-md w-full bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-xl border border-red-100 dark:border-red-900/30 text-center">

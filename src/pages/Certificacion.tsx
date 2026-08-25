@@ -3,11 +3,13 @@ import Header from "@/components/Header";
 import { Award, Quote } from "lucide-react";
 import Stack from "@/components/Stack";
 import { testimonials, type Testimonial } from "@/data/testimonialsData";
+import { SEO } from "@/components/SEO";
 
 export default function Certificacion() {
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-[#f3f4f6] dark:bg-[#0a0a0a] font-sans selection:bg-[#0277ab] selection:text-white flex flex-col relative">
+      <SEO title="Certificación Oficial" url="/certificacion" />
       {/* Background ambient glow */}
       <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] md:w-[800px] md:h-[800px] bg-blue-400/20 dark:bg-blue-600/10 blur-[100px] md:blur-[120px] rounded-full pointer-events-none z-0"></div>
 

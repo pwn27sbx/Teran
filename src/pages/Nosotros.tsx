@@ -3,6 +3,7 @@ import { ArrowRight, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Header from "@/components/Header";
+import { SEO } from "@/components/SEO";
 
 export default function Nosotros() {
   const stats = [
@@ -14,6 +15,7 @@ export default function Nosotros() {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#121212] flex flex-col font-sans relative overflow-hidden">
+      <SEO title="Quiénes Somos" url="/nosotros" />
       {/* Background Grid */}
       <div 
         className="absolute inset-0 pointer-events-none"
