@@ -1,6 +1,6 @@
 import { useDarkMode } from "@/hooks/useDarkMode";
 import { useState, useRef, useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation, Trans } from "react-i18next";
 import BrushReveal from "@/components/BrushReveal";
 import DriftWall from "@/components/DriftWall";
 import PremiumFeatures from "@/components/PremiumFeatures";
@@ -131,10 +131,12 @@ function Home() {
           <h2 className="font-['Outfit'] font-black text-5xl md:text-7xl text-[#0277ab] mb-8 tracking-tight drop-shadow-sm">
             {t('home.why_us')}
           </h2>
-          <p 
-            className="font-serif text-lg md:text-2xl leading-relaxed text-gray-600 dark:text-gray-400 font-light max-w-3xl"
-            dangerouslySetInnerHTML={{ __html: t('home.why_us_desc') }}
-          />
+          <p className="font-serif text-lg md:text-2xl leading-relaxed text-gray-600 dark:text-gray-400 font-light max-w-3xl">
+            <Trans 
+              i18nKey="home.why_us_desc"
+              components={{ strong: <strong className="font-bold text-[#0277ab]" /> }} 
+            />
+          </p>
         </motion.div>
 
         {/* Premium Bento Grid */}
