@@ -1,31 +1,19 @@
-import { useDarkMode } from "../hooks/useDarkMode";
+import { useDarkMode } from "@/hooks/useDarkMode";
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import BrushReveal from "../components/BrushReveal";
-import DriftWall from "../components/DriftWall";
-import PremiumFeatures from "../components/PremiumFeatures";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import BrushReveal from "@/components/BrushReveal";
+import DriftWall from "@/components/DriftWall";
+import PremiumFeatures from "@/components/PremiumFeatures";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { Activity } from "lucide-react";
 
 
 import { motion, useScroll, useTransform } from "framer-motion";
 
-const baseGalleryItems = Array.from({ length: 27 }, (_, i) => ({
-  image: `/gallery/${i + 1}.webp`,
-  title: `Galería ${i + 1}`,
-  href: undefined,
-}));
+import { galleryItems } from "@/data/gallery";
 
-// Rellenamos hasta 30 para que las 5 columnas tengan exactamente 6 imágenes cada una y no haya descuadres
-const galleryItems = [
-  ...baseGalleryItems,
-  baseGalleryItems[0],
-  baseGalleryItems[1],
-  baseGalleryItems[2],
-];
-
-function App() {
+function Home() {
   const { t } = useTranslation();
   
   const { isDark } = useDarkMode();
@@ -204,4 +192,4 @@ function App() {
   );
 }
 
-export default App;
+export default Home;

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft, PhoneCall } from "lucide-react";
 import { motion } from "framer-motion";
-import LocationCard from "../components/LocationCard";
+import LocationCard from "@/components/LocationCard";
 
 export default function Emergencias() {
   return (

@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import Header from "../components/Header";
+import Header from "@/components/Header";
 
 export default function NotFound() {
   return (

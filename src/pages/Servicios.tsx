@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Header from "../components/Header";
+import Header from "@/components/Header";
 import { Stethoscope } from "lucide-react";
-import { categories, services } from "../data/servicesData";
+import { categories, services } from "@/data/servicesData";
 import * as Icons from "lucide-react";
 
 export default function Servicios() {

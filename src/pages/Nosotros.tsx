@@ -2,7 +2,7 @@ import React from "react";
 import { ArrowRight, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import Header from "../components/Header";
+import Header from "@/components/Header";
 
 export default function Nosotros() {
   const stats = [

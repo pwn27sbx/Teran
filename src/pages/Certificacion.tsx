@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
-import Header from "../components/Header";
+import Header from "@/components/Header";
 import { Award, Quote } from "lucide-react";
-import Stack from "../components/Stack";
-import { testimonials, type Testimonial } from "../data/testimonialsData";
+import Stack from "@/components/Stack";
+import { testimonials, type Testimonial } from "@/data/testimonialsData";
 
 export default function Certificacion() {
 

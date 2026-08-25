@@ -4,7 +4,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { Activity, ChevronUp } from "lucide-react";
 import CurvedInput from "./CurvedInput";
 import LogoLoop from "./LogoLoop";
-import { useDarkMode } from "../hooks/useDarkMode";
+import { useDarkMode } from "@/hooks/useDarkMode";
 
 const brandLogos = [
   { src: "/logos/pfizer.svg", alt: "Pfizer", title: "Pfizer" },

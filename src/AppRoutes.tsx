@@ -18,7 +18,7 @@ const PageLoader = () => (
   </div>
 );
 
-export default function App() {
+export default function AppRoutes() {
   return (
     <Router>
       <Suspense fallback={<PageLoader />}>
