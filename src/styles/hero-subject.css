@@ -1,0 +1,59 @@
+/*
+ * Hero subject reveal.
+ *
+ * One interaction, four coordinated reactions, one token pair. The component
+ * owns only the state attribute (`data-revealed="true"`); everything that moves
+ * lives here so hover, keyboard focus and the pinned (tap) state share exactly
+ * the same transition.
+ */
+
+:root {
+  --ease-brand: cubic-bezier(0.65, 0.05, 0, 1);
+  --dur-brand: 0.75s;
+}
+
+/* Rest state: the study is fully clipped away, the subject is at rest, the
+   frame is invisible and the label keeps the brand blue. */
+.subject-reveal-img {
+  clip-path: ellipse(0% 0% at 50% 0%);
+  transition: clip-path var(--dur-brand) var(--ease-brand);
+}
+
+.subject-base {
+  transform: scale(1);
+  transition: transform var(--dur-brand) var(--ease-brand);
+}
+
+.subject-frame {
+  opacity: 0;
+  transition: opacity var(--dur-brand) var(--ease-brand);
+}
+
+.subject-label {
+  color: #0277ab;
+  transition: color var(--dur-brand) var(--ease-brand);
+}
+
+/* Revealed state: exactly four declarations, nothing else changes. */
+[data-subject-reveal][data-revealed="true"] .subject-reveal-img {
+  clip-path: ellipse(100% 120% at 50% 0%);
+}
+[data-subject-reveal][data-revealed="true"] .subject-base {
+  transform: scale(1.04);
+}
+[data-subject-reveal][data-revealed="true"] .subject-frame {
+  opacity: 1;
+}
+[data-subject-reveal][data-revealed="true"] .subject-label {
+  color: #f0ee07;
+}
+
+/* Reduced motion keeps the state, never the movement. */
+@media (prefers-reduced-motion: reduce) {
+  .subject-reveal-img,
+  .subject-base,
+  .subject-frame,
+  .subject-label {
+    transition: none;
+  }
+}

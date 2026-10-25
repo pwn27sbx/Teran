@@ -1,7 +1,6 @@
-import { useDarkMode } from "@/hooks/useDarkMode";
 import { useState, useRef, useEffect } from "react";
 import { useTranslation, Trans } from "react-i18next";
-import BrushReveal from "@/components/BrushReveal";
+import HeroSubjectReveal from "@/components/HeroSubjectReveal";
 import HeroOverlay from "@/components/HeroOverlay";
 import DriftWall from "@/components/DriftWall";
 import PremiumFeatures from "@/components/PremiumFeatures";
@@ -24,7 +23,6 @@ const GALLERY_SCROLL_OFFSET: ["start end", "start 20%"] = ["start end", "start 2
 function Home() {
   const { t } = useTranslation();
   
-  const { isDark } = useDarkMode();
   const shouldReduceMotion = useReducedMotion();
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -76,19 +74,11 @@ function Home() {
             style={heroMotionStyle}
             className="w-full h-full relative origin-center bg-white dark:bg-[#121212] shadow-2xl overflow-hidden pointer-events-auto"
           >
-            {/* Contenedor para ajustar tamaño y posición en PC sin romper las capas */}
+            {/* Media layer only: the dog hosts the scene and the cat reveals its
+                own study. The copy layer stays outside the boundary. */}
             <div className="w-full h-full md:scale-[1] md:translate-y-[5vh] origin-bottom">
               <VisualErrorBoundary fallbackMessage="Error loading hero effect">
-                <BrushReveal
-                  bgImage="/milo1_nobg.avif"
-                  revealImage="/atreus1_nobg.avif"
-                  xrayImage={isDark ? "/atreusx_dark.webp" : "/atreusx_nobg.avif"}
-                  brushSize={isMobile ? 90 : 180}
-                  revealScale={0.73}
-                  bgScale={isMobile ? 0.95 : 1}
-                  bgObjectPosition="center 5%"
-                  revealOffsetY={isMobile ? -0.35 : -0.354}
-                />
+                <HeroSubjectReveal />
               </VisualErrorBoundary>
             </div>
             <HeroOverlay />
