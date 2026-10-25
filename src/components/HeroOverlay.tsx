@@ -21,14 +21,14 @@ function HeroOverlay() {
   return (
     <div className="absolute inset-0 z-20 pointer-events-none flex flex-col">
       {/* Brand lockup: mobile only, the header already shows it on desktop */}
-      <div className="md:hidden flex flex-col items-center text-gray-900 drop-shadow-md pt-[16vh] px-6">
+      <div className="md:hidden flex flex-col items-center text-gray-900 drop-shadow-md pt-[8vh] sm:pt-[16vh] px-6">
         <img
           src="/logoTeran.svg"
           alt="Logo Hospital Veterinario Terán"
-          className="h-[85px] w-auto"
+          className="h-[64px] sm:h-[85px] w-auto"
         />
         <div className="flex flex-col justify-center items-center mt-2">
-          <span className="font-['Outfit'] font-black text-[56px] tracking-tighter uppercase leading-none text-gray-900 drop-shadow-sm text-center">
+          <span className="font-['Outfit'] font-black text-[40px] sm:text-[56px] tracking-tighter uppercase leading-none text-gray-900 drop-shadow-sm text-center">
             TERAN
           </span>
           <span className="font-['Outfit'] font-bold text-[14px] tracking-[0.09em] uppercase text-gray-700 leading-none mt-1.5 drop-shadow-sm text-center">
@@ -38,8 +38,8 @@ function HeroOverlay() {
       </div>
 
       {/* Copy block: bottom-anchored on mobile and on desktop */}
-      <div className="mt-auto flex flex-col px-6 pb-24 text-center md:pl-12 md:pb-16 md:items-start md:text-left md:max-w-xl">
-        <h1 className="font-['Outfit'] font-black text-[40px] md:text-6xl tracking-tighter leading-[0.95] text-gray-900">
+      <div className="mt-auto flex flex-col px-6 pb-10 sm:pb-24 text-center md:pl-12 md:pb-16 md:items-start md:text-left md:max-w-xl">
+        <h1 className="font-['Outfit'] font-black text-[32px] sm:text-[40px] md:text-6xl tracking-tighter leading-[0.95] text-gray-900">
           {t('home.hero.title')}{' '}
           <span className="text-[#f4484a]">{t('home.hero.best_friend')}</span>
         </h1>
@@ -48,7 +48,7 @@ function HeroOverlay() {
           {t('home.hero.subtitle')}
         </p>
 
-        <div className="pointer-events-auto flex flex-col items-center gap-5 mt-8 md:flex-row md:gap-7">
+        <div className="pointer-events-auto flex flex-col items-center gap-4 sm:gap-5 mt-8 md:flex-row md:gap-7">
           <a
             href={WHATSAPP_URL}
             target="_blank"

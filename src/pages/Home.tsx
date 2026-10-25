@@ -11,7 +11,7 @@ import { Activity } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { VisualErrorBoundary } from "@/components/VisualErrorBoundary";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 
 import { galleryItems } from "@/data/gallery";
 
@@ -25,6 +25,7 @@ function Home() {
   const { t } = useTranslation();
   
   const { isDark } = useDarkMode();
+  const shouldReduceMotion = useReducedMotion();
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -48,6 +49,12 @@ function Home() {
   const heroRadius = useTransform(scrollY, [SCROLL_RANGE[0], SCROLL_RANGE[1]], HERO_RADIUS_RANGE);
   const heroOpacity = useTransform(scrollY, SCROLL_RANGE, HERO_OPACITY_RANGE);
 
+  // With reduced motion the hero renders statically: no scroll-driven scale,
+  // radius or opacity, so the composition never moves under the copy.
+  const heroMotionStyle = shouldReduceMotion
+    ? undefined
+    : { scale: heroScale, borderRadius: heroRadius, opacity: heroOpacity };
+
   return (
     <div
       className="relative font-sans selection:bg-[#f4484a] selection:text-white bg-[#f8f9fa] dark:bg-[#121212]"
@@ -66,11 +73,7 @@ function Home() {
       <div className="h-[200vh] w-full relative z-10">
         <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden pointer-events-none">
           <motion.div
-            style={{
-              scale: heroScale,
-              borderRadius: heroRadius,
-              opacity: heroOpacity,
-            }}
+            style={heroMotionStyle}
             className="w-full h-full relative origin-center bg-white dark:bg-[#121212] shadow-2xl overflow-hidden pointer-events-auto"
           >
             {/* Contenedor para ajustar tamaño y posición en PC sin romper las capas */}
