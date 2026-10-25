@@ -2,6 +2,7 @@ import { useDarkMode } from "@/hooks/useDarkMode";
 import { useState, useRef, useEffect } from "react";
 import { useTranslation, Trans } from "react-i18next";
 import BrushReveal from "@/components/BrushReveal";
+import HeroOverlay from "@/components/HeroOverlay";
 import DriftWall from "@/components/DriftWall";
 import PremiumFeatures from "@/components/PremiumFeatures";
 import Header from "@/components/Header";
@@ -87,23 +88,7 @@ function Home() {
                 />
               </VisualErrorBoundary>
             </div>
-            {isMobile && (
-              <div className="absolute top-[16vh] left-1/2 -translate-x-1/2 flex flex-col items-center text-gray-900 dark:text-white drop-shadow-md z-10 pointer-events-none w-full">
-                <img
-                  src="/logoTeran.svg"
-                  alt="Logo Hospital Veterinario Terán"
-                  className="h-[85px] w-auto mt-0"
-                />
-                <div className="flex flex-col justify-center items-center mt-2">
-                  <span className="font-['Outfit'] font-black text-[56px] tracking-tighter uppercase leading-none text-gray-900 dark:text-white mb-0 drop-shadow-sm text-center">
-                    TERAN
-                  </span>
-                  <span className="font-['Outfit'] font-bold text-[14px] tracking-[0.09em] uppercase text-gray-700 dark:text-gray-300 leading-none mt-1.5 drop-shadow-sm text-center">
-                    Hospital Veterinario
-                  </span>
-                </div>
-              </div>
-            )}
+            <HeroOverlay />
             {/* No fade gradient at the bottom as requested */}
           </motion.div>
         </div>
