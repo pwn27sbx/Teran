@@ -121,7 +121,7 @@ export default function HeroSubjectReveal({
           setPinned((current) => !current);
         }}
         onKeyDown={handleKeyDown}
-        className="relative mx-auto mt-[12vh] block aspect-square w-[72vw] max-w-[340px] cursor-pointer rounded-[24px] bg-transparent p-0 md:absolute md:right-0 md:bottom-0 md:mx-0 md:mt-0 md:w-[42vw] md:max-w-none"
+        className="subject-object relative mx-auto block aspect-[1448/1637] w-auto cursor-pointer rounded-[24px] bg-transparent p-0 md:absolute md:right-0 md:bottom-[5vh] md:mx-0 md:w-auto"
       >
         {/* Subject base: the cat photo, which breathes a little when revealed. */}
         <span aria-hidden="true" className="subject-base absolute inset-0 block">
@@ -136,7 +136,7 @@ export default function HeroSubjectReveal({
               aria-hidden="true"
               draggable={false}
               decoding="async"
-              className="absolute inset-0 h-full w-full object-contain object-bottom pointer-events-none select-none"
+              className="absolute inset-0 h-full w-full object-cover object-center pointer-events-none select-none"
             />
           </picture>
         </span>
@@ -156,7 +156,7 @@ export default function HeroSubjectReveal({
                 aria-hidden="true"
                 draggable={false}
                 decoding="async"
-                className="absolute inset-0 h-full w-full object-contain object-bottom select-none"
+                className="absolute inset-0 h-full w-full object-cover object-center select-none"
               />
             </picture>
           )}
@@ -168,9 +168,12 @@ export default function HeroSubjectReveal({
           className="subject-frame absolute inset-0 block rounded-[24px] border-2 border-[#f0ee07] pointer-events-none"
         />
 
-        {/* Label: the only affordance text, colored by the reveal token. */}
-        <span className="subject-label pointer-events-none absolute inset-x-0 bottom-0 block text-center font-['Outfit'] text-[11px] font-bold tracking-[0.18em] uppercase">
-          {label}
+        {/* Label: the only affordance text, colored by the reveal token. The scrim
+            keeps it legible over whichever photo sits behind it. */}
+        <span className="subject-label pointer-events-none absolute inset-x-0 bottom-0 flex justify-center">
+          <span className="rounded-full bg-black/35 px-3 py-1 font-['Outfit'] text-[11px] font-bold tracking-[0.18em] uppercase backdrop-blur-[2px]">
+            {label}
+          </span>
         </span>
       </button>
     </div>

@@ -182,6 +182,23 @@ describe('hero subject reveal styles', () => {
     );
   });
 
+  it('hides the object when the stacked layout has no usable band left', () => {
+    const sheet = stripComments(readStyleSheet());
+
+    // Sizing is derived from the blocks around it, and a short viewport has no
+    // band to give: the object is hidden instead of overlapping or shrinking to
+    // a speck.
+    expect(sheet).toContain('--hero-mobile-lockup');
+    expect(sheet).toContain('--hero-mobile-copy');
+    expect(sheet).toContain('calc(100vh - 8vh');
+    const shortViewport = mediaBodies(sheet, '(max-width: 767px) and (max-height: 719px)');
+
+    expect(shortViewport).toHaveLength(1);
+    expect(parseRules(shortViewport[0]).flatMap((rule) => rule.declarations)).toEqual([
+      'display: none',
+    ]);
+  });
+
   it('keeps the revealed state under reduced motion and only drops the transition', () => {
     const bodies = mediaBodies(stripComments(readStyleSheet()), REDUCED_MOTION);
 
@@ -375,15 +392,20 @@ describe('HeroSubjectReveal', () => {
       expect(container.querySelector('canvas')).toBeNull();
     });
 
-    it('keeps a square box anchored to the right edge on desktop', () => {
+    it('hugs the trimmed subject and anchors to the right edge on desktop', () => {
       renderReveal();
 
       const tokens = classesOf(subjectButton());
 
-      expect(tokens).toContain('aspect-square');
+      // The subject box follows the trimmed bounds of the asset (1448x1637),
+      // so the frame outlines the cat instead of a padded square.
+      expect(tokens).toContain('aspect-[1448/1637]');
       expect(tokens).toEqual(
-        expect.arrayContaining(['md:absolute', 'md:right-0', 'md:bottom-0']),
+        expect.arrayContaining(['subject-object', 'md:absolute', 'md:right-0', 'md:w-auto']),
       );
+      // The hero content is translated 5vh on md+, so anchoring the object at
+      // the media box bottom clips its frame out of the viewport.
+      expect(tokens).toContain('md:bottom-[5vh]');
     });
 
     it('centers the object above the copy block on mobile', () => {
@@ -395,6 +417,9 @@ describe('HeroSubjectReveal', () => {
       expect(tokens).toEqual(expect.arrayContaining(['md:mx-0']));
       // Mobile uses the stacked flow, so the box is not absolutely positioned there.
       expect(tokens).not.toContain('absolute');
+      // The stylesheet derives the object height from the blocks above and
+      // below it, so the stacked layout never runs into the copy.
+      expect(tokens).toContain('subject-object');
     });
 
     it('places the cat photo and its study inside the object box', () => {
@@ -737,9 +762,11 @@ describe('Home hero composition', () => {
     expect(classesOf(media)).toEqual(expect.arrayContaining(['absolute', 'inset-0']));
     expect(classesOf(heroBox)).toEqual(expect.arrayContaining(['h-full', 'w-full', 'overflow-hidden']));
 
-    // The object is sized from the viewport, and no hero element claims a fixed
-    // width as wide as the smallest supported viewport.
-    expect(classesOf(subject)).toContain('w-[72vw]');
+    // The object is sized from the viewport height on the stacked layout, where
+    // the copy is bottom-anchored, so a short viewport shrinks the object instead
+    // of pushing it into the copy. No hero element claims a fixed width as wide
+    // as the smallest supported viewport.
+    expect(classesOf(subject)).toContain('subject-object');
     expect(fixedPixelWidths(media)).toEqual(
       fixedPixelWidths(media).filter((width) => width < 360),
     );
