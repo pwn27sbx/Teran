@@ -59,6 +59,9 @@ export default function BrushReveal({
   const xrayCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const [imagesLoaded, setImagesLoaded] = useState<boolean>(false);
   const [reducedMotion, setReducedMotion] = useState<boolean>(false);
+  // A failed AVIF request is not rescued by picture source selection, so the
+  // AVIF source must be dropped to let the WebP on the img load instead.
+  const [avifSourceFailed, setAvifSourceFailed] = useState<boolean>(false);
   const bgImgRef = useRef<HTMLImageElement | null>(null);
   const revealImgRef = useRef<HTMLImageElement | null>(null);
   const xrayImgRef = useRef<HTMLImageElement | null>(null);
@@ -97,6 +100,8 @@ export default function BrushReveal({
   }, []);
 
   useEffect(() => {
+    // A new base image deserves its own AVIF attempt.
+    setAvifSourceFailed(false);
     // If xrayImage is provided, we wait for 3 images instead of 2
     const totalToLoad = xrayImage ? 3 : 2;
     let loadedCount = 0;
@@ -914,12 +919,17 @@ export default function BrushReveal({
 
       {/* Base Layer: purely decorative, the hero copy carries the accessible name.
           Served as AVIF with the original WebP as the fallback; the image is the
-          LCP candidate, hence the high fetch priority. */}
+          LCP candidate, hence the high fetch priority. Source selection only
+          covers unsupported formats, so a failed AVIF request drops the source
+          and leaves the WebP as the base layer. */}
       <picture>
-        {isAvifSource(bgImage) && <source type="image/avif" srcSet={bgImage} />}
+        {isAvifSource(bgImage) && !avifSourceFailed && (
+          <source type="image/avif" srcSet={bgImage} />
+        )}
         <img
           ref={bgNodeRef}
           src={webpFallbackSource(bgImage)}
+          onError={() => setAvifSourceFailed(true)}
           alt=""
           aria-hidden="true"
           draggable={false}

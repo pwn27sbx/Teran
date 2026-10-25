@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n';
@@ -314,6 +314,26 @@ describe('BrushReveal as the hero media layer', () => {
     expect(baseImage?.getAttribute('src')).toBe('/base.webp');
     expect(baseImage?.getAttribute('fetchpriority')).toBe('high');
     expect(baseImage?.getAttribute('decoding')).toBe('async');
+  });
+
+  it('keeps the WebP base layer when the AVIF source fails to load', () => {
+    stubReducedMotionPreference(false);
+    stubCanvasEnvironment();
+
+    const { container } = render(
+      <BrushReveal bgImage="/base.avif" revealImage="/reveal.avif" />,
+    );
+    const picture = container.querySelector('picture');
+    const baseImage = container.querySelector('picture img');
+
+    expect(picture?.querySelector('source')).not.toBeNull();
+
+    // A failed AVIF request is not rescued by source selection: without an
+    // error path the base layer, and the whole reduced-motion hero, stays blank.
+    fireEvent.error(baseImage as HTMLImageElement);
+
+    expect(picture?.querySelector('source')).toBeNull();
+    expect(baseImage?.getAttribute('src')).toBe('/base.webp');
   });
 
   it('hides the decorative base image from assistive technology', () => {
