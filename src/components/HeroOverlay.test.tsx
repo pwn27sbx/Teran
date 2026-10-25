@@ -109,6 +109,46 @@ function stubAutoLoadingImages(): void {
   vi.stubGlobal('Image', AutoLoadingImage);
 }
 
+/**
+ * Emulates a browser without AVIF decode support: every AVIF request fails and
+ * the WebP copy succeeds, unless `failWebpToo` is set. The requested sources are
+ * recorded so a test can assert the fallback path the component actually asks
+ * for.
+ */
+function stubImagesWithFailedAvifDecode({ failWebpToo = false } = {}): string[] {
+  const requestedSources: string[] = [];
+
+  class AvifFailingImage {
+    onload: (() => void) | null = null;
+    onerror: (() => void) | null = null;
+    width = 1200;
+    height = 800;
+    private currentSource = '';
+
+    get src(): string {
+      return this.currentSource;
+    }
+
+    set src(value: string) {
+      this.currentSource = value;
+      requestedSources.push(value);
+      setTimeout(() => {
+        const failed = value.endsWith('.avif') || (failWebpToo && value.endsWith('.webp'));
+
+        if (failed) {
+          this.onerror?.();
+        } else {
+          this.onload?.();
+        }
+      }, 0);
+    }
+  }
+
+  vi.stubGlobal('Image', AvifFailingImage);
+
+  return requestedSources;
+}
+
 describe('HeroOverlay', () => {
   beforeEach(async () => {
     // The shipped LanguageDetector reads localStorage/navigator, so the language
@@ -220,6 +260,60 @@ describe('BrushReveal as the hero media layer', () => {
     expect(requestFrame).not.toHaveBeenCalled();
     // The static hero is the base image only.
     expect(container.querySelector('img')).not.toBeNull();
+  });
+
+  it('falls back to the WebP copy when the AVIF layer fails to decode', async () => {
+    stubReducedMotionPreference(true);
+    stubCanvasEnvironment();
+    const requestedSources = stubImagesWithFailedAvifDecode();
+
+    render(<BrushReveal bgImage="/base.avif" revealImage="/reveal.avif" />);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    });
+
+    expect(requestedSources).toContain('/base.avif');
+    expect(requestedSources).toContain('/base.webp');
+    expect(requestedSources).toContain('/reveal.avif');
+    expect(requestedSources).toContain('/reveal.webp');
+  });
+
+  it('retries the WebP fallback once and still settles when both formats fail', async () => {
+    stubReducedMotionPreference(true);
+    stubCanvasEnvironment();
+    const requestedSources = stubImagesWithFailedAvifDecode({ failWebpToo: true });
+
+    render(<BrushReveal bgImage="/base.avif" revealImage="/reveal.avif" />);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    });
+    // A retry loop would keep requesting the same two paths forever.
+    await new Promise((resolve) => setTimeout(resolve, 25));
+
+    expect(requestedSources.slice().sort()).toEqual(
+      ['/base.avif', '/base.webp', '/reveal.avif', '/reveal.webp'].sort(),
+    );
+    expect(requestedSources.filter((source) => source === '/base.webp')).toHaveLength(1);
+    expect(requestedSources.filter((source) => source === '/reveal.webp')).toHaveLength(1);
+  });
+
+  it('serves the DOM base layer as AVIF with the WebP as its fallback', () => {
+    stubReducedMotionPreference(false);
+    stubCanvasEnvironment();
+
+    const { container } = render(
+      <BrushReveal bgImage="/base.avif" revealImage="/reveal.avif" />,
+    );
+    const source = container.querySelector('picture source');
+    const baseImage = container.querySelector('picture img');
+
+    expect(source?.getAttribute('type')).toBe('image/avif');
+    expect(source?.getAttribute('srcset')).toBe('/base.avif');
+    expect(baseImage?.getAttribute('src')).toBe('/base.webp');
+    expect(baseImage?.getAttribute('fetchpriority')).toBe('high');
+    expect(baseImage?.getAttribute('decoding')).toBe('async');
   });
 
   it('hides the decorative base image from assistive technology', () => {

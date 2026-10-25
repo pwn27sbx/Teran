@@ -26,6 +26,18 @@ interface Framing {
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
+const AVIF_EXTENSION = /\.avif(\?|#|$)/i;
+
+const isAvifSource = (source: string): boolean => AVIF_EXTENSION.test(source);
+
+/**
+ * The hero assets ship as AVIF and keep the original WebP as the runtime
+ * fallback, so the fallback path is derived from the primary one instead of
+ * being duplicated at every call site.
+ */
+const webpFallbackSource = (source: string): string =>
+  isAvifSource(source) ? source.replace(AVIF_EXTENSION, ".webp$1") : source;
+
 const prefersReducedMotion = (): boolean =>
   typeof window !== "undefined" &&
   typeof window.matchMedia === "function" &&
@@ -97,36 +109,40 @@ export default function BrushReveal({
       }
     };
 
-    const bg = new Image();
-    bg.src = bgImage;
-    bg.onload = () => {
-      bgImgRef.current = bg;
-      checkLoaded();
-    };
-    bg.onerror = () => {
-      checkLoaded();
+    const requestImage = (
+      source: string,
+      target: { current: HTMLImageElement | null },
+    ) => {
+      const image = new Image();
+      image.onload = () => {
+        target.current = image;
+        checkLoaded();
+      };
+      image.onerror = () => {
+        // Decoding the AVIF can fail on browsers without support, so the WebP
+        // copy gets exactly one retry before proceeding without the layer.
+        const fallback = webpFallbackSource(source);
+        if (fallback === source) {
+          checkLoaded();
+          return;
+        }
+
+        const retry = new Image();
+        retry.onload = () => {
+          target.current = retry;
+          checkLoaded();
+        };
+        retry.onerror = () => checkLoaded();
+        retry.src = fallback;
+      };
+      image.src = source;
     };
 
-    const rev = new Image();
-    rev.src = revealImage;
-    rev.onload = () => {
-      revealImgRef.current = rev;
-      checkLoaded();
-    };
-    rev.onerror = () => {
-      checkLoaded();
-    };
+    requestImage(bgImage, bgImgRef);
+    requestImage(revealImage, revealImgRef);
 
     if (xrayImage) {
-      const xray = new Image();
-      xray.src = xrayImage;
-      xray.onload = () => {
-        xrayImgRef.current = xray;
-        checkLoaded();
-      };
-      xray.onerror = () => {
-        checkLoaded();
-      };
+      requestImage(xrayImage, xrayImgRef);
     }
 
     return () => {
@@ -896,16 +912,23 @@ export default function BrushReveal({
         </div>
       )}
 
-      {/* Base Layer: purely decorative, the hero copy carries the accessible name */}
-      <img
-        ref={bgNodeRef}
-        src={bgImage}
-        alt=""
-        aria-hidden="true"
-        draggable={false}
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-        style={{ willChange: "transform", objectPosition: bgObjectPosition }}
-      />
+      {/* Base Layer: purely decorative, the hero copy carries the accessible name.
+          Served as AVIF with the original WebP as the fallback; the image is the
+          LCP candidate, hence the high fetch priority. */}
+      <picture>
+        {isAvifSource(bgImage) && <source type="image/avif" srcSet={bgImage} />}
+        <img
+          ref={bgNodeRef}
+          src={webpFallbackSource(bgImage)}
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+          fetchPriority="high"
+          decoding="async"
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+          style={{ willChange: "transform", objectPosition: bgObjectPosition }}
+        />
+      </picture>
 
       {/* Reveal Layer */}
       <canvas

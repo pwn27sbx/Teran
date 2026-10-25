@@ -80,9 +80,9 @@ function Home() {
             <div className="w-full h-full md:scale-[1] md:translate-y-[5vh] origin-bottom">
               <VisualErrorBoundary fallbackMessage="Error loading hero effect">
                 <BrushReveal
-                  bgImage="/milo1_nobg.webp"
-                  revealImage="/atreus1_nobg.webp"
-                  xrayImage={isDark ? "/atreusx_dark.webp" : "/atreusx_nobg.webp"}
+                  bgImage="/milo1_nobg.avif"
+                  revealImage="/atreus1_nobg.avif"
+                  xrayImage={isDark ? "/atreusx_dark.webp" : "/atreusx_nobg.avif"}
                   brushSize={isMobile ? 90 : 180}
                   revealScale={0.73}
                   bgScale={isMobile ? 0.95 : 1}
