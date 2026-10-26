@@ -101,6 +101,15 @@ describe('SEO', () => {
     expect(metaContent('meta[name="twitter:description"]')).not.toBeNull();
   });
 
+  it('publishes the Open Graph locale that matches the active language', async () => {
+    await i18n.changeLanguage('en');
+    renderSeo({ route: '/', url: '/' });
+
+    await waitFor(() => {
+      expect(metaContent('meta[property="og:locale"]')).toBe('en_US');
+    });
+  });
+
   it('resolves a custom image prop against the production origin', async () => {
     renderSeo({ route: '/', url: '/', image: '/gallery/oter.webp' });
 

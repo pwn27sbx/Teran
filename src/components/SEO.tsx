@@ -15,7 +15,9 @@ const DEFAULT_IMAGE = '/og-teran.jpg';
 const OG_IMAGE_WIDTH = '1200';
 const OG_IMAGE_HEIGHT = '630';
 const OG_IMAGE_TYPE = 'image/jpeg';
-const OG_LOCALE = 'es_ES';
+/** Open Graph locales are territory-tagged, so the bare i18n language maps here. */
+const OG_LOCALES: Record<string, string> = { es: 'es_ES', en: 'en_US' };
+const FALLBACK_OG_LOCALE = 'es_ES';
 const FALLBACK_LANGUAGE = 'es';
 
 /** Resolves repository-relative paths against the production origin. */
@@ -40,6 +42,7 @@ export function SEO({ title, description, image, url }: SEOProps) {
   // for any route that does not pass `url` explicitly.
   const route = normalizeRoute(url ?? location.pathname);
   const language = i18n.language?.split('-')[0] || FALLBACK_LANGUAGE;
+  const ogLocale = OG_LOCALES[language] ?? FALLBACK_OG_LOCALE;
 
   const seo = {
     title: title ? `${title} | ${defaultTitle}` : defaultTitle,
@@ -65,7 +68,7 @@ export function SEO({ title, description, image, url }: SEOProps) {
       <meta property="og:url" content={seo.url} />
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content={SITE_NAME} />
-      <meta property="og:locale" content={OG_LOCALE} />
+      <meta property="og:locale" content={ogLocale} />
 
       {/* Twitter Card tags */}
       <meta name="twitter:card" content="summary_large_image" />
