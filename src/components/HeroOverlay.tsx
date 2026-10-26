@@ -34,17 +34,17 @@ function HeroOverlay({ media }: HeroOverlayProps) {
   return (
     <div className="absolute inset-0 z-20 pointer-events-none flex flex-col">
       {/* Brand lockup: mobile only, the header already shows it on desktop */}
-      <div className="md:hidden flex flex-col items-center text-gray-900 drop-shadow-md pt-[8vh] sm:pt-[16vh] px-6">
+      <div className="md:hidden flex flex-col items-center text-gray-900 dark:text-white drop-shadow-md pt-[8vh] sm:pt-[16vh] px-6">
         <img
           src="/logoTeran.svg"
           alt="Logo Hospital Veterinario Terán"
           className="h-[64px] sm:h-[85px] w-auto"
         />
         <div className="flex flex-col justify-center items-center mt-2">
-          <span className="font-['Outfit'] font-black text-[40px] sm:text-[56px] tracking-tighter uppercase leading-none text-gray-900 drop-shadow-sm text-center">
+          <span className="font-['Outfit'] font-black text-[40px] sm:text-[56px] tracking-tighter uppercase leading-none text-gray-900 dark:text-white drop-shadow-sm text-center">
             TERAN
           </span>
-          <span className="font-['Outfit'] font-bold text-[14px] tracking-[0.09em] uppercase text-gray-700 leading-none mt-1.5 drop-shadow-sm text-center">
+          <span className="font-['Outfit'] font-bold text-[14px] tracking-[0.09em] uppercase text-gray-700 dark:text-gray-300 leading-none mt-1.5 drop-shadow-sm text-center">
             Hospital Veterinario
           </span>
         </div>
@@ -63,12 +63,12 @@ function HeroOverlay({ media }: HeroOverlayProps) {
 
       {/* Copy block: bottom-anchored on mobile and on desktop */}
       <div className="mt-auto flex flex-col px-6 pb-10 sm:pb-24 text-center md:pl-12 md:pb-16 md:items-start md:text-left md:max-w-xl">
-        <h1 className="font-['Outfit'] font-black text-[32px] sm:text-[40px] md:text-6xl tracking-tighter leading-[0.95] text-gray-900">
+        <h1 className="font-['Outfit'] font-black text-[32px] sm:text-[40px] md:text-6xl tracking-tighter leading-[0.95] text-gray-900 dark:text-white">
           {t('home.hero.title')}{' '}
           <span className="text-[#f4484a]">{t('home.hero.best_friend')}</span>
         </h1>
 
-        <p className="text-base md:text-lg text-gray-600 font-light max-w-[34ch] mt-4">
+        <p className="text-base md:text-lg text-gray-600 dark:text-gray-300 font-light max-w-[34ch] mt-4">
           {t('home.hero.subtitle')}
         </p>
 
