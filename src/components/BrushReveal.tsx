@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { isAvifSource, webpFallbackSource } from "@/lib/media";
 
 export interface BrushRevealProps {
   bgImage: string;
@@ -25,18 +26,6 @@ interface Framing {
 }
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
-
-const AVIF_EXTENSION = /\.avif(\?|#|$)/i;
-
-const isAvifSource = (source: string): boolean => AVIF_EXTENSION.test(source);
-
-/**
- * The hero assets ship as AVIF and keep the original WebP as the runtime
- * fallback, so the fallback path is derived from the primary one instead of
- * being duplicated at every call site.
- */
-const webpFallbackSource = (source: string): string =>
-  isAvifSource(source) ? source.replace(AVIF_EXTENSION, ".webp$1") : source;
 
 const prefersReducedMotion = (): boolean =>
   typeof window !== "undefined" &&

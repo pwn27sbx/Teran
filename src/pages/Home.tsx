@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation, Trans } from "react-i18next";
-import HeroSubjectReveal from "@/components/HeroSubjectReveal";
+import { HeroSubjectBackdrop, HeroSubjectObject } from "@/components/HeroSubjectReveal";
 import HeroOverlay from "@/components/HeroOverlay";
 import DriftWall from "@/components/DriftWall";
 import PremiumFeatures from "@/components/PremiumFeatures";
@@ -74,14 +74,22 @@ function Home() {
             style={heroMotionStyle}
             className="w-full h-full relative origin-center bg-white dark:bg-[#121212] shadow-2xl overflow-hidden pointer-events-auto"
           >
-            {/* Media layer only: the dog hosts the scene and the cat reveals its
-                own study. The copy layer stays outside the boundary. */}
+            {/* Media layer only, split in two: the dog hosts the scene as a
+                full-bleed backdrop and the cat reveals its own study from the
+                slot the overlay allocates. Each layer keeps its own boundary,
+                so a media failure can never remove the copy. */}
             <div className="w-full h-full md:scale-[1] md:translate-y-[5vh] origin-bottom">
               <VisualErrorBoundary fallbackMessage="Error loading hero effect">
-                <HeroSubjectReveal />
+                <HeroSubjectBackdrop />
               </VisualErrorBoundary>
             </div>
-            <HeroOverlay />
+            <HeroOverlay
+              media={
+                <VisualErrorBoundary fallbackMessage="Error loading hero subject">
+                  <HeroSubjectObject />
+                </VisualErrorBoundary>
+              }
+            />
             {/* No fade gradient at the bottom as requested */}
           </motion.div>
         </div>

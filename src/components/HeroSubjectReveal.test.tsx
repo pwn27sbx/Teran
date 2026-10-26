@@ -3,30 +3,40 @@ import path from 'node:path';
 import { createElement } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { MemoryRouter } from 'react-router-dom';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n';
 import Home from '@/pages/Home';
-import HeroSubjectReveal from './HeroSubjectReveal';
+import { HeroSubjectBackdrop, HeroSubjectObject } from './HeroSubjectReveal';
 
 /**
  * Lets one suite force a media failure without touching the media layer: the
- * error boundary in `Home` is what must keep the copy alive.
+ * boundaries in `Home` are what must keep the copy alive.
  */
-const mediaFailure = vi.hoisted(() => ({ enabled: false }));
+const mediaFailure = vi.hoisted(() => ({ backdrop: false, object: false }));
 
 vi.mock('./HeroSubjectReveal', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./HeroSubjectReveal')>();
-  const Actual = actual.default;
 
   return {
     ...actual,
-    default: function FailableHeroSubjectReveal(props: Parameters<typeof Actual>[0]) {
-      if (mediaFailure.enabled) {
-        throw new Error('hero media failed');
+    HeroSubjectBackdrop: function FailableHeroSubjectBackdrop(
+      props: Parameters<typeof actual.HeroSubjectBackdrop>[0],
+    ) {
+      if (mediaFailure.backdrop) {
+        throw new Error('hero backdrop failed');
       }
 
-      return createElement(Actual, props);
+      return createElement(actual.HeroSubjectBackdrop, props);
+    },
+    HeroSubjectObject: function FailableHeroSubjectObject(
+      props: Parameters<typeof actual.HeroSubjectObject>[0],
+    ) {
+      if (mediaFailure.object) {
+        throw new Error('hero subject failed');
+      }
+
+      return createElement(actual.HeroSubjectObject, props);
     },
   };
 });
@@ -44,6 +54,7 @@ interface CssRule {
 }
 
 const REVEALED = '[data-subject-reveal][data-revealed="true"]';
+const STUDY_PENDING = '[data-subject-reveal][data-study-ready="false"]';
 
 const EASE_TOKEN = '--ease-brand: cubic-bezier(0.65, 0.05, 0, 1)';
 const DURATION_TOKEN = '--dur-brand: 0.75s';
@@ -182,21 +193,61 @@ describe('hero subject reveal styles', () => {
     );
   });
 
-  it('hides the object when the stacked layout has no usable band left', () => {
+  it('sizes the object from the slot the overlay gives it', () => {
     const sheet = stripComments(readStyleSheet());
 
-    // Sizing is derived from the blocks around it, and a short viewport has no
-    // band to give: the object is hidden instead of overlapping or shrinking to
-    // a speck.
-    expect(sheet).toContain('--hero-mobile-lockup');
-    expect(sheet).toContain('--hero-mobile-copy');
-    expect(sheet).toContain('calc(100vh - 8vh');
+    // The overlay owns the stacked layout: the object fills its slot, so its
+    // mobile height is allocated by layout instead of being computed from the
+    // height of the blocks around it.
+    expect(sheet).not.toContain('--hero-mobile-lockup');
+    expect(sheet).not.toContain('--hero-mobile-copy');
+    expect(sheet).not.toContain('--hero-mobile-breath');
+    expect(sheet).not.toContain('calc(100vh');
+
+    const object = styleSheetRules().filter((rule) => rule.selector === '.subject-object');
+
+    expect(object).toHaveLength(1);
+    // The slot caps the width too, so a very tall viewport cannot push the
+    // frame out of the hero.
+    expect(object[0].declarations).toEqual(['height: 100%', 'max-width: 100%']);
+  });
+
+  it('keeps the desktop placement on md and up', () => {
+    const desktop = mediaBodies(stripComments(readStyleSheet()), '(min-width: 768px)');
+
+    expect(desktop).toHaveLength(1);
+    expect(parseRules(desktop[0])).toEqual([
+      { selector: '.subject-object', declarations: ['height: 64vh'] },
+    ]);
+  });
+
+  it('hides the object on a short stacked viewport as a viewport query only', () => {
+    const sheet = stripComments(readStyleSheet());
     const shortViewport = mediaBodies(sheet, '(max-width: 767px) and (max-height: 719px)');
 
+    // A short viewport leaves no band between the lockup and the copy, so the
+    // interaction is absent there instead of overlapping or shrinking to a speck.
     expect(shortViewport).toHaveLength(1);
-    expect(parseRules(shortViewport[0]).flatMap((rule) => rule.declarations)).toEqual([
-      'display: none',
+    expect(parseRules(shortViewport[0])).toEqual([
+      { selector: '.subject-object', declarations: ['display: none'] },
     ]);
+  });
+
+  it('keeps the four reactions at rest until the study image is ready', () => {
+    const rules = styleSheetRules().filter((rule) => rule.selector.startsWith(STUDY_PENDING));
+
+    // S14: the state attribute may flip first, the visuals wait for the content.
+    expect(rules.map((rule) => rule.selector)).toEqual(
+      REST_STATE.map(({ part }) => `${STUDY_PENDING} ${part}`),
+    );
+    expect(rules.map((rule) => rule.declarations)).toEqual(
+      REST_STATE.map(({ property, value }) => [`${property}: ${value}`]),
+    );
+
+    // Equal specificity with the revealed rules, so this block has to stay last.
+    const flat = withoutMediaBlocks(stripComments(readStyleSheet()));
+
+    expect(flat.indexOf(STUDY_PENDING)).toBeGreaterThan(flat.lastIndexOf(REVEALED));
   });
 
   it('keeps the revealed state under reduced motion and only drops the transition', () => {
@@ -225,14 +276,56 @@ const EN_SUBJECT_LABEL = 'See the study';
 
 const REVEAL_HOOKS = ['.subject-reveal-img', '.subject-base', '.subject-frame', '.subject-label'];
 
-type RevealProps = React.ComponentProps<typeof HeroSubjectReveal>;
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
+
+type BackdropProps = React.ComponentProps<typeof HeroSubjectBackdrop>;
+type ObjectProps = React.ComponentProps<typeof HeroSubjectObject>;
+
+/**
+ * The study mounts on the first idle moment after mount (S14). jsdom has no
+ * `requestIdleCallback`, so this stub makes that moment explicit instead of
+ * racing the component's timer fallback.
+ */
+let idleCallbacks: { flush: () => void; pending: () => number };
+
+function stubIdleCallbacks(): void {
+  const pending: Array<() => void> = [];
+
+  vi.stubGlobal('requestIdleCallback', (callback: () => void) => {
+    pending.push(callback);
+    return pending.length;
+  });
+  vi.stubGlobal('cancelIdleCallback', () => undefined);
+
+  idleCallbacks = {
+    flush() {
+      act(() => {
+        for (const callback of pending.splice(0)) callback();
+      });
+    },
+    pending: () => pending.length,
+  };
+}
 
 function classesOf(element: Element | null): string[] {
   return (element?.getAttribute('class') ?? '').split(/\s+/).filter(Boolean);
 }
 
-function renderReveal(props: Partial<RevealProps> = {}) {
-  return render(<HeroSubjectReveal {...props} />);
+function renderBackdrop(props: Partial<BackdropProps> = {}) {
+  return render(<HeroSubjectBackdrop {...props} />);
+}
+
+function renderObject(props: Partial<ObjectProps> = {}) {
+  return render(<HeroSubjectObject {...props} />);
+}
+
+function renderHeroMedia(props: Partial<BackdropProps & ObjectProps> = {}) {
+  return render(
+    <>
+      <HeroSubjectBackdrop baseImage={props.baseImage} />
+      <HeroSubjectObject subjectImage={props.subjectImage} studyImage={props.studyImage} />
+    </>,
+  );
 }
 
 function subjectButton(label: string = ES_SUBJECT_LABEL): HTMLElement {
@@ -248,6 +341,24 @@ function pictureFor(container: HTMLElement, webpSource: string): HTMLPictureElem
   if (!picture) throw new Error(`No <picture> serves the fallback ${webpSource}`);
 
   return picture;
+}
+
+function studyImage(container: HTMLElement): HTMLImageElement {
+  const image = container.querySelector<HTMLImageElement>(`img[src="${STUDY_WEBP}"]`);
+
+  if (!image) throw new Error('The study layer is not mounted');
+
+  return image;
+}
+
+/** Renders the object with its study mounted and painted, ready to interact. */
+function renderPaintedObject(props: Partial<ObjectProps> = {}) {
+  const view = renderObject(props);
+
+  idleCallbacks.flush();
+  fireEvent.load(studyImage(view.container));
+
+  return view;
 }
 
 /**
@@ -274,7 +385,7 @@ function stubReducedMotionPreference(prefersReducedMotion: boolean): void {
   );
 }
 
-describe('HeroSubjectReveal', () => {
+describe('HeroSubjectBackdrop', () => {
   beforeEach(async () => {
     // The shipped LanguageDetector reads localStorage/navigator, so the language
     // must be pinned explicitly to keep this suite order-independent.
@@ -288,40 +399,58 @@ describe('HeroSubjectReveal', () => {
     await i18n.changeLanguage('es');
   });
 
-  describe('host layer', () => {
-    it('renders the dog as the full-bleed host layer', () => {
-      const { container } = renderReveal();
-      const host = pictureFor(container, BASE_WEBP);
-      const image = host.querySelector('img');
+  it('renders the dog as the full-bleed host layer', () => {
+    const { container } = renderBackdrop();
+    const host = pictureFor(container, BASE_WEBP);
+    const image = host.querySelector('img');
 
-      expect(host.querySelector('source')?.getAttribute('srcset')).toBe(BASE_AVIF);
-      expect(image?.getAttribute('alt')).toBe('');
-      expect(image?.getAttribute('aria-hidden')).toBe('true');
-      expect(image?.getAttribute('fetchpriority')).toBe('high');
-      expect(image?.getAttribute('decoding')).toBe('async');
-      expect(classesOf(image)).toEqual(
-        expect.arrayContaining([
-          'absolute',
-          'inset-0',
-          'h-full',
-          'w-full',
-          'object-cover',
-          'object-[center_5%]',
-          'pointer-events-none',
-        ]),
-      );
-    });
+    expect(host.querySelector('source')?.getAttribute('srcset')).toBe(BASE_AVIF);
+    expect(image?.getAttribute('alt')).toBe('');
+    expect(image?.getAttribute('aria-hidden')).toBe('true');
+    expect(image?.getAttribute('fetchpriority')).toBe('high');
+    expect(image?.getAttribute('decoding')).toBe('async');
+    expect(classesOf(image)).toEqual(
+      expect.arrayContaining([
+        'absolute',
+        'inset-0',
+        'h-full',
+        'w-full',
+        'object-cover',
+        'object-[center_5%]',
+        'pointer-events-none',
+      ]),
+    );
+  });
 
-    it('keeps a single decorative hero image role-free for assistive technology', () => {
-      renderReveal();
+  it('stays a decorative layer outside the stacked flow', () => {
+    const { container } = renderBackdrop();
+    const layer = container.querySelector('[data-hero-media]');
 
-      expect(screen.queryByRole('img')).not.toBeInTheDocument();
-    });
+    expect(classesOf(layer)).toEqual(
+      expect.arrayContaining(['absolute', 'inset-0', 'overflow-hidden']),
+    );
+    // Only the interactive object is a button; the host is inert.
+    expect(container.querySelector('button')).toBeNull();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+});
+
+describe('hero subject reveal', () => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('es');
+    stubIdleCallbacks();
+  });
+
+  afterEach(async () => {
+    cleanup();
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    await i18n.changeLanguage('es');
   });
 
   describe('AVIF failure fallback', () => {
     it('serves every first-paint hero image as AVIF with its WebP fallback', () => {
-      const { container } = renderReveal();
+      const { container } = renderHeroMedia();
       const base = pictureFor(container, BASE_WEBP);
       const subject = pictureFor(container, SUBJECT_WEBP);
 
@@ -331,10 +460,10 @@ describe('HeroSubjectReveal', () => {
       expect(subject.querySelector('source')?.getAttribute('srcset')).toBe(SUBJECT_AVIF);
     });
 
-    it('mounts the study as AVIF with its WebP fallback once it is revealed', () => {
-      const { container } = renderReveal();
+    it('mounts the study as AVIF with its WebP fallback once it is warmed', () => {
+      const { container } = renderHeroMedia();
 
-      fireEvent.mouseOver(subjectButton());
+      idleCallbacks.flush();
 
       const study = pictureFor(container, STUDY_WEBP);
 
@@ -343,9 +472,9 @@ describe('HeroSubjectReveal', () => {
     });
 
     it('drops the AVIF source when the request fails so the WebP copy is selected', () => {
-      const { container } = renderReveal();
+      const { container } = renderHeroMedia();
 
-      fireEvent.mouseOver(subjectButton());
+      idleCallbacks.flush();
 
       const pictures = Array.from(container.querySelectorAll('picture'));
 
@@ -368,13 +497,13 @@ describe('HeroSubjectReveal', () => {
     });
 
     it('derives the WebP fallback from the AVIF path it is given', () => {
-      const { container } = renderReveal({
+      const { container } = renderHeroMedia({
         baseImage: '/host.avif',
         subjectImage: '/object.avif',
         studyImage: '/study.avif',
       });
 
-      fireEvent.mouseOver(subjectButton());
+      idleCallbacks.flush();
 
       expect(pictureFor(container, '/host.webp')).toBeInTheDocument();
       expect(pictureFor(container, '/object.webp')).toBeInTheDocument();
@@ -384,7 +513,7 @@ describe('HeroSubjectReveal', () => {
 
   describe('interactive object', () => {
     it('renders the cat as a real button, never a canvas layer', () => {
-      const { container } = renderReveal();
+      const { container } = renderObject();
       const button = subjectButton();
 
       expect(button.tagName).toBe('BUTTON');
@@ -393,7 +522,7 @@ describe('HeroSubjectReveal', () => {
     });
 
     it('hugs the trimmed subject and anchors to the right edge on desktop', () => {
-      renderReveal();
+      renderObject();
 
       const tokens = classesOf(subjectButton());
 
@@ -406,10 +535,12 @@ describe('HeroSubjectReveal', () => {
       // The hero content is translated 5vh on md+, so anchoring the object at
       // the media box bottom clips its frame out of the viewport.
       expect(tokens).toContain('md:bottom-[5vh]');
+      // The overlay root keeps pointer events off; the object restores them.
+      expect(tokens).toContain('pointer-events-auto');
     });
 
-    it('centers the object above the copy block on mobile', () => {
-      renderReveal();
+    it('sits in the overlay stack on mobile instead of being positioned by hand', () => {
+      renderObject();
 
       const tokens = classesOf(subjectButton());
 
@@ -417,29 +548,30 @@ describe('HeroSubjectReveal', () => {
       expect(tokens).toEqual(expect.arrayContaining(['md:mx-0']));
       // Mobile uses the stacked flow, so the box is not absolutely positioned there.
       expect(tokens).not.toContain('absolute');
-      // The stylesheet derives the object height from the blocks above and
-      // below it, so the stacked layout never runs into the copy.
+      // The height comes from the slot the overlay allocates, never from a
+      // number copied out of a neighbouring block.
       expect(tokens).toContain('subject-object');
+      expect(tokens).not.toContain('h-[64vh]');
     });
 
-    it('places the cat photo and its study inside the object box', () => {
-      const { container } = renderReveal();
+    it('places the cat photo and its warm study inside the object box', () => {
+      const { container } = renderObject();
 
-      fireEvent.mouseOver(subjectButton());
+      idleCallbacks.flush();
 
       const button = subjectButton();
 
       expect(button.querySelector(`img[src="${SUBJECT_WEBP}"]`)).not.toBeNull();
       expect(button.querySelector(`img[src="${STUDY_WEBP}"]`)).not.toBeNull();
-      // The host stays behind the object, so the dog never swallows the tap.
+      // The host is a sibling layer, so the dog never swallows the tap.
       expect(button.querySelector(`img[src="${BASE_WEBP}"]`)).toBeNull();
-      expect(container.querySelector(`img[src="${BASE_WEBP}"]`)).not.toBeNull();
+      expect(container.querySelector(`img[src="${BASE_WEBP}"]`)).toBeNull();
     });
   });
 
   describe('reveal state', () => {
     it('marks the object with the reveal attributes the stylesheet targets', () => {
-      renderReveal();
+      renderPaintedObject();
 
       const button = subjectButton();
 
@@ -452,7 +584,7 @@ describe('HeroSubjectReveal', () => {
     });
 
     it('exposes the four style hooks the coordinated reactions need', () => {
-      const { container } = renderReveal();
+      const { container } = renderPaintedObject();
 
       fireEvent.mouseOver(subjectButton());
 
@@ -464,7 +596,7 @@ describe('HeroSubjectReveal', () => {
 
   describe('input parity', () => {
     it('names the object with the localized subject label', async () => {
-      renderReveal();
+      renderObject();
 
       expect(subjectButton()).toBeInTheDocument();
 
@@ -474,7 +606,7 @@ describe('HeroSubjectReveal', () => {
     });
 
     it('reveals on hover and hides when the pointer leaves', () => {
-      renderReveal();
+      renderPaintedObject();
 
       const button = subjectButton();
 
@@ -488,7 +620,7 @@ describe('HeroSubjectReveal', () => {
     });
 
     it('reveals on keyboard focus and hides on blur', () => {
-      renderReveal();
+      renderPaintedObject();
 
       const button = subjectButton();
 
@@ -502,7 +634,7 @@ describe('HeroSubjectReveal', () => {
     });
 
     it('pins the reveal with Enter and mirrors it on aria-pressed', () => {
-      renderReveal();
+      renderPaintedObject();
 
       const button = subjectButton();
 
@@ -520,7 +652,7 @@ describe('HeroSubjectReveal', () => {
     });
 
     it('pins the reveal with Space and mirrors it on aria-pressed', () => {
-      renderReveal();
+      renderPaintedObject();
 
       const button = subjectButton();
 
@@ -536,7 +668,7 @@ describe('HeroSubjectReveal', () => {
     });
 
     it('pins the reveal on tap and keeps it while the pointer leaves', () => {
-      renderReveal();
+      renderPaintedObject();
 
       const button = subjectButton();
 
@@ -551,7 +683,7 @@ describe('HeroSubjectReveal', () => {
   describe('reduced motion', () => {
     it('still applies the reveal when reduced motion is preferred', () => {
       stubReducedMotionPreference(true);
-      renderReveal();
+      renderPaintedObject();
 
       fireEvent.click(subjectButton());
 
@@ -566,9 +698,11 @@ describe('HeroSubjectReveal', () => {
       for (const width of [390, 1440]) {
         Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
 
-        const { unmount } = renderReveal();
+        const { container, unmount } = renderObject();
         const button = subjectButton();
 
+        idleCallbacks.flush();
+        fireEvent.load(studyImage(container));
         fireEvent.mouseOver(button);
         fireEvent.click(button);
         fireEvent.keyDown(button, { key: 'Enter' });
@@ -582,14 +716,70 @@ describe('HeroSubjectReveal', () => {
   });
 
   describe('study layer', () => {
-    it('keeps the study out of first paint and mounts it on the first reveal intent', () => {
-      const { container } = renderReveal();
+    it('keeps the study out of first paint', () => {
+      const { container } = renderObject();
+
+      expect(container.querySelector(`img[src="${STUDY_WEBP}"]`)).toBeNull();
+      expect(idleCallbacks.pending()).toBe(1);
+    });
+
+    it('mounts the study on the first idle moment, without any reveal intent', () => {
+      const { container } = renderObject();
+
+      idleCallbacks.flush();
+
+      // No hover, focus or tap: warming the study is what keeps the first
+      // reveal from opening onto an empty layer.
+      expect(container.querySelector(`img[src="${STUDY_WEBP}"]`)).not.toBeNull();
+      expect(subjectButton()).toHaveAttribute('data-revealed', 'false');
+    });
+
+    it('falls back to a short timer when requestIdleCallback is unavailable', async () => {
+      vi.unstubAllGlobals();
+      expect(window.requestIdleCallback).toBeUndefined();
+
+      const { container } = renderObject();
 
       expect(container.querySelector(`img[src="${STUDY_WEBP}"]`)).toBeNull();
 
+      await waitFor(() => {
+        expect(container.querySelector(`img[src="${STUDY_WEBP}"]`)).not.toBeNull();
+      });
+    });
+
+    it('holds the four reactions at rest until the study image has loaded', () => {
+      const { container } = renderObject();
+
+      idleCallbacks.flush();
+
+      const study = studyImage(container);
+
+      expect(subjectButton()).toHaveAttribute('data-study-ready', 'false');
+
       fireEvent.mouseOver(subjectButton());
 
-      expect(container.querySelector(`img[src="${STUDY_WEBP}"]`)).not.toBeNull();
+      // The state attribute already flipped; the visuals must wait for the pixels.
+      expect(subjectButton()).toHaveAttribute('data-revealed', 'true');
+      expect(subjectButton()).toHaveAttribute('data-study-ready', 'false');
+
+      fireEvent.load(study);
+
+      expect(subjectButton()).toHaveAttribute('data-study-ready', 'true');
+      expect(subjectButton()).toHaveAttribute('data-revealed', 'true');
+    });
+
+    it('accepts the WebP study as painted when the AVIF copy fails', () => {
+      const { container } = renderObject();
+
+      idleCallbacks.flush();
+
+      fireEvent.error(studyImage(container));
+
+      expect(subjectButton()).toHaveAttribute('data-study-ready', 'false');
+
+      fireEvent.load(studyImage(container));
+
+      expect(subjectButton()).toHaveAttribute('data-study-ready', 'true');
     });
 
     it('keeps index.html preloading only the two first-paint hero images', () => {
@@ -693,13 +883,15 @@ describe('Home hero composition', () => {
     stubReducedMotionPreference(false);
     stubLayoutEnvironment();
     stubBrowserStorage();
+    stubIdleCallbacks();
   });
 
   afterEach(async () => {
     cleanup();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
-    mediaFailure.enabled = false;
+    mediaFailure.backdrop = false;
+    mediaFailure.object = false;
     await i18n.changeLanguage('es');
   });
 
@@ -719,24 +911,42 @@ describe('Home hero composition', () => {
 
   it('composes the hero from the dog host and the cat object, not the brush', () => {
     const { container } = renderHome();
-    const media = container.querySelector('[data-hero-media]');
+    const backdrop = container.querySelector('[data-hero-media]') as HTMLElement;
+    const slot = container.querySelector('[data-hero-media-slot]') as HTMLElement;
+    const subject = screen.getByRole('button', { name: ES_SUBJECT_LABEL });
 
-    expect(media).not.toBeNull();
-    expect(screen.getByRole('button', { name: ES_SUBJECT_LABEL })).toBeInTheDocument();
-    expect(media?.querySelector(`img[src="${BASE_WEBP}"]`)).not.toBeNull();
-    expect(media?.querySelector('canvas')).toBeNull();
+    expect(backdrop).not.toBeNull();
+    expect(backdrop.querySelector(`img[src="${BASE_WEBP}"]`)).not.toBeNull();
+    // The host is a full-bleed layer outside the stack; the interactive object
+    // lives in the slot the overlay allocates between the lockup and the copy.
+    expect(backdrop.contains(subject)).toBe(false);
+    expect(slot.contains(subject)).toBe(true);
+    expect(backdrop.compareDocumentPosition(slot) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+    expect(container.querySelector('canvas')).toBeNull();
     // The retired brush announced its own loading state with this copy.
     expect(screen.queryByText(ES_LOADING)).not.toBeInTheDocument();
   });
 
-  it('keeps the hero copy alive when the media layer fails', () => {
-    mediaFailure.enabled = true;
+  it('keeps the hero copy alive when the whole media layer fails', () => {
+    mediaFailure.backdrop = true;
+    mediaFailure.object = true;
     renderHome();
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(ES_HERO_TITLE);
     expect(screen.getByRole('link', { name: /reservar cita/i })).toBeInTheDocument();
-    // The boundary still wraps only the media layer, which is what failed.
+    // Each media layer keeps its own boundary, so both report the failure.
     expect(screen.getByText('Error loading hero effect')).toBeInTheDocument();
+    expect(screen.getByText('Error loading hero subject')).toBeInTheDocument();
+  });
+
+  it('keeps the hero copy alive when only the subject object fails', () => {
+    mediaFailure.object = true;
+    const { container } = renderHome();
+
+    expect(container.querySelector(`img[src="${BASE_WEBP}"]`)).not.toBeNull();
+    expect(screen.getByText('Error loading hero subject')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(ES_HERO_TITLE);
+    expect(screen.getByRole('link', { name: /reservar cita/i })).toBeInTheDocument();
   });
 
   it('keeps the primary CTA on WhatsApp in a new tab and the secondary on the services page', () => {
@@ -753,22 +963,24 @@ describe('Home hero composition', () => {
 
   it('keeps the hero inside a 360x640 viewport', () => {
     const { container } = renderHome();
-    const media = container.querySelector('[data-hero-media]') as HTMLElement;
-    const heroBox = media.parentElement?.closest('.overflow-hidden');
+    const backdrop = container.querySelector('[data-hero-media]') as HTMLElement;
+    const heroBox = backdrop.parentElement?.closest('.overflow-hidden');
+    const slot = container.querySelector('[data-hero-media-slot]');
     const subject = screen.getByRole('button', { name: ES_SUBJECT_LABEL });
 
-    // The media layer fills the hero box instead of reserving its own size, and
+    // The backdrop fills the hero box instead of reserving its own size, and
     // the hero box clips, so a 640px-tall viewport never overflows.
-    expect(classesOf(media)).toEqual(expect.arrayContaining(['absolute', 'inset-0']));
+    expect(classesOf(backdrop)).toEqual(expect.arrayContaining(['absolute', 'inset-0']));
     expect(classesOf(heroBox)).toEqual(expect.arrayContaining(['h-full', 'w-full', 'overflow-hidden']));
 
-    // The object is sized from the viewport height on the stacked layout, where
-    // the copy is bottom-anchored, so a short viewport shrinks the object instead
-    // of pushing it into the copy. No hero element claims a fixed width as wide
-    // as the smallest supported viewport.
+    // The overlay owns the stacked layout and hands the object the leftover
+    // height, so no hero element claims a fixed width as wide as the smallest
+    // supported viewport.
+    expect(classesOf(slot as Element)).toEqual(expect.arrayContaining(['flex-1', 'min-h-0']));
+    expect(slot).toContainElement(subject);
     expect(classesOf(subject)).toContain('subject-object');
-    expect(fixedPixelWidths(media)).toEqual(
-      fixedPixelWidths(media).filter((width) => width < 360),
+    expect(fixedPixelWidths(backdrop)).toEqual(
+      fixedPixelWidths(backdrop).filter((width) => width < 360),
     );
   });
 });

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { MessageCircle } from "lucide-react";
@@ -7,15 +8,27 @@ const WHATSAPP_MESSAGE = "Hola, quiero agendar una cita para mi mascota.";
 
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
 
+export interface HeroOverlayProps {
+  /**
+   * Optional media slot. The overlay owns the stacked (mobile) layout, so the
+   * object it receives is sized by layout instead of by a number copied from a
+   * neighbouring block. On `md+` that object leaves the slot and positions
+   * itself against the hero box.
+   */
+  media?: ReactNode;
+}
+
 /**
  * Copy layer of the home hero.
  *
- * Rendered as a sibling of the BrushReveal canvas (outside its error boundary)
- * so the message and the conversion path survive a canvas or image failure.
- * The root stays pointer-events-none so the brush reveal keeps its full
- * interaction area; only the CTA row restores pointer events.
+ * Rendered outside the media error boundaries so the message and the
+ * conversion path survive an image failure. It also owns the stacked layout: the
+ * brand lockup, the media slot and the copy block share the hero height as a
+ * flex column. The root stays pointer-events-none so the media layer keeps its
+ * full interaction area; only the CTA row restores pointer events (the object
+ * inside the slot does the same for itself).
  */
-function HeroOverlay() {
+function HeroOverlay({ media }: HeroOverlayProps) {
   const { t } = useTranslation();
 
   return (
@@ -36,6 +49,17 @@ function HeroOverlay() {
           </span>
         </div>
       </div>
+
+      {/* Media slot: allocates whatever height the lockup and the copy leave on
+          the stacked layout, and is inert on md+ where the object leaves it. */}
+      {media ? (
+        <div
+          data-hero-media-slot
+          className="flex min-h-0 flex-1 items-center justify-center py-[2vh]"
+        >
+          {media}
+        </div>
+      ) : null}
 
       {/* Copy block: bottom-anchored on mobile and on desktop */}
       <div className="mt-auto flex flex-col px-6 pb-10 sm:pb-24 text-center md:pl-12 md:pb-16 md:items-start md:text-left md:max-w-xl">
