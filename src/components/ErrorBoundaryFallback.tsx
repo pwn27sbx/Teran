@@ -1,11 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { FallbackProps } from 'react-error-boundary';
+import { getErrorMessage } from 'react-error-boundary';
 import { AlertTriangle, RefreshCcw, Loader2 } from 'lucide-react';
 
-export function ErrorBoundaryFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
+export function ErrorBoundaryFallback({ error, resetErrorBoundary }: FallbackProps) {
   const [isReloading, setIsReloading] = useState(false);
+  // `react-error-boundary` hands the fallback whatever was thrown, so the
+  // message is read through its own accessor instead of assuming an `Error`.
+  const errorMessage = getErrorMessage(error);
+  const isChunkError =
+    errorMessage?.toLowerCase().includes('dynamically imported module') ||
+    errorMessage?.includes('ChunkLoadError');
 
   useEffect(() => {
-    const isChunkError = error?.message?.toLowerCase().includes('dynamically imported module') || error?.message?.includes('ChunkLoadError');
     if (isChunkError) {
       const hasReloaded = sessionStorage.getItem('chunk_reload');
       if (!hasReloaded) {
@@ -17,7 +24,7 @@ export function ErrorBoundaryFallback({ error, resetErrorBoundary }: { error: Er
         sessionStorage.removeItem('chunk_reload');
       }
     }
-  }, [error]);
+  }, [error, isChunkError]);
 
   if (isReloading) {
     return (
@@ -37,14 +44,14 @@ export function ErrorBoundaryFallback({ error, resetErrorBoundary }: { error: Er
           ¡Ups! Algo salió mal
         </h2>
         <p className="text-red-500 font-mono text-sm mb-4 bg-red-50 dark:bg-red-900/10 p-2 rounded">
-          {error?.message || "Error desconocido"}
+          {errorMessage || "Error desconocido"}
         </p>
         <p className="text-gray-600 dark:text-gray-400 mb-8">
           Tuvimos un problema técnico inesperado. Por favor, intenta recargar la página.
         </p>
         <button
           onClick={() => {
-            if (error?.message?.toLowerCase().includes('dynamically imported module') || error?.message?.includes('ChunkLoadError')) {
+            if (isChunkError) {
               window.location.reload();
             } else {
               resetErrorBoundary();

@@ -28,11 +28,6 @@ const SUBJECT_YEAR = String(new Date().getFullYear());
 
 const ACTIVATION_KEYS = ["Enter", " ", "Spacebar"];
 
-interface IdleWindow extends Window {
-  requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => number;
-  cancelIdleCallback?: (handle: number) => void;
-}
-
 /**
  * The AVIF failure contract shared by both hero media layers: a failed
  * `<source>` is dropped from the DOM so the browser re-selects the WebP copy
@@ -126,14 +121,12 @@ export function HeroSubjectObject({
   const revealed = hovered || focused || pinned;
 
   useEffect(() => {
-    const idleWindow = window as IdleWindow;
-
-    if (typeof idleWindow.requestIdleCallback === "function") {
-      const handle = idleWindow.requestIdleCallback(() => setStudyMounted(true), {
+    if (typeof window.requestIdleCallback === "function") {
+      const handle = window.requestIdleCallback(() => setStudyMounted(true), {
         timeout: IDLE_DEADLINE_MS,
       });
 
-      return () => idleWindow.cancelIdleCallback?.(handle);
+      return () => window.cancelIdleCallback?.(handle);
     }
 
     const timer = setTimeout(() => setStudyMounted(true), IDLE_FALLBACK_MS);

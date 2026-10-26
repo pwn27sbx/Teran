@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import React, { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Activity, ChevronUp } from "lucide-react";
 import CurvedInput from "./CurvedInput";

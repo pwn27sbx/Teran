@@ -41,6 +41,18 @@ const hexToRgb = (hex: string): [number, number, number] => {
 
 const directionToFloat = (dir: ScanDirection): number => (dir === 'horizontal' ? 1.0 : dir === 'diagonal' ? 2.0 : 0.0);
 
+/**
+ * The uniforms this component writes. ogl exposes them as an untyped bag, so
+ * the colour uniforms are named here: they carry an RGB triple, not a scalar,
+ * and reading them through the generic entry would lose that.
+ */
+interface ScannerUniforms {
+  [name: string]: { value: unknown };
+  uColor1: { value: Float32Array };
+  uColor2: { value: Float32Array };
+  uColor3: { value: Float32Array };
+}
+
 const vertex = `#version 300 es
 in vec2 position;
 void main() {
@@ -369,7 +381,7 @@ const Scanner: React.FC<ScannerProps> = ({
     const ctx = ctxMap.get(container);
     if (!ctx) return;
     const { program } = ctx;
-    const u = program.uniforms as Record<string, { value: unknown }>;
+    const u = program.uniforms as ScannerUniforms;
 
     u.uSpeed.value = speed;
     u.uSweepSpeed.value = sweepSpeed;
