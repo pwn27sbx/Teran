@@ -1,4 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { isAvifSource, webpFallbackSource } from "@/lib/media";
 
 export interface BrushRevealProps {
   bgImage: string;
@@ -23,6 +25,13 @@ interface Framing {
   y: number;
 }
 
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+
+const prefersReducedMotion = (): boolean =>
+  typeof window !== "undefined" &&
+  typeof window.matchMedia === "function" &&
+  window.matchMedia(REDUCED_MOTION_QUERY).matches;
+
 export default function BrushReveal({
   bgImage,
   revealImage,
@@ -33,10 +42,15 @@ export default function BrushReveal({
   bgObjectPosition = "center 20%",
   revealOffsetY = 0,
 }: BrushRevealProps): React.JSX.Element {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const xrayCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const [imagesLoaded, setImagesLoaded] = useState<boolean>(false);
+  const [reducedMotion, setReducedMotion] = useState<boolean>(false);
+  // A failed AVIF request is not rescued by picture source selection, so the
+  // AVIF source must be dropped to let the WebP on the img load instead.
+  const [avifSourceFailed, setAvifSourceFailed] = useState<boolean>(false);
   const bgImgRef = useRef<HTMLImageElement | null>(null);
   const revealImgRef = useRef<HTMLImageElement | null>(null);
   const xrayImgRef = useRef<HTMLImageElement | null>(null);
@@ -62,6 +76,21 @@ export default function BrushReveal({
   const numNodes = 12; // Reduced from 20 to 12 for 144fps performance optimization
 
   useEffect(() => {
+    setReducedMotion(prefersReducedMotion());
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+
+    // Follow the preference at runtime so a change applies without a reload.
+    const mq = window.matchMedia(REDUCED_MOTION_QUERY);
+    const onChange = (event: MediaQueryListEvent) => setReducedMotion(event.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  useEffect(() => {
+    // A new base image deserves its own AVIF attempt.
+    setAvifSourceFailed(false);
     // If xrayImage is provided, we wait for 3 images instead of 2
     const totalToLoad = xrayImage ? 3 : 2;
     let loadedCount = 0;
@@ -74,36 +103,40 @@ export default function BrushReveal({
       }
     };
 
-    const bg = new Image();
-    bg.src = bgImage;
-    bg.onload = () => {
-      bgImgRef.current = bg;
-      checkLoaded();
-    };
-    bg.onerror = () => {
-      checkLoaded();
+    const requestImage = (
+      source: string,
+      target: { current: HTMLImageElement | null },
+    ) => {
+      const image = new Image();
+      image.onload = () => {
+        target.current = image;
+        checkLoaded();
+      };
+      image.onerror = () => {
+        // Decoding the AVIF can fail on browsers without support, so the WebP
+        // copy gets exactly one retry before proceeding without the layer.
+        const fallback = webpFallbackSource(source);
+        if (fallback === source) {
+          checkLoaded();
+          return;
+        }
+
+        const retry = new Image();
+        retry.onload = () => {
+          target.current = retry;
+          checkLoaded();
+        };
+        retry.onerror = () => checkLoaded();
+        retry.src = fallback;
+      };
+      image.src = source;
     };
 
-    const rev = new Image();
-    rev.src = revealImage;
-    rev.onload = () => {
-      revealImgRef.current = rev;
-      checkLoaded();
-    };
-    rev.onerror = () => {
-      checkLoaded();
-    };
+    requestImage(bgImage, bgImgRef);
+    requestImage(revealImage, revealImgRef);
 
     if (xrayImage) {
-      const xray = new Image();
-      xray.src = xrayImage;
-      xray.onload = () => {
-        xrayImgRef.current = xray;
-        checkLoaded();
-      };
-      xray.onerror = () => {
-        checkLoaded();
-      };
+      requestImage(xrayImage, xrayImgRef);
     }
 
     return () => {
@@ -113,6 +146,10 @@ export default function BrushReveal({
 
   useEffect(() => {
     if (!imagesLoaded) return;
+
+    // With reduced motion the hero stays static: the base image is enough, so
+    // nothing is ever drawn on the canvases and no frame loop is started.
+    if (reducedMotion) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -848,7 +885,7 @@ export default function BrushReveal({
       window.removeEventListener("touchcancel", handleTouchEnd);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [imagesLoaded, brushSize, bgScale, revealScale, revealOffsetY, bgObjectPosition]);
+  }, [imagesLoaded, reducedMotion, brushSize, bgScale, revealScale, revealOffsetY, bgObjectPosition]);
 
   return (
     <div
@@ -861,20 +898,36 @@ export default function BrushReveal({
       }}
     >
       {!imagesLoaded && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#f8f9fa] text-[#0277ab] font-serif text-xl tracking-widest">
-          Cargando magia...
+        <div
+          role="status"
+          className="absolute inset-0 z-50 flex items-center justify-center bg-white text-[#0277ab] font-serif text-xl tracking-widest"
+        >
+          {t('home.hero.loading')}
         </div>
       )}
 
-      {/* Base Layer */}
-      <img
-        ref={bgNodeRef}
-        src={bgImage}
-        alt="Base"
-        draggable={false}
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-        style={{ willChange: "transform", objectPosition: bgObjectPosition }}
-      />
+      {/* Base Layer: purely decorative, the hero copy carries the accessible name.
+          Served as AVIF with the original WebP as the fallback; the image is the
+          LCP candidate, hence the high fetch priority. Source selection only
+          covers unsupported formats, so a failed AVIF request drops the source
+          and leaves the WebP as the base layer. */}
+      <picture>
+        {isAvifSource(bgImage) && !avifSourceFailed && (
+          <source type="image/avif" srcSet={bgImage} />
+        )}
+        <img
+          ref={bgNodeRef}
+          src={webpFallbackSource(bgImage)}
+          onError={() => setAvifSourceFailed(true)}
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+          fetchPriority="high"
+          decoding="async"
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+          style={{ willChange: "transform", objectPosition: bgObjectPosition }}
+        />
+      </picture>
 
       {/* Reveal Layer */}
       <canvas

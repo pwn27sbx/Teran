@@ -1,7 +1,7 @@
-import { useDarkMode } from "@/hooks/useDarkMode";
 import { useState, useRef, useEffect } from "react";
 import { useTranslation, Trans } from "react-i18next";
-import BrushReveal from "@/components/BrushReveal";
+import { HeroSubjectBackdrop, HeroSubjectObject } from "@/components/HeroSubjectReveal";
+import HeroOverlay from "@/components/HeroOverlay";
 import DriftWall from "@/components/DriftWall";
 import PremiumFeatures from "@/components/PremiumFeatures";
 import Header from "@/components/Header";
@@ -10,7 +10,7 @@ import { Activity } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { VisualErrorBoundary } from "@/components/VisualErrorBoundary";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 
 import { galleryItems } from "@/data/gallery";
 
@@ -23,7 +23,7 @@ const GALLERY_SCROLL_OFFSET: ["start end", "start 20%"] = ["start end", "start 2
 function Home() {
   const { t } = useTranslation();
   
-  const { isDark } = useDarkMode();
+  const shouldReduceMotion = useReducedMotion();
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -47,6 +47,12 @@ function Home() {
   const heroRadius = useTransform(scrollY, [SCROLL_RANGE[0], SCROLL_RANGE[1]], HERO_RADIUS_RANGE);
   const heroOpacity = useTransform(scrollY, SCROLL_RANGE, HERO_OPACITY_RANGE);
 
+  // With reduced motion the hero renders statically: no scroll-driven scale,
+  // radius or opacity, so the composition never moves under the copy.
+  const heroMotionStyle = shouldReduceMotion
+    ? undefined
+    : { scale: heroScale, borderRadius: heroRadius, opacity: heroOpacity };
+
   return (
     <div
       className="relative font-sans selection:bg-[#f4484a] selection:text-white bg-[#f8f9fa] dark:bg-[#121212]"
@@ -65,45 +71,25 @@ function Home() {
       <div className="h-[200vh] w-full relative z-10">
         <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden pointer-events-none">
           <motion.div
-            style={{
-              scale: heroScale,
-              borderRadius: heroRadius,
-              opacity: heroOpacity,
-            }}
+            style={heroMotionStyle}
             className="w-full h-full relative origin-center bg-white dark:bg-[#121212] shadow-2xl overflow-hidden pointer-events-auto"
           >
-            {/* Contenedor para ajustar tamaño y posición en PC sin romper las capas */}
+            {/* Media layer only, split in two: the dog hosts the scene as a
+                full-bleed backdrop and the cat reveals its own study from the
+                slot the overlay allocates. Each layer keeps its own boundary,
+                so a media failure can never remove the copy. */}
             <div className="w-full h-full md:scale-[1] md:translate-y-[5vh] origin-bottom">
               <VisualErrorBoundary fallbackMessage="Error loading hero effect">
-                <BrushReveal
-                  bgImage="/milo1_nobg.webp"
-                  revealImage="/atreus1_nobg.webp"
-                  xrayImage={isDark ? "/atreusx_dark.webp" : "/atreusx_nobg.webp"}
-                  brushSize={isMobile ? 90 : 180}
-                  revealScale={0.73}
-                  bgScale={isMobile ? 0.95 : 1}
-                  bgObjectPosition="center 5%"
-                  revealOffsetY={isMobile ? -0.35 : -0.354}
-                />
+                <HeroSubjectBackdrop />
               </VisualErrorBoundary>
             </div>
-            {isMobile && (
-              <div className="absolute top-[16vh] left-1/2 -translate-x-1/2 flex flex-col items-center text-gray-900 dark:text-white drop-shadow-md z-10 pointer-events-none w-full">
-                <img
-                  src="/logoTeran.svg"
-                  alt="Logo Hospital Veterinario Terán"
-                  className="h-[85px] w-auto mt-0"
-                />
-                <div className="flex flex-col justify-center items-center mt-2">
-                  <span className="font-['Outfit'] font-black text-[56px] tracking-tighter uppercase leading-none text-gray-900 dark:text-white mb-0 drop-shadow-sm text-center">
-                    TERAN
-                  </span>
-                  <span className="font-['Outfit'] font-bold text-[14px] tracking-[0.09em] uppercase text-gray-700 dark:text-gray-300 leading-none mt-1.5 drop-shadow-sm text-center">
-                    Hospital Veterinario
-                  </span>
-                </div>
-              </div>
-            )}
+            <HeroOverlay
+              media={
+                <VisualErrorBoundary fallbackMessage="Error loading hero subject">
+                  <HeroSubjectObject />
+                </VisualErrorBoundary>
+              }
+            />
             {/* No fade gradient at the bottom as requested */}
           </motion.div>
         </div>
