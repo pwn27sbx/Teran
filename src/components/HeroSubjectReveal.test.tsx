@@ -42,7 +42,7 @@ vi.mock('./HeroSubjectReveal', async (importOriginal) => {
 });
 
 /**
- * The hero reveal is a CSS state machine: one interaction, four coordinated
+ * The hero reveal is a CSS state machine: one interaction, three coordinated
  * reactions and one token pair. The DOM alone cannot pin that, so this suite
  * reads the dedicated stylesheet as text and asserts its contract.
  */
@@ -63,15 +63,13 @@ const BRAND_TRANSITION = 'var(--dur-brand) var(--ease-brand)';
 const REST_STATE = [
   { part: '.subject-reveal-img', property: 'clip-path', value: 'ellipse(0% 0% at 50% 0%)' },
   { part: '.subject-base', property: 'transform', value: 'scale(1)' },
-  { part: '.subject-frame', property: 'opacity', value: '0' },
-  { part: '.subject-label', property: 'color', value: '#0277ab' },
+  { part: '.subject-frame', property: 'border-color', value: 'var(--cell-line)' },
 ];
 
 const REVEALED_STATE = [
   { part: '.subject-reveal-img', declaration: 'clip-path: ellipse(100% 120% at 50% 0%)' },
   { part: '.subject-base', declaration: 'transform: scale(1.04)' },
-  { part: '.subject-frame', declaration: 'opacity: 1' },
-  { part: '.subject-label', declaration: 'color: #f0ee07' },
+  { part: '.subject-frame', declaration: 'border-color: var(--brand-accent)' },
 ];
 
 const REDUCED_MOTION = '(prefers-reduced-motion: reduce)';
@@ -182,7 +180,7 @@ describe('hero subject reveal styles', () => {
     }
   });
 
-  it('pins exactly the four revealed-state declarations and nothing else', () => {
+  it('pins exactly the three revealed-state declarations and nothing else', () => {
     const revealed = styleSheetRules().filter((rule) => rule.selector.startsWith(REVEALED));
 
     expect(revealed.map((rule) => rule.selector)).toEqual(
@@ -233,7 +231,7 @@ describe('hero subject reveal styles', () => {
     ]);
   });
 
-  it('keeps the four reactions at rest until the study image is ready', () => {
+  it('keeps the three reactions at rest until the study image is ready', () => {
     const rules = styleSheetRules().filter((rule) => rule.selector.startsWith(STUDY_PENDING));
 
     // S14: the state attribute may flip first, the visuals wait for the content.
@@ -274,7 +272,7 @@ const STUDY_WEBP = '/atreusx_nobg.webp';
 const ES_SUBJECT_LABEL = 'Ver el estudio';
 const EN_SUBJECT_LABEL = 'See the study';
 
-const REVEAL_HOOKS = ['.subject-reveal-img', '.subject-base', '.subject-frame', '.subject-label'];
+const REVEAL_HOOKS = ['.subject-reveal-img', '.subject-base', '.subject-frame'];
 
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 
@@ -537,11 +535,12 @@ describe('hero subject reveal', () => {
       // so the frame outlines the cat instead of a padded square.
       expect(tokens).toContain('aspect-[1448/1637]');
       expect(tokens).toEqual(
-        expect.arrayContaining(['subject-object', 'md:absolute', 'md:right-0', 'md:w-auto']),
+        expect.arrayContaining(['subject-object', 'md:absolute', 'md:w-auto']),
       );
-      // The hero content is translated 5vh on md+, so anchoring the object at
-      // the media box bottom clips its frame out of the viewport.
-      expect(tokens).toContain('md:bottom-[5vh]');
+      // The cell keeps a margin on both axes: anchored flush, the hero content
+      // translation clipped its right and bottom hairline out of the viewport.
+      expect(tokens).toContain('md:right-[4vw]');
+      expect(tokens).toContain('md:bottom-[6vh]');
       // The overlay root keeps pointer events off; the object restores them.
       expect(tokens).toContain('pointer-events-auto');
     });
@@ -590,7 +589,7 @@ describe('hero subject reveal', () => {
       expect(subjectButton()).toHaveAttribute('data-revealed', 'true');
     });
 
-    it('exposes the four style hooks the coordinated reactions need', () => {
+    it('exposes the three style hooks the coordinated reactions need', () => {
       const { container } = renderPaintedObject();
 
       fireEvent.mouseOver(subjectButton());
@@ -754,7 +753,7 @@ describe('hero subject reveal', () => {
       });
     });
 
-    it('holds the four reactions at rest until the study image has loaded', () => {
+    it('holds the three reactions at rest until the study image has loaded', () => {
       const { container } = renderObject();
 
       idleCallbacks.flush();
@@ -793,7 +792,7 @@ describe('hero subject reveal', () => {
       renderObject();
 
       // Without a deadline the browser may defer the callback forever, and the
-      // four reactions would stay held at rest, leaving the object inert.
+      // the reactions would stay held at rest, leaving the object inert.
       expect(idleCallbacks.options).toHaveLength(1);
       const [{ timeout } = {}] = idleCallbacks.options;
 

@@ -10,6 +10,8 @@
 :root {
   --ease-brand: cubic-bezier(0.65, 0.05, 0, 1);
   --dur-brand: 0.75s;
+  --brand-accent: #f0ee07;
+  --cell-line: rgba(120, 120, 120, 0.45);
 }
 
 /* The stacked hero layout is owned by `HeroOverlay`: it renders the object
@@ -41,8 +43,9 @@
   }
 }
 
-/* Rest state: the study is fully clipped away, the subject is at rest, the
-   frame is invisible and the label keeps the brand blue. */
+/* Rest state of the cell. The object sits inside the frame with air around it and
+   the hairline is the only chrome; on reveal the frame carries the brand accent,
+   because a yellow caption on the light hero surface would not be legible. */
 .subject-reveal-img {
   clip-path: ellipse(0% 0% at 50% 0%);
   transition: clip-path var(--dur-brand) var(--ease-brand);
@@ -54,16 +57,11 @@
 }
 
 .subject-frame {
-  opacity: 0;
-  transition: opacity var(--dur-brand) var(--ease-brand);
+  border-color: var(--cell-line);
+  transition: border-color var(--dur-brand) var(--ease-brand);
 }
 
-.subject-label {
-  color: #0277ab;
-  transition: color var(--dur-brand) var(--ease-brand);
-}
-
-/* Revealed state: exactly four declarations, nothing else changes. */
+/* Revealed state: exactly three declarations, nothing else changes. */
 [data-subject-reveal][data-revealed="true"] .subject-reveal-img {
   clip-path: ellipse(100% 120% at 50% 0%);
 }
@@ -71,17 +69,12 @@
   transform: scale(1.04);
 }
 [data-subject-reveal][data-revealed="true"] .subject-frame {
-  opacity: 1;
-}
-[data-subject-reveal][data-revealed="true"] .subject-label {
-  color: #f0ee07;
+  border-color: var(--brand-accent);
 }
 
-/* The study mounts on the first idle moment, so the state attribute can flip
-   before its pixels are ready. Until the study image has loaded the four
-   reactions stay at their rest values, so the reveal never opens onto an empty
-   layer. These rules have the same specificity as the revealed block above and
-   therefore must stay after it. */
+/* While the study has not painted, the same three values hold. These rules come
+   after the revealed block on purpose: both selectors carry two attributes, so
+   source order decides when a reveal is requested before the pixels exist. */
 [data-subject-reveal][data-study-ready="false"] .subject-reveal-img {
   clip-path: ellipse(0% 0% at 50% 0%);
 }
@@ -89,18 +82,14 @@
   transform: scale(1);
 }
 [data-subject-reveal][data-study-ready="false"] .subject-frame {
-  opacity: 0;
-}
-[data-subject-reveal][data-study-ready="false"] .subject-label {
-  color: #0277ab;
+  border-color: var(--cell-line);
 }
 
 /* Reduced motion keeps the state, never the movement. */
 @media (prefers-reduced-motion: reduce) {
   .subject-reveal-img,
   .subject-base,
-  .subject-frame,
-  .subject-label {
+  .subject-frame {
     transition: none;
   }
 }

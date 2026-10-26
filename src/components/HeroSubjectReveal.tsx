@@ -22,6 +22,10 @@ const IDLE_FALLBACK_MS = 120;
  */
 const IDLE_DEADLINE_MS = 2000;
 
+/** Caption of the cell, in the voice a helmet cell uses: name and season. */
+const SUBJECT_NAME = "Atreus";
+const SUBJECT_YEAR = String(new Date().getFullYear());
+
 const ACTIVATION_KEYS = ["Enter", " ", "Spacebar"];
 
 interface IdleWindow extends Window {
@@ -159,72 +163,77 @@ export function HeroSubjectObject({
       onBlur={() => setFocused(false)}
       onClick={() => setPinned((current) => !current)}
       onKeyDown={handleKeyDown}
-      className="subject-object pointer-events-auto relative mx-auto block aspect-[1448/1637] w-auto cursor-pointer rounded-[24px] bg-transparent p-0 md:absolute md:right-0 md:bottom-[5vh] md:mx-0 md:w-auto"
+      className="subject-object pointer-events-auto relative mx-auto block aspect-[1448/1637] w-auto cursor-pointer border-0 bg-transparent p-0 md:absolute md:right-[4vw] md:bottom-[6vh] md:mx-0 md:w-auto"
     >
-      {/* Subject base: the cat photo, which breathes a little when revealed. */}
-      <span aria-hidden="true" className="subject-base absolute inset-0 block">
-        <picture className="absolute inset-0 block">
-          {avifIsUsable(subjectImage) && (
-            <source type="image/avif" srcSet={subjectImage} />
-          )}
-          <img
-            src={webpFallbackSource(subjectImage)}
-            onError={() => dropFailedAvif(subjectImage)}
-            alt=""
-            aria-hidden="true"
-            draggable={false}
-            decoding="async"
-            className="absolute inset-0 h-full w-full object-cover object-center pointer-events-none select-none"
-          />
-        </picture>
-      </span>
-
-      {/* Reveal layer: the same cat as a pencil study, clipped in from the top. */}
-      <span
-        aria-hidden="true"
-        className="subject-reveal-img absolute inset-0 block overflow-hidden pointer-events-none"
-      >
-        {studyMounted && (
+      {/* The object sits inside the cell with air around it: the frame is the
+          cell, not a card around the picture. */}
+      <span aria-hidden="true" className="absolute inset-[12%] block overflow-hidden">
+        {/* Subject base: the cat photo, which breathes a little when revealed. */}
+        <span className="subject-base absolute inset-0 block">
           <picture className="absolute inset-0 block">
-            {avifIsUsable(studyImage) && <source type="image/avif" srcSet={studyImage} />}
+            {avifIsUsable(subjectImage) && (
+              <source type="image/avif" srcSet={subjectImage} />
+            )}
             <img
-              src={webpFallbackSource(studyImage)}
-              onLoad={() => setStudyReady(true)}
-              onError={() => {
-                // The first failure drops the AVIF source so the browser selects
-                // the WebP copy instead of leaving the reveal empty.
-                if (avifIsUsable(studyImage)) {
-                  setStudyReady(false);
-                  dropFailedAvif(studyImage);
-                  return;
-                }
-
-                // Nothing left to try: release the hold so the object still
-                // answers instead of staying inert for the session.
-                setStudyReady(true);
-              }}
+              src={webpFallbackSource(subjectImage)}
+              onError={() => dropFailedAvif(subjectImage)}
               alt=""
               aria-hidden="true"
               draggable={false}
               decoding="async"
-              className="absolute inset-0 h-full w-full object-cover object-center select-none"
+              className="absolute inset-0 h-full w-full object-contain object-center pointer-events-none select-none"
             />
           </picture>
-        )}
+        </span>
+
+        {/* Reveal layer: the same cat as a pencil study, clipped in from the top. */}
+        <span
+          className="subject-reveal-img absolute inset-0 block overflow-hidden pointer-events-none"
+        >
+          {studyMounted && (
+            <picture className="absolute inset-0 block">
+              {avifIsUsable(studyImage) && <source type="image/avif" srcSet={studyImage} />}
+              <img
+                src={webpFallbackSource(studyImage)}
+                onLoad={() => setStudyReady(true)}
+                onError={() => {
+                  // The first failure drops the AVIF source so the browser selects
+                  // the WebP copy instead of leaving the reveal empty.
+                  if (avifIsUsable(studyImage)) {
+                    setStudyReady(false);
+                    dropFailedAvif(studyImage);
+                    return;
+                  }
+
+                  // Nothing left to try: release the hold so the object still
+                  // answers instead of staying inert for the session.
+                  setStudyReady(true);
+                }}
+                alt=""
+                aria-hidden="true"
+                draggable={false}
+                decoding="async"
+                className="absolute inset-0 h-full w-full object-contain object-center select-none"
+              />
+            </picture>
+          )}
+        </span>
       </span>
 
-      {/* Frame: the outline that appears with the study. */}
+      {/* Cell frame: a hairline, which is the only chrome the cell carries. */}
       <span
         aria-hidden="true"
-        className="subject-frame absolute inset-0 block rounded-[24px] border-2 border-[#f0ee07] pointer-events-none"
+        className="subject-frame pointer-events-none absolute inset-0 block border border-solid"
       />
 
-      {/* Label: the only affordance text, colored by the reveal token. The scrim
-          keeps it legible over whichever photo sits behind it. */}
-      <span className="subject-label pointer-events-none absolute inset-x-0 bottom-0 flex justify-center">
-        <span className="rounded-full bg-black/35 px-3 py-1 font-['Outfit'] text-[11px] font-bold tracking-[0.18em] uppercase backdrop-blur-[2px]">
-          {label}
-        </span>
+      {/* Caption inside the cell, the way a helmet cell names its paint and year.
+          Decorative: the button already carries the accessible name. */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-3 right-3 flex items-baseline gap-2 font-['Outfit'] text-[10px] font-semibold uppercase tracking-[0.16em]"
+      >
+        <span className="text-[#1a1a1a]/70 dark:text-white/80">{SUBJECT_NAME}</span>
+        <span className="text-[#b5a800]">{SUBJECT_YEAR}</span>
       </span>
     </button>
   );
