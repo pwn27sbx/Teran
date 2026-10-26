@@ -38,6 +38,17 @@ const hexToRgb = (hex: string): [number, number, number] => {
 const DETAIL_STEPS: Record<AcidSquaresDetail, number> = { low: 20, medium: 32, high: 48 };
 const stepsFor = (detail: AcidSquaresDetail): number => DETAIL_STEPS[detail] || DETAIL_STEPS.medium;
 
+/**
+ * The post-processing uniforms this component writes. ogl exposes them as an
+ * untyped bag, so the two-pass blur direction and the resolution are named
+ * here: they are read as vectors, not as scalars.
+ */
+interface PostUniforms {
+  [name: string]: { value: unknown };
+  uDirection: { value: Float32Array };
+  iResolution: { value: Float32Array };
+}
+
 const vertex = `#version 300 es
 in vec2 position;
 void main() {
@@ -272,7 +283,7 @@ const AcidSquares: React.FC<AcidSquaresProps> = ({
       }
     });
     const postMesh = new Mesh(gl, { geometry, program: postProgram });
-    const pu = postProgram.uniforms as Record<string, { value: unknown }>;
+    const pu = postProgram.uniforms as PostUniforms;
     const mu = program.uniforms as Record<string, { value: unknown }>;
 
     let rtA: InstanceType<typeof RenderTarget> | null = null;

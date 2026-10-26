@@ -312,7 +312,7 @@ function stubIdleCallbacks(): void {
   };
 }
 
-function classesOf(element: Element | null): string[] {
+function classesOf(element: Element | null | undefined): string[] {
   return (element?.getAttribute('class') ?? '').split(/\s+/).filter(Boolean);
 }
 
