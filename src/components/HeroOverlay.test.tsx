@@ -179,6 +179,22 @@ describe('HeroOverlay', () => {
     expect(screen.getByText(ES_SUBTITLE)).toBeInTheDocument();
   });
 
+  it('renders the hero data card from i18n in Spanish', () => {
+    renderOverlay();
+
+    expect(screen.getByText('Emergencias')).toBeInTheDocument();
+    expect(screen.getByText('24 / 7')).toBeInTheDocument();
+    expect(screen.getByText('Desde 1994 · Lima')).toBeInTheDocument();
+  });
+
+  it('localizes the hero data card in English', async () => {
+    await i18n.changeLanguage('en');
+    renderOverlay();
+
+    expect(screen.getByText('Emergencies')).toBeInTheDocument();
+    expect(screen.getByText('Since 1994 · Lima')).toBeInTheDocument();
+  });
+
   it('renders the WhatsApp primary CTA that opens in a new tab', () => {
     renderOverlay();
 

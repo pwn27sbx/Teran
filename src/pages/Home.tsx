@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation, Trans } from "react-i18next";
+import HeroField from "@/components/HeroField";
 import { HeroSubjectBackdrop, HeroSubjectObject } from "@/components/HeroSubjectReveal";
 import HeroOverlay from "@/components/HeroOverlay";
 import DriftWall from "@/components/DriftWall";
@@ -74,6 +75,12 @@ function Home() {
             style={heroMotionStyle}
             className="w-full h-full relative origin-center bg-white dark:bg-[#121212] shadow-2xl overflow-hidden pointer-events-auto"
           >
+            {/* Quiet contour field: the reference hero is a light field crossed
+                by thin lines, not a flat surface. Decorative and inert. */}
+            <div className="pointer-events-none absolute inset-0 text-[#186dac] opacity-[0.14]">
+              <HeroField />
+            </div>
+
             {/* Media layer only, split in two: the dog hosts the scene as a
                 full-bleed backdrop and the cat reveals its own study from the
                 slot the overlay allocates. Each layer keeps its own boundary,

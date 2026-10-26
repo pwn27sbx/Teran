@@ -63,6 +63,20 @@ function HeroOverlay({ media }: HeroOverlayProps) {
 
       {/* Copy block: bottom-anchored on mobile and on desktop */}
       <div className="mt-auto flex flex-col px-6 pb-10 sm:pb-24 text-center md:pl-12 md:pb-16 md:items-start md:text-left md:max-w-xl">
+        {/* Micro-label card, the reference hero's way of putting real data at the
+            edge of the composition without a paragraph. */}
+        <div className="mb-6 inline-flex flex-col gap-1 self-center border border-gray-900/20 px-3 py-2 text-left dark:border-white/25 md:self-start">
+          <span className="font-['Outfit'] text-[9px] font-bold uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400">
+            {t('home.hero.data_label')}
+          </span>
+          <span className="font-['Outfit'] text-[13px] font-black uppercase leading-none tracking-[0.08em] text-gray-900 dark:text-white">
+            {t('home.hero.data_value')}
+          </span>
+          <span className="font-['Outfit'] text-[9px] font-semibold uppercase tracking-[0.18em] text-[#b5a800]">
+            {t('home.hero.data_footer')}
+          </span>
+        </div>
+
         <h1 className="font-['Outfit'] font-black text-[32px] sm:text-[40px] md:text-6xl tracking-tighter leading-[0.95] text-gray-900 dark:text-white">
           {t('home.hero.title')}{' '}
           <span className="text-[#f4484a]">{t('home.hero.best_friend')}</span>
