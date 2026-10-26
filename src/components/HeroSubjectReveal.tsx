@@ -15,6 +15,13 @@ const DEFAULT_STUDY_IMAGE = "/atreusx_nobg.avif";
  */
 const IDLE_FALLBACK_MS = 120;
 
+/**
+ * Deadline for the idle warm-up: a busy page can defer `requestIdleCallback`
+ * indefinitely, and the reveal holds its reactions until the study has painted,
+ * so an unbounded wait would leave the object inert.
+ */
+const IDLE_DEADLINE_MS = 2000;
+
 const ACTIVATION_KEYS = ["Enter", " ", "Spacebar"];
 
 interface IdleWindow extends Window {
@@ -118,7 +125,9 @@ export function HeroSubjectObject({
     const idleWindow = window as IdleWindow;
 
     if (typeof idleWindow.requestIdleCallback === "function") {
-      const handle = idleWindow.requestIdleCallback(() => setStudyMounted(true));
+      const handle = idleWindow.requestIdleCallback(() => setStudyMounted(true), {
+        timeout: IDLE_DEADLINE_MS,
+      });
 
       return () => idleWindow.cancelIdleCallback?.(handle);
     }
@@ -182,8 +191,17 @@ export function HeroSubjectObject({
               src={webpFallbackSource(studyImage)}
               onLoad={() => setStudyReady(true)}
               onError={() => {
-                setStudyReady(false);
-                dropFailedAvif(studyImage);
+                // The first failure drops the AVIF source so the browser selects
+                // the WebP copy instead of leaving the reveal empty.
+                if (avifIsUsable(studyImage)) {
+                  setStudyReady(false);
+                  dropFailedAvif(studyImage);
+                  return;
+                }
+
+                // Nothing left to try: release the hold so the object still
+                // answers instead of staying inert for the session.
+                setStudyReady(true);
               }}
               alt=""
               aria-hidden="true"

@@ -286,13 +286,19 @@ type ObjectProps = React.ComponentProps<typeof HeroSubjectObject>;
  * `requestIdleCallback`, so this stub makes that moment explicit instead of
  * racing the component's timer fallback.
  */
-let idleCallbacks: { flush: () => void; pending: () => number };
+let idleCallbacks: {
+  flush: () => void;
+  pending: () => number;
+  options: Array<{ timeout?: number } | undefined>;
+};
 
 function stubIdleCallbacks(): void {
   const pending: Array<() => void> = [];
+  const options: Array<{ timeout?: number } | undefined> = [];
 
-  vi.stubGlobal('requestIdleCallback', (callback: () => void) => {
+  vi.stubGlobal('requestIdleCallback', (callback: () => void, received?: { timeout?: number }) => {
     pending.push(callback);
+    options.push(received);
     return pending.length;
   });
   vi.stubGlobal('cancelIdleCallback', () => undefined);
@@ -304,6 +310,7 @@ function stubIdleCallbacks(): void {
       });
     },
     pending: () => pending.length,
+    options,
   };
 }
 
@@ -779,6 +786,33 @@ describe('hero subject reveal', () => {
 
       fireEvent.load(studyImage(container));
 
+      expect(subjectButton()).toHaveAttribute('data-study-ready', 'true');
+    });
+
+    it('gives the idle moment a deadline so a busy page still warms the study', () => {
+      renderObject();
+
+      // Without a deadline the browser may defer the callback forever, and the
+      // four reactions would stay held at rest, leaving the object inert.
+      expect(idleCallbacks.options).toHaveLength(1);
+      const [{ timeout } = {}] = idleCallbacks.options;
+
+      expect(typeof timeout).toBe('number');
+      expect(timeout).toBeGreaterThan(0);
+    });
+
+    it('releases the hold when the study cannot load in either format', () => {
+      const { container } = renderObject();
+
+      idleCallbacks.flush();
+
+      // First failure drops the AVIF source so the WebP copy can be selected.
+      fireEvent.error(studyImage(container));
+      expect(subjectButton()).toHaveAttribute('data-study-ready', 'false');
+
+      // Second failure leaves nothing to try: the affordance must still respond
+      // instead of staying held at rest forever.
+      fireEvent.error(studyImage(container));
       expect(subjectButton()).toHaveAttribute('data-study-ready', 'true');
     });
 
