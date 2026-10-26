@@ -994,6 +994,15 @@ describe('Home hero composition', () => {
     expect(secondary).toHaveAttribute('href', '/servicios');
   });
 
+  it('draws the decorative contour field behind the media', () => {
+    const { container } = renderHome();
+    const field = container.querySelector('[data-hero-field]');
+
+    expect(field).not.toBeNull();
+    // Decorative: the field must never reach assistive technology.
+    expect(field?.getAttribute('aria-hidden')).toBe('true');
+  });
+
   it('keeps the hero inside a 360x640 viewport', () => {
     const { container } = renderHome();
     const backdrop = container.querySelector('[data-hero-media]') as HTMLElement;
